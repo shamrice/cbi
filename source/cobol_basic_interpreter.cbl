@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-10-11
+      * Last Modified: 2021-10-13
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -48,6 +48,7 @@
 
        01  ws-num-lines               pic 9(10) comp value 0.
 
+       01  ws-source-data-temp        pic x(1024).
        01  ws-source-data-read        pic x(1024) 
                                       occurs 0 to 64000 times 
                                       depending on ws-num-lines.          
@@ -74,7 +75,10 @@
        01  ws-space-count             pic 9(10) value zero.
        01  ws-comma-count             pic 9(10) value zero.
        01  ws-keyword-count           pic 9(10) value zero.
+       01  ws-colon-count             pic 99 value zero.
        01  ws-assignment-count        pic 9 value zero.
+
+       01  ws-starting-pointer        pic 99 comp.
 
        01  ws-temp-param-values       pic x(1024) occurs 10 times.
 
@@ -129,9 +133,47 @@
                    at end set ws-eof to true 
                    not at end 
                        display trim(f-source-code-line)
-                       add 1 to ws-num-lines
-                       move trim(f-source-code-line)
-                           to ws-source-data-read(ws-num-lines)
+
+                       inspect f-source-code-line 
+                       tallying ws-colon-count for all ":"                       
+
+                       if ws-colon-count > 0 then 
+                           call "logger" using concatenate(
+                               "Found " ws-colon-count 
+                               " colons in line.")
+                           end-call 
+                           move 1 to ws-starting-pointer
+                           perform ws-colon-count times 
+                               add 1 to ws-num-lines
+
+                               unstring f-source-code-line
+                                   delimited by ":" 
+                                   into 
+                                   ws-source-data-temp
+                                   with pointer ws-starting-pointer
+                               end-unstring
+
+                               move trim(ws-source-data-temp)
+                                   to ws-source-data-read(ws-num-lines)
+                           end-perform
+                           
+                           if ws-starting-pointer > 1 then 
+                               add 1 to ws-num-lines
+                               move trim(
+                               f-source-code-line(ws-starting-pointer:))
+                               to ws-source-data-read(ws-num-lines)
+                           end-if 
+                           *>add ws-colon-count to ws-num-lines
+                           *>add 1 to ws-num-lines
+                           move zeros to ws-colon-count
+                       else
+                           add 1 to ws-num-lines
+                           move trim(f-source-code-line)
+                               to ws-source-data-read(ws-num-lines)
+                       end-if 
+
+
+                       
                    end-read 
 
                end-perform 
