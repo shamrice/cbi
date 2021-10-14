@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-10-13
+      * Last Modified: 2021-10-14
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -19,16 +19,9 @@
            crt status is ws-crt-status.
 
        input-output section.
-           file-control.                              
-               select optional fd-basic-source-file
-               assign to dynamic ws-input-source-file-name
-               organization is line sequential.          
-
+     
        data division.
        file section.
-
-       fd  fd-basic-source-file.
-       01  f-source-code-line               pic x(1024).     
 
        working-storage section.
 
@@ -41,25 +34,28 @@
            05  filler                        pic x. 
            05  filler                        pic x.
        
-       01  ws-input-source-file-name  pic x(1024) value "./test.bas".
+       01  ws-input-source-file-name  pic x(1024) value spaces.
 
        01  ws-line-idx                pic 9(10) comp value 0.
        01  ws-line-idx-disp           pic 9(10) value 0.
-
-       01  ws-num-lines               pic 9(10) comp value 0.
+       
 
        01  ws-source-data-temp        pic x(1024).
-       01  ws-source-data-read        pic x(1024) 
+       01  ws-source-data-table.
+           05  ws-num-lines           pic 9(10) comp value 0.
+           05  ws-source-data-read    pic x(1024) 
                                       occurs 0 to 64000 times 
-                                      depending on ws-num-lines.          
+                                      depending on ws-num-lines.       
 
-       01  ws-eof-sw                  pic a value 'N'.
-           88  ws-eof                 value 'Y'.
-           88  ws-not-eof             value 'N'.
+
 
        01  ws-run-program-sw          pic a value 'N'.
            88  ws-run-program         value 'Y'.
            88  ws-not-run-program     value 'N'.
+
+       01  ws-list-program-sw         pic a value 'N'.
+           88  ws-list-program        value 'Y'.
+           88  ws-not-list-program    value 'N'.
 
        01  ws-exit-program-sw         pic a value 'N'.
            88  ws-exit-program        value 'Y'.
@@ -75,14 +71,9 @@
        01  ws-space-count             pic 9(10) value zero.
        01  ws-comma-count             pic 9(10) value zero.
        01  ws-keyword-count           pic 9(10) value zero.
-       01  ws-colon-count             pic 99 value zero.
+       
        01  ws-assignment-count        pic 9 value zero.
-
-       01  ws-starting-pointer        pic 99 comp.
-
-       01  ws-temp-param-values       pic x(1024) occurs 10 times.
-
-       01  ws-temp-variable-type      pic x(10) value spaces.
+              
 
        01  ws-temp-variable-idx       pic 9(4) comp value 0.
        
@@ -99,119 +90,44 @@
                                           pic 9(16) value zeros.    
                                       
 
-
-       01  is-valid-variable-sw       pic a value 'N'.
-           88  ws-is-valid-variable   value 'Y'.
-           88  ws-not-valid-variable  value 'N'.
-
        01  ws-text-colors.
            05  ws-text-fg-color          pic 99 value 7.
            05  ws-text-bg-color          pic 99 value 0.
            05  ws-text-fg-highlight-sw   pic a value 'N'.
                88  ws-text-fg-highlight  value 'Y'.
                88  ws-text-fg-lowlight   value 'N'.
-        
+
+       01  ws-command-line-args          pic x(2048).
+
 
        procedure division.
        set environment 'COB_SCREEN_EXCEPTIONS' TO 'Y'.
        set environment 'COB_SCREEN_ESC'        TO 'Y'.
       
        main-procedure.
-           display spaces 
-           display "-----------------------------"
-           display 
-               "Reading contents of " 
-               trim(ws-input-source-file-name)               
-           end-display
-           display "-----------------------------"
-
-           open input fd-basic-source-file
-
-               perform until ws-eof 
-               
-                   read fd-basic-source-file                        
-                   at end set ws-eof to true 
-                   not at end 
-                       display trim(f-source-code-line)
-
-                       inspect f-source-code-line 
-                       tallying ws-colon-count for all ":"                       
-
-                       if ws-colon-count > 0 then 
-                           call "logger" using concatenate(
-                               "Found " ws-colon-count 
-                               " colons in line.")
-                           end-call 
-                           move 1 to ws-starting-pointer
-                           perform ws-colon-count times 
-                               add 1 to ws-num-lines
-
-                               unstring f-source-code-line
-                                   delimited by ":" 
-                                   into 
-                                   ws-source-data-temp
-                                   with pointer ws-starting-pointer
-                               end-unstring
-
-                               move trim(ws-source-data-temp)
-                                   to ws-source-data-read(ws-num-lines)
-                           end-perform
-                           
-                           if ws-starting-pointer > 1 then 
-                               add 1 to ws-num-lines
-                               move trim(
-                               f-source-code-line(ws-starting-pointer:))
-                               to ws-source-data-read(ws-num-lines)
-                           end-if 
-                           *>add ws-colon-count to ws-num-lines
-                           *>add 1 to ws-num-lines
-                           move zeros to ws-colon-count
-                       else
-                           add 1 to ws-num-lines
-                           move trim(f-source-code-line)
-                               to ws-source-data-read(ws-num-lines)
-                       end-if 
-
-
-                       
-                   end-read 
-
-               end-perform 
-
-           close fd-basic-source-file
-
-           display "-----------------------------"
-           display 
-               "Done reading file: " 
-               trim(ws-input-source-file-name)
-           end-display 
-           display "-----------------------------"
-           display spaces 
-           display spaces        
-           display "-----------------------------"
-           display "Printing read file contents:"
-           display "----------------------------"
-
-           perform varying ws-line-idx 
-           from 1 by 1 until ws-line-idx > ws-num-lines
-
-               display 
-                   "LINE " ws-line-idx ": " 
-                   trim(ws-source-data-read(ws-line-idx))
-               end-display
-
-           end-perform 
-
-           display "-----------------------------"
-           display "Done printing read contents"
-           display "-----------------------------"               
-           display spaces 
            
-           display "Run program? [Y/N] " with no advancing
-           accept ws-run-program-sw 
+           display spaces 
+           display "CBI - COBOL BASIC Interpreter"
+           display "-----------------------------"
+           display " By: Erik Eriksen"
+           display "Url: https://github.com/shamrice/cbi"
+           display space 
 
-           if not ws-run-program then 
-               display "Exiting..."
+           accept ws-command-line-args from command-line
+           call "command-line-parser" using 
+               ws-command-line-args
+               ws-input-source-file-name
+               ws-list-program-sw
+               ws-run-program-sw               
+           end-call 
+           
+           call "load-program" using 
+               ws-input-source-file-name 
+               ws-source-data-table
+               ws-list-program-sw
+           end-call 
+         
+           if not ws-run-program then               
                stop run 
            end-if                  
 
@@ -269,6 +185,8 @@
 
            if upper-case(ws-source-data-read(ws-line-idx)) = ws-cls then 
                display space blank screen 
+               move 1 to ws-scr-col
+               move 1 to ws-scr-row 
                call "logger" using "CLS"
            end-if 
 
