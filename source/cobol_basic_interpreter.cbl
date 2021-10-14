@@ -177,8 +177,10 @@
        process-line.
 
            if upper-case(ws-source-data-read(ws-line-idx)) 
-           = ws-end or ws-system then 
-               call "logger" using "END or SYSTEM. Setting exit flag."
+           = ws-end or ws-system or ws-stop then 
+               call "logger" using 
+                   "END SYSTEM or STOP. Setting exit flag."
+               end-call 
                set ws-exit-program to true 
                exit paragraph 
            end-if 
@@ -190,8 +192,17 @@
                call "logger" using "CLS"
            end-if 
 
+           if upper-case
+           (ws-source-data-read(ws-line-idx)(1:length(ws-sleep))) 
+           = ws-sleep then 
+               call "sleep-program" using 
+                   ws-source-data-read(ws-line-idx)                
+               end-call 
+           end-if                
+
            if upper-case(
-               ws-source-data-read(ws-line-idx)(1:5)) = ws-color
+               ws-source-data-read(ws-line-idx)(1:length(ws-color))) 
+               = ws-color
            then 
                call "set-cursor-color" using 
                    ws-source-data-read(ws-line-idx)
@@ -201,7 +212,8 @@
            end-if 
 
            if upper-case( 
-               ws-source-data-read(ws-line-idx)(1:6)) = ws-locate 
+               ws-source-data-read(ws-line-idx)(1:length(ws-locate))) 
+               = ws-locate 
            then 
                call "set-cursor-position" using 
                    ws-source-data-read(ws-line-idx)
@@ -210,8 +222,9 @@
               
            end-if 
 
-           if upper-case(trim(
-               ws-source-data-read(ws-line-idx)(1:5))) = ws-print
+           if upper-case(
+               ws-source-data-read(ws-line-idx)(1:length(ws-print))) 
+               = ws-print
            then 
                move trim(ws-source-data-read(ws-line-idx)(6:))
                    to ws-temp-param-buffer
@@ -269,8 +282,9 @@
 
 
 
-           if upper-case(trim(
-               ws-source-data-read(ws-line-idx)(1:3))) = ws-dim
+           if upper-case(
+               ws-source-data-read(ws-line-idx)(1:length(ws-dim))) 
+               = ws-dim
            then 
                call "allocate-var" using 
                    ws-source-data-read(ws-line-idx)
