@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-10-13
+      * Last Modified: 2021-10-16
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -48,7 +48,28 @@
            88  ls-eof                 value 'Y'.
            88  ls-not-eof             value 'N'.
 
-       01  ls-source-data-temp        pic x(1024).      
+       01  ls-source-data-temp        pic x(1024).        
+
+       01  ls-quote-count             pic 99.
+
+       01  ls-quote-pair-idx          pic 99 comp.
+
+       01  ls-quote-table.
+           05  ls-num-quote-pairs     pic 99.
+           05  ls-quote-location      occurs 0 to 99 times 
+                                      depending on ls-num-quote-pairs.
+               10  ls-q-start-idx     pic 9(4).
+               10  ls-q-end-idx       pic 9(4).
+
+       01  ls-quote-type-sw           pic a value 'E'.
+           88  ls-quote-type-start    value 'S'.
+           88  ls-quote-type-end      value 'E'.
+
+       01  ls-line-char-idx           pic 9(4) .
+
+       01  ls-colon-in-quote-sw       pic a value 'N'.
+           88  ls-colon-in-quote      value 'Y'.
+           88  ls-colon-not-in-quote  value 'N'.
 
        linkage section.    
 
@@ -141,6 +162,48 @@
                display trim(f-source-code-line)
            end-if 
 
+      *> Figure out quote start and end locations.          
+           inspect f-source-code-line
+           tallying ls-quote-count for all '"'.
+
+           if ls-quote-count > 0 then 
+               perform varying ls-line-char-idx from 1 by 1
+               until ls-line-char-idx > length(f-source-code-line) 
+
+                   if f-source-code-line(ls-line-char-idx:1) = '"' then 
+
+                       if not ls-quote-type-start then 
+                           add 1 to ls-num-quote-pairs
+                           move ls-line-char-idx 
+                               to ls-q-start-idx(ls-num-quote-pairs)
+                           
+                           set ls-quote-type-start to true 
+
+                           call "logger" using concatenate(
+                               "LOAD :: quote START at: " 
+                               ls-line-char-idx
+                               " for line: " 
+                               trim(f-source-code-line)) 
+                           end-call 
+                       
+                       else 
+                           move ls-line-char-idx
+                               to ls-q-end-idx(ls-num-quote-pairs) 
+
+                           set ls-quote-type-end to true 
+
+                           call "logger" using concatenate(
+                               "LOAD :: quote END at: " ls-line-char-idx
+                               " for line: " 
+                               trim(f-source-code-line))
+                           end-call 
+                                                     
+                       end-if 
+                   end-if 
+               
+               end-perform 
+           end-if 
+
       *> Check to see if line is split by colons. 
            move zeros to ws-colon-count
            inspect f-source-code-line 
@@ -153,9 +216,8 @@
 
       *> Unstring line into multiple in-memory lines.
                move 1 to ws-starting-pointer
-          
-               perform ws-colon-count times 
-                   add 1 to l-num-lines
+               
+               perform ws-colon-count times
 
                    unstring f-source-code-line
                        delimited by ":" 
@@ -163,15 +225,42 @@
                        with pointer ws-starting-pointer
                    end-unstring
 
-                   move trim(ls-source-data-temp)
-                       to l-source-data-read(l-num-lines)
+      *> Make sure that the colon is not in quoted text. 
+                   
+                   set ls-colon-not-in-quote to true 
+
+                   perform varying ls-quote-pair-idx from 1 by 1 
+                   until ls-quote-pair-idx > ls-num-quote-pairs
+                       if ws-starting-pointer > 
+                           ls-q-start-idx(ls-quote-pair-idx)
+                           and ws-starting-pointer 
+                           < ls-q-end-idx(ls-quote-pair-idx)
+                       then 
+                           set ls-colon-in-quote to true 
+                           exit perform 
+                       end-if 
+
+                   end-perform 
+
+      *> If not quoted, then generate new line.
+                   if ls-colon-not-in-quote then 
+                       add 1 to l-num-lines
+
+                       move trim(ls-source-data-temp)
+                          to l-source-data-read(l-num-lines)
+                   end-if 
+
                end-perform
                            
       *> Add any text that may be after last colon in new line
-               if ws-starting-pointer > 1 then 
+               if ws-starting-pointer > 1 and ls-colon-not-in-quote then 
                    add 1 to l-num-lines
 
                    move trim(f-source-code-line(ws-starting-pointer:))
+                       to l-source-data-read(l-num-lines)
+               else *> colon exists in quoted text in the string. parse normal
+                   add 1 to l-num-lines
+                   move trim(f-source-code-line)
                        to l-source-data-read(l-num-lines)
                end-if 
                                                       
