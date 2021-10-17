@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-10-14
+      * Last Modified: 2021-10-17
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -226,61 +226,23 @@
                ws-source-data-read(ws-line-idx)(1:length(ws-print))) 
                = ws-print
            then 
-               move trim(ws-source-data-read(ws-line-idx)(6:))
-                   to ws-temp-param-buffer
-
-               *> check to see if printing variable value.
-               if ws-temp-param-buffer(1:1) not = '"' then 
-               
-                   perform varying ws-temp-variable-idx
-                   from 1 by 1 
-                   until ws-temp-variable-idx > ws-num-variables
-
-                       if upper-case(ws-temp-param-buffer)
-                       = ws-variable-name(ws-temp-variable-idx) then 
-                           move ws-variable-value(ws-temp-variable-idx)
-                               to ws-temp-param-buffer
-                           exit perform 
-                       end-if 
-                   end-perform 
-
-               else 
-                   inspect ws-temp-param-buffer 
-                       replacing first '"' by space 
-                   
-                   inspect reverse(ws-temp-param-buffer)  
-                       tallying ws-space-count for leading spaces
-                   
-                   move spaces to ws-temp-param-buffer(
-                       length(ws-temp-param-buffer) - ws-space-count:)
-               end-if 
-
-               if ws-text-fg-highlight then 
-                   display trim(ws-temp-param-buffer)
-                       at ws-screen-position
-                       highlight
-                       foreground-color ws-text-fg-color  
-                       background-color ws-text-bg-color       
-                   end-display
-               else 
-                   display trim(ws-temp-param-buffer)
-                       at ws-screen-position
-                       foreground-color ws-text-fg-color 
-                       background-color ws-text-bg-color        
-                   end-display
-               end-if 
-
-               call "logger" using concatenate(
-                   "PRINT :: location: " ws-screen-position
-                   " colors: " ws-text-colors
-                   " text: " trim(ws-temp-param-buffer))
+               call "print-text" using 
+                   ws-source-data-read(ws-line-idx)
+                   ws-screen-position
+                   ws-text-colors
+                   ws-variable-table
                end-call 
-       
-               add 1 to ws-scr-row
-               move 1 to ws-scr-col
            end-if 
 
-
+      *     if upper-case(
+      *         ws-source-data-read(ws-line-idx)(1:length(ws-input))) 
+      *         = ws-input
+      *     then 
+      *         call "input-cmd" using 
+      *             ws-source-data-read(ws-line-idx)
+      *             ws-variable-table 
+      *         end-call 
+      *     end-if 
 
            if upper-case(
                ws-source-data-read(ws-line-idx)(1:length(ws-dim))) 

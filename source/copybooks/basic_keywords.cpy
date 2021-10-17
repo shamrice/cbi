@@ -22,4 +22,6 @@
        78  ws-dim                     value "DIM".
        78  ws-integer-type            value "AS INTEGER".
        78  ws-string-type             value "AS STRING".
+
+       78  ws-input                   value "INPUT".
        
