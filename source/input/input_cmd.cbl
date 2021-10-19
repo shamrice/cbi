@@ -45,6 +45,8 @@
            88  ls-input-type-normal     value 'N'.
            88  ls-input-type-question   value 'Q'.
 
+       01  ls-quote-count               pic 9(4) comp.
+
        linkage section.       
 
        01  l-src-code-str               pic x(1024). 
@@ -88,6 +90,30 @@
                end-call
                goback                
            end-if               
+
+           inspect ls-temp-param-buffer 
+           tallying ls-quote-count for all '"'
+          
+           if ls-quote-count > 0 then 
+               perform handle-input-with-text
+           else 
+               perform handle-input-var-only
+           end-if 
+
+           call "logger" using concatenate(
+               "INPUT :: "
+               " type: " ls-input-type-sw
+               " end idx: " ls-input-str-end-idx
+               " input statement: " trim(l-src-code-str)
+               " param buffer: " trim(ls-temp-param-buffer)
+               " text: " trim(ls-temp-input-text)
+               " variable: " trim(ls-temp-param-values(1)))
+           end-call 
+              
+           goback.
+
+
+       handle-input-with-text.
 
            perform varying ls-char-idx from 1 by 1 
            until ls-char-idx > length(ls-temp-param-buffer) 
@@ -147,7 +173,34 @@
                l-variable-table
            end-call  
 
-               
+           perform display-and-accept-input
+
+           exit paragraph.       
+
+
+
+       handle-input-var-only.
+
+           set ls-input-type-question to true            
+           move "?" to ls-temp-input-text           
+           move 5 to ls-input-str-end-idx           
+
+           call "print-text" using 
+               ls-temp-input-text 
+               l-screen-position
+               l-text-colors
+               l-variable-table
+           end-call  
+
+           move trim(ls-temp-param-buffer) to ls-temp-param-values(1) 
+
+           perform display-and-accept-input
+           
+           exit paragraph.
+
+
+
+       display-and-accept-input.
       *>   TODO : improve this
       *>   Set location of cursor after input text and accept.
            subtract 1 from l-scr-row 
@@ -170,16 +223,6 @@
                l-variable-table
            end-call 
 
-           call "logger" using concatenate(
-               "INPUT :: "
-               " type: " ls-input-type-sw
-               " end idx: " ls-input-str-end-idx
-               " input statement: " trim(l-src-code-str)
-               " param buffer: " trim(ls-temp-param-buffer)
-               " text: " trim(ls-temp-input-text)
-               " variable: " trim(ls-temp-param-values(1)))
-           end-call 
-              
-           goback.
+           exit paragraph.
 
        end program input-cmd.

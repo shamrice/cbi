@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-10-16
+      * Last Modified: 2021-10-19
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -38,8 +38,8 @@
        01  ws-line-idx                pic 9(10) comp value 0.
        01  ws-line-idx-disp           pic 9(10) value 0.
 
-       01  ws-colon-count             pic 99 value zero.
-       01  ws-starting-pointer        pic 99 comp.
+       01  ws-colon-count             pic 9(10) value zero.
+       01  ws-starting-pointer        pic 9(10) comp.
       
        
        local-storage section.
@@ -50,13 +50,16 @@
 
        01  ls-source-data-temp        pic x(1024).        
 
-       01  ls-quote-count             pic 99.
+       01  ls-quote-count             pic 9(6).
 
-       01  ls-quote-pair-idx          pic 99 comp.
+       01  ls-quote-pair-idx          pic 9(6) comp.
 
+      *> TODO : this shouldn't be a table. No reason to store the whole
+      *>        program's quote locations. Just the current line being 
+      *>        read and parsed!
        01  ls-quote-table.
-           05  ls-num-quote-pairs     pic 99.
-           05  ls-quote-location      occurs 0 to 99 times 
+           05  ls-num-quote-pairs     pic 9(6).
+           05  ls-quote-location      occurs 0 to 999999 times 
                                       depending on ls-num-quote-pairs.
                10  ls-q-start-idx     pic 9(4).
                10  ls-q-end-idx       pic 9(4).
