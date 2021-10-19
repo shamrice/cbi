@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-10-13
+      * Last Modified: 2021-10-19
       * Purpose: Assigns value to a variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -29,7 +29,9 @@
        
        01  ls-var-idx                    pic 9(4) comp value zero.
 
-       01  ls-space-count                pic 9(10) value zero.
+       01  ls-space-count                pic 9(10) comp value zero.
+
+       01  ls-end-quote-idx              pic 9(10) comp value zero.
 
        01  ls-temp-param-values          pic x(1024) occurs 10 times.  
 
@@ -96,16 +98,32 @@
                        
                inspect reverse(l-variable-value(ls-var-idx))
                tallying ls-space-count for leading spaces
-                   
-               move spaces to l-variable-value(ls-var-idx)
-               (length(l-variable-value(ls-var-idx)) - ls-space-count:)
+               
+               compute ls-end-quote-idx = 
+                   length(l-variable-value(ls-var-idx)) - ls-space-count
+               end-compute 
+               
+               if l-variable-value(ls-var-idx)(ls-end-quote-idx:1) 
+               = '"' then                
+                   move spaces 
+                   to l-variable-value(ls-var-idx)(ls-end-quote-idx:)
+               else 
+                   call "logger" using concatenate(
+                       "ASSIGNMENT :: WARNING : variable: " 
+                       trim(l-variable-name(ls-var-idx))
+                       " assigned to type STRING but does not have "
+                       "proper quotes in value. Assigning anyway but "
+                       "data may be incorrect.")
+                   end-call 
+               end-if 
            end-if 
 
            call "logger" using concatenate(
                "ASSIGNMENT :: variable name: " 
                trim(l-variable-name(ls-var-idx))
                " new value: " trim(l-variable-value(ls-var-idx))
-               " type: " l-variable-type(ls-var-idx))
+               " type: " l-variable-type(ls-var-idx)
+               " space count: " ls-space-count)
            end-call                     
 
            goback. 

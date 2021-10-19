@@ -25,28 +25,29 @@
 
        copy "copybooks/basic_keywords.cpy".
 
-       local-storage section.
+       local-storage section.       
 
-       01  ls-space-count             pic 9(10) value zero.
-
-       01  ls-temp-variable-idx       pic 9(4) comp value 0.       
-    
-       01  ls-temp-param-buffer       pic x(1024).
+       01  ls-space-count                pic 9(10) comp value zero.
+ 
+       01  ls-temp-variable-idx          pic 9(4) comp value 0.       
+       
+       01  ls-temp-param-buffer          pic x(1024).
+       
 
        linkage section.       
 
-       01  l-src-code-str               pic x(1024). 
+       01  l-src-code-str                pic x(1024). 
 
        01  l-screen-position.
-           05  l-scr-row             pic 999 value 1.
-           05  l-scr-col             pic 999 value 1.    
+           05  l-scr-row                 pic 999 value 1.
+           05  l-scr-col                 pic 999 value 1.    
 
        01  l-text-colors.
-           05  l-text-fg-color          pic 99 value 7.
-           05  l-text-bg-color          pic 99 value 0.
-           05  l-text-fg-highlight-sw   pic a value 'N'.
-               88  l-text-fg-highlight  value 'Y'.
-               88  l-text-fg-lowlight   value 'N'.
+           05  l-text-fg-color           pic 99 value 7.
+           05  l-text-bg-color           pic 99 value 0.
+           05  l-text-fg-highlight-sw    pic a value 'N'.
+               88  l-text-fg-highlight   value 'Y'.
+               88  l-text-fg-lowlight    value 'N'.
 
        01  l-variable-table.
            05  l-num-variables           pic 9(4) comp.
@@ -57,8 +58,9 @@
                    88  l-type-string     value "STRING".
                10  l-variable-name       pic x(16) value spaces.
                10  l-variable-value      pic x(1024) value spaces.
-               10  l-variable-value-num  redefines l-variable-value
-                                         pic 9(16) value zeros.           
+               10  l-variable-value-num  redefines l-variable-value                   
+                                         pic 9(16) value zeros.    
+     
       
        procedure division using 
            l-src-code-str l-screen-position l-text-colors
@@ -66,8 +68,14 @@
 
        main-procedure.
 
-           move trim(l-src-code-str(length(ws-print) + 1:))
-               to ls-temp-param-buffer
+      *>   If string still has leading "PRINT" command, take it out.
+           if upper-case(l-src-code-str(1:length(ws-print))) = ws-print
+           then 
+               move trim(l-src-code-str(length(ws-print) + 1:))
+                   to ls-temp-param-buffer
+           else 
+               move trim(l-src-code-str) to ls-temp-param-buffer
+           end-if 
 
            *> check to see if printing variable value.
            if ls-temp-param-buffer(1:1) not = '"' then 
@@ -115,9 +123,9 @@
                " colors: " l-text-colors
                " text: " trim(ls-temp-param-buffer))
            end-call 
-       
+                 
            add 1 to l-scr-row
-           move 1 to l-scr-col         
+           move 1 to l-scr-col                   
 
            goback.
 

@@ -47,8 +47,6 @@
                                       occurs 0 to 64000 times 
                                       depending on ws-num-lines.       
 
-
-
        01  ws-run-program-sw          pic a value 'N'.
            88  ws-run-program         value 'Y'.
            88  ws-not-run-program     value 'N'.
@@ -68,14 +66,12 @@
        01  ws-temp-cmd-buffer         pic x(256).
        01  ws-temp-param-buffer       pic x(1024).
 
-       01  ws-space-count             pic 9(10) value zero.
-       01  ws-comma-count             pic 9(10) value zero.
-       01  ws-keyword-count           pic 9(10) value zero.
+       01  ws-space-count             pic 9(10) comp value zero.
+       01  ws-comma-count             pic 9(10) comp value zero.
+       01  ws-keyword-count           pic 9(10) comp value zero.
        
-       01  ws-assignment-count        pic 9 value zero.
-              
-
-       01  ws-temp-variable-idx       pic 9(4) comp value 0.
+       01  ws-assignment-count        pic 9 comp value zero.
+                     
        
        01  ws-variable-table.
            05  ws-num-variables           pic 9(4) comp.
@@ -234,15 +230,17 @@
                end-call 
            end-if 
 
-      *     if upper-case(
-      *         ws-source-data-read(ws-line-idx)(1:length(ws-input))) 
-      *         = ws-input
-      *     then 
-      *         call "input-cmd" using 
-      *             ws-source-data-read(ws-line-idx)
-      *             ws-variable-table 
-      *         end-call 
-      *     end-if 
+           if upper-case(
+               ws-source-data-read(ws-line-idx)(1:length(ws-input))) 
+               = ws-input
+           then 
+               call "input-cmd" using 
+                   ws-source-data-read(ws-line-idx)
+                   ws-screen-position
+                   ws-text-colors
+                   ws-variable-table 
+               end-call 
+           end-if 
 
            if upper-case(
                ws-source-data-read(ws-line-idx)(1:length(ws-dim))) 

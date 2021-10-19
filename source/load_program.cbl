@@ -187,8 +187,11 @@
                            end-call 
                        
                        else 
-                           move ls-line-char-idx
-                               to ls-q-end-idx(ls-num-quote-pairs) 
+                           compute ls-q-end-idx(ls-num-quote-pairs) 
+                               = ls-line-char-idx + 1
+                           end-compute 
+      *                     move ls-line-char-idx
+      *                         to ls-q-end-idx(ls-num-quote-pairs) 
 
                            set ls-quote-type-end to true 
 
