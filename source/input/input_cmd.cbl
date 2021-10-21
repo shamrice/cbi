@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-14
-      * Last Modified: 2021-10-19
+      * Last Modified: 2021-10-21
       * Purpose: Process the INPUT command with parameter.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -204,20 +204,28 @@
       *>   TODO : improve this
       *>   Set location of cursor after input text and accept.
            subtract 1 from l-scr-row 
-           compute l-scr-col = ls-input-str-end-idx - 2
+           compute l-scr-col = ls-input-str-end-idx - 1
                
            accept ls-temp-input-val at l-screen-position
 
            add 1 to l-scr-row 
            move 1 to l-scr-col 
 
-           move concatenate(
-               upper-case(trim(ls-temp-param-values(1)))
-               ' = "'
-               trim(ls-temp-input-val)
-               '"')
-               to ls-assign-var-str               
-            
+           if trim(ls-temp-input-val) is numeric then 
+               move concatenate(
+                   upper-case(trim(ls-temp-param-values(1)))
+                   ' = '
+                   trim(ls-temp-input-val))
+                   to ls-assign-var-str               
+           else 
+
+               move concatenate(
+                   upper-case(trim(ls-temp-param-values(1)))
+                   ' = "'
+                   trim(ls-temp-input-val)
+                   '"')
+                   to ls-assign-var-str               
+           end-if 
            call "assign-var" using 
                ls-assign-var-str
                l-variable-table

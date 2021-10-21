@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-10-19
+      * Last Modified: 2021-10-21
       * Purpose: Assigns value to a variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -38,6 +38,8 @@
        01  ls-temp-alloc-str             pic x(1024) value spaces.     
 
        01  ls-test-numval-ret-code       pic 99.   
+
+       01  ls-allocate-return-code        pic 9 value 0.
 
        linkage section.       
 
@@ -82,9 +84,17 @@
       *> Assign new value to variable   
            if l-type-integer(ls-var-idx) then 
                move trim(ls-temp-param-values(2))
-                   to l-variable-value-num(ls-var-idx)                       
-           else 
-               move ls-temp-param-values(2)
+                   to l-variable-value-num(ls-var-idx) 
+               call "logger" using concatenate(
+                   "ASSIGNMENT :: Number value. New value: "
+                   l-variable-value-num(ls-var-idx) 
+                   " : from: " trim(ls-temp-param-values(2)))
+               end-call                       
+           else
+               inspect ls-temp-param-values(2)
+               replacing first '"' by space 
+
+               move trim(ls-temp-param-values(2))
                    to l-variable-value(ls-var-idx)
            end-if 
 
@@ -93,8 +103,8 @@
                        
                move zeros to ls-space-count
                        
-               inspect l-variable-value(ls-var-idx)
-               replacing first '"' by space 
+      *         inspect l-variable-value(ls-var-idx)
+      *         replacing first '"' by space 
                        
                inspect reverse(l-variable-value(ls-var-idx))
                tallying ls-space-count for leading spaces
@@ -158,7 +168,17 @@
            call "allocate-var" using 
                ls-temp-alloc-str
                l-variable-table
+               ls-allocate-return-code
            end-call        
+
+           if ls-allocate-return-code = 0 then 
+               call "logger" using concatenate(
+                   "ASSIGNMENT :: cannot assign value. Allocation "
+                   "of new variable failed. Variable: " 
+                   trim(ls-temp-param-values(1)))
+               end-call 
+               goback 
+           end-if 
 
            exit paragraph.
 

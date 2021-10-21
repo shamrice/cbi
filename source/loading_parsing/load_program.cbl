@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-10-19
+      * Last Modified: 2021-10-20
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -84,13 +84,20 @@
                                      occurs 0 to unbounded times 
                                      depending on l-num-lines. 
 
+       01  l-loop-boundary-table.
+           05  l-num-loops           pic 9(10) comp value 0. 
+           05  l-loop-data           occurs 0 to unbounded times
+                                     depending on l-num-loops.               
+               10  l-loop-start      pic 9(10). *>TODO Make comp 
+               10  l-loop-end        pic 9(10).
+
        01  l-list-program-sw         pic a.
            88  l-list-program        value 'Y'.
            88  l-not-list-program    value 'N'.
 
        procedure division using 
            l-input-file-name l-source-data-table
-           l-list-program-sw.  
+           l-loop-boundary-table l-list-program-sw.  
 
        main-procedure.
 
@@ -275,6 +282,12 @@
                move trim(f-source-code-line)
                    to l-source-data-read(l-num-lines)
            end-if 
+            
+           call "parse-loops" using 
+               l-source-data-read(l-num-lines)
+               l-num-lines 
+               l-loop-boundary-table
+           end-call 
 
            exit paragraph.                                  
 

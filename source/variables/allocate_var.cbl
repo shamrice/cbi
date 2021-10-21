@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-10-12
+      * Last Modified: 2021-10-21
       * Purpose: Allocates a new variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -45,7 +45,8 @@
            88  ls-is-valid-variable      value 'Y'.
            88  ls-not-valid-variable     value 'N'.
 
-       
+       01  ls-keyword-check-ret-code     pic 9 value 0.
+
        linkage section.       
 
        01  l-src-code-str                pic x(1024). 
@@ -60,9 +61,14 @@
                10  l-variable-name       pic x(16) value spaces.
                10  l-variable-value      pic x(1024) value spaces.
                10  l-variable-value-num  redefines l-variable-value
-                                         pic 9(16) value zeros.       
+                                         pic 9(16) value zeros. 
 
-       procedure division using l-src-code-str l-variable-table.       
+       01  l-allocate-return-code        pic 9 value 0.
+           88  l-return-code-true        value 1.
+           88  l-return-code-false       value 0.      
+
+       procedure division using 
+           l-src-code-str l-variable-table l-allocate-return-code.       
       
        main-procedure.
 
@@ -74,6 +80,34 @@
            move upper-case(trim(l-src-code-str(4:)))
                to ls-temp-param-buffer
 
+      *>   Get and set variable name as well as increment variable count.
+           unstring ls-temp-param-buffer
+               delimited by space 
+               into ls-temp-param-values(1) 
+           end-unstring
+
+      *>   Make sure var name isn't a reserve word. If so, exit allocation.
+           call "is-keyword" using 
+               ls-temp-param-values(1) 
+               ls-keyword-check-ret-code
+           end-call                    
+
+           if ls-keyword-check-ret-code = 1 then 
+               call "logger" using concatenate(
+                   "DIM :: cannot allocate variable. Variable name is "
+                   " a reserved keyword. Variable name attempted: "
+                   trim(ls-temp-param-values(1)))
+               end-call
+               set l-return-code-false to true 
+               goback 
+           end-if 
+
+           add 1 to l-num-variables
+
+           move ls-temp-param-values(1) 
+               to l-variable-name(l-num-variables)               
+
+      *>   Figure out what the new type is for the variable and set it.
            inspect ls-temp-param-buffer  
                tallying ls-keyword-count for all ws-string-type 
                    
@@ -93,8 +127,7 @@
                move ws-string-type to ls-temp-variable-type
            end-if 
 
-           add 1 to l-num-variables
-
+      *>   Allocate variable with blank value.
            move spaces to l-variable-value(l-num-variables)
 
            if ls-temp-variable-type = ws-string-type
@@ -103,13 +136,6 @@
                set l-type-integer(l-num-variables) to true 
            end-if 
 
-           unstring ls-temp-param-buffer
-               delimited by space 
-               into ls-temp-param-values(1) 
-           end-unstring
-
-           move ls-temp-param-values(1) 
-               to l-variable-name(l-num-variables)
 
            call "logger" using concatenate(
                "DIM :: name: " trim(l-variable-name(l-num-variables))
@@ -117,6 +143,7 @@
                " type: " trim(l-variable-type(l-num-variables)))
            end-call 
        
+           set l-return-code-true to true 
            goback.
 
        end program allocate-var.

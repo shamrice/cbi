@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-10-17
+      * Last Modified: 2021-10-21
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -39,6 +39,7 @@
        01  ws-line-idx                pic 9(10) comp value 0.
        01  ws-line-idx-disp           pic 9(10) value 0.
        
+       01  ws-loop-idx                pic 9(10) comp.
 
        01  ws-source-data-temp        pic x(1024).
        01  ws-source-data-table.
@@ -71,8 +72,13 @@
        01  ws-keyword-count           pic 9(10) comp value zero.
        
        01  ws-assignment-count        pic 9 comp value zero.
-                     
+
+       01  ws-conditional-ret-val     pic 9 value 0.   
+       01  ws-allocate-ret-val        pic 9 value 0.  
+       01  ws-keyword-check-ret-val   pic 9 value 0. 
        
+       01  ws-assert-check-val        pic x(1024) value spaces.
+
        01  ws-variable-table.
            05  ws-num-variables           pic 9(4) comp.
            05  ws-variables               occurs 0 to 1000 times
@@ -84,16 +90,21 @@
                10  ws-variable-value      pic x(1024) value spaces.
                10  ws-variable-value-num  redefines ws-variable-value
                                           pic 9(16) value zeros.    
-                                      
+       01  ws-loop-boundary-table.
+           05  ws-num-loops               pic 9(10) comp. 
+           05  ws-loop-data               occurs 0 to 1000 times
+                                          depending on ws-num-loops.               
+               10  ws-loop-start          pic 9(10). *>TODO Make comp 
+               10  ws-loop-end            pic 9(10).                                      
 
        01  ws-text-colors.
-           05  ws-text-fg-color          pic 99 value 7.
-           05  ws-text-bg-color          pic 99 value 0.
-           05  ws-text-fg-highlight-sw   pic a value 'N'.
-               88  ws-text-fg-highlight  value 'Y'.
-               88  ws-text-fg-lowlight   value 'N'.
+           05  ws-text-fg-color           pic 99 value 7.
+           05  ws-text-bg-color           pic 99 value 0.
+           05  ws-text-fg-highlight-sw    pic a value 'N'.
+               88  ws-text-fg-highlight   value 'Y'.
+               88  ws-text-fg-lowlight    value 'N'.
 
-       01  ws-command-line-args          pic x(2048).
+       01  ws-command-line-args           pic x(2048).
 
 
        procedure division.
@@ -120,6 +131,7 @@
            call "load-program" using 
                ws-input-source-file-name 
                ws-source-data-table
+               ws-loop-boundary-table
                ws-list-program-sw
            end-call 
          
@@ -249,18 +261,36 @@
                call "allocate-var" using 
                    ws-source-data-read(ws-line-idx)
                    ws-variable-table 
+                   ws-allocate-ret-val
                end-call 
 
            end-if 
 
            perform check-assign-value-to-variable
-           
+           perform check-and-handle-loop-end           
+           perform check-and-handle-loop-start
+
            exit paragraph.
 
 
 
 
        check-assign-value-to-variable.           
+
+           unstring trim(ws-source-data-read(ws-line-idx))
+               delimited by space 
+               into ws-assert-check-val
+           end-unstring
+
+           call "is-keyword" using 
+               ws-assert-check-val
+               ws-keyword-check-ret-val
+           end-call 
+
+           if ws-keyword-check-ret-val = 1 then 
+               exit paragraph 
+           end-if 
+           
 
            inspect ws-source-data-read(ws-line-idx) 
                tallying ws-assignment-count for all "="
@@ -272,6 +302,76 @@
                end-call 
            end-if 
 
+
+           exit paragraph.
+
+
+
+       check-and-handle-loop-start.
+
+      *> Make sure there's loops and that the current line is a loop exit
+           if ws-num-loops = 0 then 
+               exit paragraph
+           end-if 
+           
+           if upper-case(
+               ws-source-data-read(ws-line-idx)(1:length(ws-while))) 
+               = ws-while  
+           then
+               *> TODO : move to sub program.
+               call "logger" using "processing while loop start"
+               
+               call "conditional-processor" using 
+                   ws-source-data-read(ws-line-idx)(length(ws-while):)
+                   ws-variable-table
+                   ws-conditional-ret-val
+               end-call 
+               
+               call "logger" using ws-conditional-ret-val
+
+               if ws-conditional-ret-val = 0 then 
+                   
+                   call "logger" using "VALUE TRUE!"
+      *>          TODO: need to know what nested level loop to jump past!!
+                   move ws-loop-end(ws-num-loops) to ws-line-idx
+               end-if 
+
+           end-if
+
+
+           exit paragraph.
+
+       check-and-handle-loop-end.
+
+      *> Make sure there's loops and that the current line is a loop exit
+           if ws-num-loops = 0 then 
+               exit paragraph
+           end-if 
+           
+           if upper-case(
+               ws-source-data-read(ws-line-idx)(1:length(ws-wend))) 
+               not = ws-wend 
+           then
+               exit paragraph
+           end-if 
+
+      *> Iterate through loop table and find start position of current
+      *> loop's end.
+           perform varying ws-loop-idx from 1 by 1
+           until ws-loop-idx > ws-num-loops 
+               
+               if ws-loop-end(ws-loop-idx) = ws-line-idx then 
+      *> -1 because app line counter will auto increment in main parse loop                   
+                   compute ws-line-idx = ws-loop-start(ws-loop-idx) - 1
+
+                   call "logger" using concatenate(
+                       "PARSE :: found loop end, redirecting to top of "
+                       "the loop at line: " ws-line-idx)
+                   end-call 
+                   exit perform 
+               end-if 
+
+           end-perform 
 
            exit paragraph.
 
