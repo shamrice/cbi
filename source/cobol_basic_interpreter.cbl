@@ -321,8 +321,9 @@
                = ws-while  
            then
                *> TODO : move to sub program.
-               call "logger" using "processing while loop start"
+               call "logger" using "processing WHILE loop start"
                
+      *>       Check to see if condition is valid before continuing.
                call "conditional-processor" using 
                    ws-source-data-read(ws-line-idx)(length(ws-while):)
                    ws-variable-table
@@ -331,11 +332,20 @@
                
                call "logger" using ws-conditional-ret-val
 
-               if ws-conditional-ret-val = 0 then 
-                   
+      *>       Reset line ot end if conditional statement check fails.
+               if ws-conditional-ret-val = 0 then                    
                    call "logger" using "WHILE :: VALUE FALSE!"
-      *>          TODO: need to know what nested level loop to jump past!!
-                   move ws-loop-end(ws-num-loops) to ws-line-idx
+      
+           *>     Find matching loop exit line and redirect there.
+                   perform varying ws-loop-idx from 1 by 1
+                   until ws-loop-idx > ws-num-loops 
+
+                       if ws-loop-start(ws-loop-idx) = ws-line-idx then 
+                           
+                           move ws-loop-end(ws-loop-idx) to ws-line-idx
+                           exit perform 
+                       end-if 
+                   end-perform
                end-if 
 
            end-if
