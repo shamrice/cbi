@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-10-21
+      * Last Modified: 2021-10-22
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -184,87 +184,89 @@
 
        process-line.
 
-           if upper-case(ws-source-data-read(ws-line-idx)) 
-           = ws-end or ws-system or ws-stop then 
-               call "logger" using 
-                   "END SYSTEM or STOP. Setting exit flag."
-               end-call 
-               set ws-exit-program to true 
-               exit paragraph 
-           end-if 
+           evaluate true 
 
-           if upper-case(ws-source-data-read(ws-line-idx)) = ws-cls then 
-               display space blank screen 
-               move 1 to ws-scr-col
-               move 1 to ws-scr-row 
-               call "logger" using "CLS"
-           end-if 
+               when upper-case(ws-source-data-read(ws-line-idx)) 
+                   = ws-end or ws-system or ws-stop    
 
-           if upper-case
-           (ws-source-data-read(ws-line-idx)(1:length(ws-sleep))) 
-           = ws-sleep then 
-               call "sleep-program" using 
-                   ws-source-data-read(ws-line-idx)                
-               end-call 
-           end-if                
+                   call "logger" using 
+                       "END SYSTEM or STOP. Setting exit flag."
+                   end-call 
+                   set ws-exit-program to true 
+                   exit paragraph 
+           
 
-           if upper-case(
-               ws-source-data-read(ws-line-idx)(1:length(ws-color))) 
-               = ws-color
-           then 
-               call "set-cursor-color" using 
-                   ws-source-data-read(ws-line-idx)
-                   ws-text-colors
-               end-call 
+               when upper-case(ws-source-data-read(ws-line-idx)) 
+                   = ws-cls 
+
+                   display space blank screen 
+                   move 1 to ws-scr-col
+                   move 1 to ws-scr-row 
+                   call "logger" using "CLS"
                
-           end-if 
 
-           if upper-case( 
-               ws-source-data-read(ws-line-idx)(1:length(ws-locate))) 
-               = ws-locate 
-           then 
-               call "set-cursor-position" using 
-                   ws-source-data-read(ws-line-idx)
-                   ws-screen-position
-               end-call       
+               when upper-case(
+                   ws-source-data-read(ws-line-idx)(1:length(ws-sleep))) 
+                   = ws-sleep 
+
+                   call "sleep-program" using 
+                       ws-source-data-read(ws-line-idx)                
+                   end-call 
+                         
+
+               when upper-case(
+                   ws-source-data-read(ws-line-idx)(1:length(ws-color))) 
+                   = ws-color
+           
+                   call "set-cursor-color" using 
+                       ws-source-data-read(ws-line-idx)
+                       ws-text-colors
+                   end-call 
+               
+
+               when upper-case( 
+                   ws-source-data-read(ws-line-idx)(1:length(ws-locate))
+                   ) = ws-locate 
+           
+                   call "set-cursor-position" using 
+                       ws-source-data-read(ws-line-idx)
+                       ws-screen-position
+                   end-call       
               
-           end-if 
 
-           if upper-case(
-               ws-source-data-read(ws-line-idx)(1:length(ws-print))) 
-               = ws-print
-           then 
-               call "print-text" using 
-                   ws-source-data-read(ws-line-idx)
-                   ws-screen-position
-                   ws-text-colors
-                   ws-variable-table
-               end-call 
-           end-if 
+               when upper-case(
+                   ws-source-data-read(ws-line-idx)(1:length(ws-print))) 
+                   = ws-print
+           
+                   call "print-text" using 
+                       ws-source-data-read(ws-line-idx)
+                       ws-screen-position
+                       ws-text-colors
+                       ws-variable-table
+                   end-call 
+           
+               when upper-case(
+                   ws-source-data-read(ws-line-idx)(1:length(ws-input))) 
+                   = ws-input
+           
+                   call "input-cmd" using 
+                       ws-source-data-read(ws-line-idx)
+                       ws-screen-position
+                       ws-text-colors
+                       ws-variable-table 
+                   end-call 
 
-           if upper-case(
-               ws-source-data-read(ws-line-idx)(1:length(ws-input))) 
-               = ws-input
-           then 
-               call "input-cmd" using 
-                   ws-source-data-read(ws-line-idx)
-                   ws-screen-position
-                   ws-text-colors
-                   ws-variable-table 
-               end-call 
-           end-if 
+               when upper-case(
+                   ws-source-data-read(ws-line-idx)(1:length(ws-dim))) 
+                   = ws-dim
+           
+                   call "allocate-var" using 
+                       ws-source-data-read(ws-line-idx)
+                       ws-variable-table 
+                       ws-allocate-ret-val
+                   end-call 
 
-           if upper-case(
-               ws-source-data-read(ws-line-idx)(1:length(ws-dim))) 
-               = ws-dim
-           then 
-               call "allocate-var" using 
-                   ws-source-data-read(ws-line-idx)
-                   ws-variable-table 
-                   ws-allocate-ret-val
-               end-call 
-
-           end-if 
+           end-evaluate 
 
            perform check-assign-value-to-variable
            perform check-and-handle-loop-end           
@@ -331,7 +333,7 @@
 
                if ws-conditional-ret-val = 0 then 
                    
-                   call "logger" using "VALUE TRUE!"
+                   call "logger" using "WHILE :: VALUE FALSE!"
       *>          TODO: need to know what nested level loop to jump past!!
                    move ws-loop-end(ws-num-loops) to ws-line-idx
                end-if 
