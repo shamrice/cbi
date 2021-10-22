@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-10-21
+      * Last Modified: 2021-10-22
       * Purpose: Processes conditional statement and returns if true (1)       
       *          or false (0).
       * Tectonics: ./build.sh
@@ -62,6 +62,10 @@
        01  ls-sub-val-with-var-sw        pic a value 'N'.
            88  ls-sub-val-with-var       value 'Y'.
            88  ls-not-sub-val-with-var   value 'N'.
+
+       01  ls-conditional-type-check-sw     pic a value 'N'.
+           88  ls-conditional-check-numeric value 'N'.
+           88  ls-conditional-check-string  value 'S'.
 
        01  ls-operator-count             pic 9(4) comp.
 
@@ -206,6 +210,12 @@
 
       *>   TODO : Currently only handles one statement (no AND or OR)
 
+           if ls-type-integer(1) and ls-type-integer(3) then 
+               set ls-conditional-check-numeric to true 
+           else 
+               set ls-conditional-check-string to true 
+           end-if 
+
            evaluate ls-part-value(2) 
 
                when ws-equal-to 
@@ -216,7 +226,7 @@
                        trim(ls-part-value-num(1)) "=" 
                        trim(ls-part-value-num(3) ))
                    end-call 
-                   if ls-type-integer(1) and ls-type-integer(3) then 
+                   if ls-conditional-check-numeric then 
                        call "logger" using "NUMERIC COMP"
                        if ls-part-value-num(1) = ls-part-value-num(3) 
                        then 
@@ -230,29 +240,75 @@
                            set l-return-code-true to true                    
                        end-if 
                    end-if 
+
+
                when ws-not-equal-to
-                   if ls-part-value(1) not = ls-part-value(3) then 
-                       set l-return-code-true to true 
+                   if ls-conditional-check-numeric then 
+                       if ls-part-value-num(1) 
+                           not = ls-part-value-num(3) 
+                       then 
+                           set l-return-code-true to true 
+                       end-if 
+                   else 
+                       if ls-part-value(1) not = ls-part-value(3) then 
+                           set l-return-code-true to true 
+                       end-if 
                    end-if 
+
 
                when ws-greater-than
-                   if ls-part-value(1) > ls-part-value(3) then 
-                       set l-return-code-true to true 
+                 if ls-conditional-check-numeric then 
+                       if ls-part-value-num(1) 
+                           > ls-part-value-num(3) 
+                       then 
+                           set l-return-code-true to true 
+                       end-if 
+                   else 
+                       if ls-part-value(1) > ls-part-value(3) then 
+                           set l-return-code-true to true 
+                       end-if 
                    end-if 
+
 
                when ws-greater-than-equal-to
-                   if ls-part-value(1) >= ls-part-value(3) then 
-                       set l-return-code-true to true 
+                 if ls-conditional-check-numeric then 
+                       if ls-part-value-num(1) 
+                           >= ls-part-value-num(3) 
+                       then 
+                           set l-return-code-true to true 
+                       end-if 
+                   else 
+                       if ls-part-value(1) >= ls-part-value(3) then 
+                           set l-return-code-true to true 
+                       end-if 
                    end-if 
+
 
                when ws-less-than
-                   if ls-part-value(1) < ls-part-value(3) then 
-                       set l-return-code-true to true 
+                 if ls-conditional-check-numeric then 
+                       if ls-part-value-num(1) 
+                           < ls-part-value-num(3) 
+                       then 
+                           set l-return-code-true to true 
+                       end-if 
+                   else 
+                       if ls-part-value(1) < ls-part-value(3) then 
+                           set l-return-code-true to true 
+                       end-if 
                    end-if 
 
+
                when ws-less-than-equal-to
-                   if ls-part-value(1) = ls-part-value(3) then 
-                       set l-return-code-true to true 
+                 if ls-conditional-check-numeric then 
+                       if ls-part-value-num(1) 
+                           <= ls-part-value-num(3) 
+                       then 
+                           set l-return-code-true to true 
+                       end-if 
+                   else 
+                       if ls-part-value(1) <= ls-part-value(3) then 
+                           set l-return-code-true to true 
+                       end-if 
                    end-if  
 
                end-evaluate
