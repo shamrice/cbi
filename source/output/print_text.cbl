@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-17
-      * Last Modified: 2021-10-17
+      * Last Modified: 2021-10-23
       * Purpose: Process the PRINT command with parameter.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -33,6 +33,7 @@
        
        01  ls-temp-param-buffer          pic x(1024).
        
+       01  ls-temp-disp-num-val          pic z(15)9.
 
        linkage section.       
 
@@ -85,8 +86,20 @@
 
                    if upper-case(ls-temp-param-buffer)
                    = l-variable-name(ls-temp-variable-idx) then 
-                       move l-variable-value(ls-temp-variable-idx)
+                   
+      *>   If variable value is a number, remove leading zeros before 
+      *>   moving it to the temp param buffer.
+                       if l-type-integer(ls-temp-variable-idx) then 
+                           move 
+                           l-variable-value-num(ls-temp-variable-idx)
+                           to ls-temp-disp-num-val
+
+                           move ls-temp-disp-num-val
                            to ls-temp-param-buffer
+                       else 
+                           move l-variable-value(ls-temp-variable-idx)
+                               to ls-temp-param-buffer
+                       end-if 
                        exit perform 
                    end-if 
                end-perform 
