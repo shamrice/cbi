@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-10-22
+      * Last Modified: 2021-10-23
       * Purpose: Processes conditional statement and returns if true (1)       
       *          or false (0).
       * Tectonics: ./build.sh
@@ -190,7 +190,23 @@
 
            end-perform 
 
-           if ls-num-parts = 0 or ls-num-parts not = 3 then 
+           call "logger" using concatenate(
+               "CONDITIONAL-PROCESSOR ::  NUM PARTS: " ls-num-parts)
+           end-call 
+
+      *> If only one value, if value zero, return false, otherwise true.
+           if ls-num-parts = 1 then 
+               if ls-part-value-num(1) = 0 then 
+                   set l-return-code-false to true 
+               else 
+                   set l-return-code-true to true 
+               end-if 
+               
+               goback 
+           end-if 
+
+      *>   At this point, must be three parts to test conditional values
+           if ls-num-parts not = 3 then 
                goback 
            end-if 
 
