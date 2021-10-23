@@ -191,11 +191,27 @@
            end-perform 
 
            call "logger" using concatenate(
-               "CONDITIONAL-PROCESSOR ::  NUM PARTS: " ls-num-parts)
+               "CONDITIONAL-PROCESSOR :: NUM PARTS: " ls-num-parts)
            end-call 
 
       *> If only one value, if value zero, return false, otherwise true.
            if ls-num-parts = 1 then 
+
+      *> TODO : In QuickBasic, this would be caught by the pre-parser
+      *>        and syntax checker before even running. Need to decide
+      *>        if should abrupt exit with error or just assume false
+      *>        like current code below.
+               if ls-type-string(1) then 
+                   call "logger" using concatenate(
+                       "CONDITIONAL-PROCESSOR :: Type mismatch. "
+                       "Cannot determine boolean value of string. "
+                       "value: " trim(ls-part-value(1))
+                       " : Return code false.")
+                   end-call 
+                   set l-return-code-false to true 
+                   goback 
+               end-if 
+
                if ls-part-value-num(1) = 0 then 
                    set l-return-code-false to true 
                else 
