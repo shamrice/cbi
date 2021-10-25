@@ -101,11 +101,7 @@
                    exit perform 
                end-if 
 
-           end-perform 
-           
+           end-perform           
            goback.
-
-
-           exit paragraph.
 
        end program call-cmd.
