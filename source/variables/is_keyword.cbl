@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-10-21
+      * Last Modified: 2021-10-25
       * Purpose: Checks if value passed is a BASIC keyword or not.
       *          Returns true(1) if it is or false(0) if it is not.
       * Tectonics: ./build.sh
@@ -63,6 +63,9 @@
                all ws-wend 
                all ws-for 
                all ws-next 
+               all ws-sub     
+               all ws-call 
+               
            
            if ls-keyword-found-count > 0 then 
                set l-return-code-true to true 

@@ -284,7 +284,12 @@
                when upper-case(
                    ws-source-data-read(ws-line-idx)(1:length(ws-call)))
                    = ws-call 
-                       perform handle-call
+                       call "logger" using "ENTER CALL HANDLER"
+                       call "call-cmd" using 
+                           ws-source-data-read(ws-line-idx)
+                           ws-line-idx 
+                           ws-sub-boundary-table
+                       end-call 
                    
 
            end-evaluate 
@@ -509,52 +514,5 @@
            exit paragraph.
 
 
-      *> TODO : MOVE TO OWN SUB PROGRAM!
-       handle-call.
-
-           call "logger" using "ENTER CALL HANDLER"
-
-           if ws-num-subs = 0 then 
-               call "logger" using concatenate(
-                   "PARSE :: CALL without any SUBs declared. Ignoring.")
-               end-call 
-               exit paragraph
-           end-if 
-
-           move trim(upper-case(
-               ws-source-data-read(ws-line-idx)(length(ws-call):)))
-                to ws-temp-sub-name
-
-           call "logger" using ws-temp-sub-name
-
-           perform varying ws-sub-idx from 1 by 1 
-           until ws-sub-idx > ws-num-subs 
-               
-               if ws-sub-name(ws-sub-idx) = ws-temp-sub-name then 
-
-               *> Add to nest idx (invoke count) and keep track of this
-               *> as source called line. Then redirect processing to sub
-                   add 1 to ws-sub-cur-nest(ws-sub-idx)
-                   
-                   move ws-line-idx 
-                   to ws-sub-last-call(
-                       ws-sub-idx, 
-                       ws-sub-cur-nest(ws-sub-idx))
-
-                   move ws-sub-start(ws-sub-idx) to ws-line-idx 
-
-                   move ws-line-idx to ws-line-idx-disp
-                   call "logger" using concatenate(
-                       "HANDLE-CALL :: found sub: " 
-                       trim(ws-temp-sub-name)
-                       " : moving line idx to: " ws-line-idx-disp)
-                   end-call 
-                   exit perform 
-               end-if 
-
-           end-perform 
-           
-
-           exit paragraph.
 
        end program cobol-basic-interpreter.
