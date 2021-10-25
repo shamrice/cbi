@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-10-22
+      * Last Modified: 2021-10-25
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -40,6 +40,7 @@
        01  ws-line-idx-disp           pic 9(10) value 0.
        
        01  ws-loop-idx                pic 9(10) comp.
+       01  ws-sub-idx                 pic 9(4) comp.
 
        01  ws-source-data-temp        pic x(1024).
        01  ws-source-data-table.
@@ -66,6 +67,8 @@
 
        01  ws-temp-cmd-buffer         pic x(256).
        01  ws-temp-param-buffer       pic x(1024).
+
+       01  ws-temp-sub-name           pic x(32).
 
        01  ws-space-count             pic 9(10) comp value zero.
        01  ws-comma-count             pic 9(10) comp value zero.
@@ -96,6 +99,17 @@
                                           depending on ws-num-loops.               
                10  ws-loop-start          pic 9(10). *>TODO Make comp 
                10  ws-loop-end            pic 9(10).                                      
+
+       01  ws-sub-boundary-table.
+           05  ws-num-subs                pic 9(10) comp. 
+           05  ws-sub-data                occurs 0 to 1000 times
+                                          depending on ws-num-subs.    
+               10  ws-sub-name            pic x(32).           
+               10  ws-sub-start           pic 9(10). *>TODO Make comp 
+               10  ws-sub-end             pic 9(10).  
+               10  ws-sub-cur-nest        pic 9(4) value 0.
+               10  ws-sub-last-call       pic 9(10) occurs 1000 times.
+                                         *>idx of last call is cur nest.                  
 
        01  ws-text-colors.
            05  ws-text-fg-color           pic 99 value 7.
@@ -132,6 +146,7 @@
                ws-input-source-file-name 
                ws-source-data-table
                ws-loop-boundary-table
+               ws-sub-boundary-table
                ws-list-program-sw
            end-call 
          
@@ -266,11 +281,19 @@
                        ws-allocate-ret-val
                    end-call 
 
+               when upper-case(
+                   ws-source-data-read(ws-line-idx)(1:length(ws-call)))
+                   = ws-call 
+                       perform handle-call
+                   
+
            end-evaluate 
 
            perform check-assign-value-to-variable
            perform check-and-handle-loop-end           
            perform check-and-handle-loop-start
+           perform check-and-handle-sub-start 
+           perform check-and-handle-sub-end
 
            exit paragraph.
 
@@ -308,10 +331,10 @@
            exit paragraph.
 
 
-
+      *> TODO : MOVE TO OWN SUB PROGRAM WITH END!
        check-and-handle-loop-start.
 
-      *> Make sure there's loops and that the current line is a loop exit
+      *> Make sure there's loops and that the current line is a loop start
            if ws-num-loops = 0 then 
                exit paragraph
            end-if 
@@ -353,6 +376,8 @@
 
            exit paragraph.
 
+
+      *> TODO : MOVE TO OWN SUB PROGRAM WITH START!
        check-and-handle-loop-end.
 
       *> Make sure there's loops and that the current line is a loop exit
@@ -376,14 +401,159 @@
       *> -1 because app line counter will auto increment in main parse loop                   
                    compute ws-line-idx = ws-loop-start(ws-loop-idx) - 1
 
+                   move ws-line-idx to ws-line-idx-disp
                    call "logger" using concatenate(
                        "PARSE :: found loop end, redirecting to top of "
-                       "the loop at line: " ws-line-idx)
+                       "the loop at line: " ws-line-idx-disp)
                    end-call 
                    exit perform 
                end-if 
 
            end-perform 
+
+           exit paragraph.
+
+
+
+      *> TODO : Move to own sub program for handle in general of subs.
+       check-and-handle-sub-start.
+
+      *> Make sure there's subs 
+           if ws-num-subs = 0 then 
+               exit paragraph
+           end-if 
+           
+           if upper-case(
+               ws-source-data-read(ws-line-idx)(1:length(ws-sub))) 
+               = ws-sub  
+           then
+               *> TODO : move to sub program.
+               call "logger" using "processing SUB start"
+               
+               perform varying ws-sub-idx from 1 by 1
+               until ws-sub-idx > ws-num-subs 
+                   if ws-sub-start(ws-sub-idx) = ws-line-idx then 
+
+                       if ws-sub-cur-nest(ws-sub-idx) = 0 then 
+                           move ws-line-idx to ws-line-idx-disp
+                           call "logger" using concatenate(
+                               "PARSE :: SUBROUTINE start on line " 
+                               ws-line-idx-disp
+                               " has not been invoked yet. Skipping "
+                               " to END SUB at line "
+                               ws-sub-end(ws-sub-idx)) 
+                           end-call 
+
+                       *> -1 because program counter will add line at next loop
+                           compute ws-line-idx =
+                                ws-sub-end(ws-sub-idx) - 1    
+                           end-compute 
+                           
+                           exit perform                        
+                       end-if 
+
+               end-perform        
+
+           end-if
+
+           exit paragraph.
+
+
+      *> TODO : MOVE TO OWN SUB PROGRAM WITH START!
+       check-and-handle-sub-end.
+      *> Make sure there's subs and that the current line is a sub exit
+           if ws-num-subs = 0 then 
+               exit paragraph
+           end-if 
+           
+           if upper-case(
+               ws-source-data-read(ws-line-idx)(1:length(ws-end-sub))) 
+               not = ws-end-sub 
+           then               
+               exit paragraph
+           end-if 
+
+      *>   Iterate through loop table and find last called line of
+      *>   sub and subtract the nest index by 1.
+           perform varying ws-sub-idx from 1 by 1
+           until ws-sub-idx > ws-num-subs 
+               
+               if ws-sub-end(ws-sub-idx) = ws-line-idx then 
+                   
+                   
+                   if ws-sub-cur-nest(ws-sub-idx) > 0 then 
+                       move ws-sub-last-call(
+                           ws-sub-idx, ws-sub-cur-nest(ws-sub-idx))
+                           to ws-line-idx 
+
+                       subtract 1 from ws-sub-cur-nest(ws-sub-idx) 
+                       
+                       move ws-line-idx to ws-line-idx-disp
+                       call "logger" using concatenate(
+                           "PARSE :: found END SUB. Redirecting to last"
+                           " line to call sub: " ws-line-idx-disp)
+                       end-call 
+                   else 
+                       call "logger" using concatenate(
+                           "PARSE :: found END SUB. Current SUB was not"
+                           " invoked, so ignoring and moving to next "
+                           " line in the program.")
+                       end-call                    
+                   end-if                    
+                   
+                   exit perform 
+               end-if 
+
+           end-perform 
+
+           exit paragraph.
+
+
+      *> TODO : MOVE TO OWN SUB PROGRAM!
+       handle-call.
+
+           call "logger" using "ENTER CALL HANDLER"
+
+           if ws-num-subs = 0 then 
+               call "logger" using concatenate(
+                   "PARSE :: CALL without any SUBs declared. Ignoring.")
+               end-call 
+               exit paragraph
+           end-if 
+
+           move trim(upper-case(
+               ws-source-data-read(ws-line-idx)(length(ws-call):)))
+                to ws-temp-sub-name
+
+           call "logger" using ws-temp-sub-name
+
+           perform varying ws-sub-idx from 1 by 1 
+           until ws-sub-idx > ws-num-subs 
+               
+               if ws-sub-name(ws-sub-idx) = ws-temp-sub-name then 
+
+               *> Add to nest idx (invoke count) and keep track of this
+               *> as source called line. Then redirect processing to sub
+                   add 1 to ws-sub-cur-nest(ws-sub-idx)
+                   
+                   move ws-line-idx 
+                   to ws-sub-last-call(
+                       ws-sub-idx, 
+                       ws-sub-cur-nest(ws-sub-idx))
+
+                   move ws-sub-start(ws-sub-idx) to ws-line-idx 
+
+                   move ws-line-idx to ws-line-idx-disp
+                   call "logger" using concatenate(
+                       "HANDLE-CALL :: found sub: " 
+                       trim(ws-temp-sub-name)
+                       " : moving line idx to: " ws-line-idx-disp)
+                   end-call 
+                   exit perform 
+               end-if 
+
+           end-perform 
+           
 
            exit paragraph.
 

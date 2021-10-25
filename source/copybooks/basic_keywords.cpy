@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-10-20
+      * Last Modified: 2021-10-25
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -31,5 +31,9 @@
        78  ws-wend                    value "WEND ".
        78  ws-for                     value "FOR ".
        78  ws-next                    value "NEXT ".
+
+       78  ws-sub                     value "SUB ".
+       78  ws-end-sub                 value "END SUB".
+       78  ws-call                    value "CALL ".
 
        

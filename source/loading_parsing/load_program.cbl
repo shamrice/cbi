@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-10-20
+      * Last Modified: 2021-10-25
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -91,13 +91,25 @@
                10  l-loop-start      pic 9(10). *>TODO Make comp 
                10  l-loop-end        pic 9(10).
 
+       01  l-sub-boundary-table.
+           05  l-num-subs            pic 9(10) comp. 
+           05  l-sub-data            occurs 0 to 1000 times
+                                     depending on l-num-subs.  
+               10  l-sub-name        pic x(32).                                                  
+               10  l-sub-start       pic 9(10). *>TODO Make comp 
+               10  l-sub-end         pic 9(10).  
+               10  l-sub-cur-nest    pic 9(4) value 0.
+               10  l-sub-last-call   pic 9(10) occurs 1000 times.
+                                     *>idx of last call is cur nest. 
+
        01  l-list-program-sw         pic a.
            88  l-list-program        value 'Y'.
            88  l-not-list-program    value 'N'.
 
        procedure division using 
            l-input-file-name l-source-data-table
-           l-loop-boundary-table l-list-program-sw.  
+           l-loop-boundary-table l-sub-boundary-table
+           l-list-program-sw.  
 
        main-procedure.
 
@@ -288,6 +300,12 @@
                l-num-lines 
                l-loop-boundary-table
            end-call 
+
+           call "parse-subs" using 
+               l-source-data-read(l-num-lines)
+               l-num-lines 
+               l-sub-boundary-table
+           end-call                
 
            exit paragraph.                                  
 
