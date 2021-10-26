@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-10-25
+      * Last Modified: 2021-10-26
       * Purpose: During loading, populates loop table with start and end
       *          line locations.
       * Tectonics: ./build.sh
@@ -26,13 +26,19 @@
 
        copy "copybooks/basic_keywords.cpy".
 
-       01  ws-nested-idx             pic 9(10) comp.
+       01  ws-nested-idx             pic 9(10) comp value 0.
+
+       01  ws-nested-loop-idx        pic 9(10)  
+                                     occurs 0 to 1000 times 
+                                     depending on ws-nested-idx.
 
        local-storage section.
        
        01  ls-cur-line-num-disp      pic 9(10).
        01  ls-num-loops-disp         pic 9(10).
        01  ls-nested-idx-disp        pic 9(10).
+
+       01  ls-end-loop-idx           pic 9(10).
 
        linkage section.       
 
@@ -59,7 +65,11 @@
            then 
                add 1 to l-num-loops
                add 1 to ws-nested-idx
-               move l-cur-line-num to l-loop-start(ws-nested-idx) 
+
+      *>   Keep track of loop idx and nest level relationship.
+               move l-num-loops to ws-nested-loop-idx(ws-nested-idx)
+      
+               move l-cur-line-num to l-loop-start(l-num-loops) 
 
                move l-cur-line-num to ls-cur-line-num-disp
                move l-num-loops to ls-num-loops-disp
@@ -68,7 +78,9 @@
                    "LOAD :: found loop START at: " 
                    ls-cur-line-num-disp
                    " : number of loops: " ls-num-loops-disp
-                   " : nested level: " ls-nested-idx-disp)
+                   " : nested level: " ls-nested-idx-disp
+                   " : nested loop idx: " 
+                   ws-nested-loop-idx(ws-nested-idx))
                end-call 
            end-if 
 
@@ -77,7 +89,13 @@
                or upper-case(l-src-code-str(1:length(ws-loop))) 
                = ws-loop  
            then                               
-               move l-cur-line-num to l-loop-end(ws-nested-idx) 
+      
+      *>      Get related start/end loop index based on current nest level.
+               move ws-nested-loop-idx(ws-nested-idx) 
+                   to ls-end-loop-idx               
+
+               move l-cur-line-num 
+                   to l-loop-end(ls-end-loop-idx)
 
                move l-cur-line-num to ls-cur-line-num-disp
                move l-num-loops to ls-num-loops-disp
@@ -85,11 +103,14 @@
                call "logger" using concatenate(
                    "LOAD :: found loop END at: " 
                    ls-cur-line-num-disp
+                   " : for loop idx: " ls-end-loop-idx
+                   " : related start line: " 
+                       l-loop-start(ls-end-loop-idx)
                    " : number of loops: " ls-num-loops-disp
                    " : nested level: " ls-nested-idx-disp)                   
                end-call 
 
-               subtract 1 from ws-nested-idx
+               subtract 1 from ws-nested-idx               
            end-if 
 
            goback.

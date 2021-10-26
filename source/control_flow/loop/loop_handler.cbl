@@ -69,6 +69,11 @@
 
        main-procedure.
 
+           call "logger" using concatenate(
+               "LOOP-HANDLER :: Enter with line: "
+               trim(l-src-code-str))
+           end-call 
+
            if l-num-loops = 0 then 
                call "logger" using concatenate(
                    "LOOP-HANDLER :: No loops declared. Ignoring.")
@@ -76,7 +81,7 @@
                goback 
            end-if 
 
-           move trim(l-src-code-str) to ls-line-text
+           move trim(l-src-code-str) to ls-line-text           
 
            evaluate true 
                when upper-case(ls-line-text(1:length(ws-while))) 
@@ -95,11 +100,17 @@
                    = ws-do-until
                    perform handle-do-until-loop-start 
 
+               when upper-case(ls-line-text(1:length(ws-loop-while)))
+                   = ws-loop-while 
+                   perform handle-loop-while-end
+                   
+               when upper-case(ls-line-text(1:length(ws-loop-until)))
+                   = ws-loop-until 
+                   perform handle-loop-until-end                                      
 
-               when trim(upper-case(ls-line-text)) = ws-loop
+               when upper-case(trim(ls-line-text)) = ws-loop
                    perform handle-no-condition-loop-end
-
-
+                   
 
            end-evaluate
 
@@ -145,7 +156,12 @@
       *> loop's end.
            perform varying ls-loop-idx from 1 by 1
            until ls-loop-idx > l-num-loops 
-               
+               call "logger" using concatenate(
+                   "LOOP : checking end of " ls-loop-idx 
+                   " : l-loop-end: " l-loop-end(ls-loop-idx) 
+                   " : cur line: " ls-cur-line-num-disp)
+               end-call 
+
                if l-loop-end(ls-loop-idx) = l-cur-line-num then 
       *> -1 because app line counter will auto increment in main parse loop                   
                    compute l-cur-line-num = 
@@ -234,6 +250,69 @@
            exit paragraph.           
 
 
+
+
+       handle-loop-while-end.               
+           call "logger" using "LOOP WHILE :: Processing loop end"
+               
+      *>   Check to see if condition is valid before continuing.
+           call "conditional-processor" using 
+               ls-line-text(length(ws-loop-while):)
+               l-variable-table
+               ls-conditional-ret-val
+           end-call 
+               
+           call "logger" using ls-conditional-ret-val
+
+      *>   Set line to end if conditional statement check fails.
+           if ls-conditional-ret-val = 1 then                    
+               call "logger" using "LOOP WHILE :: VALUE TRUE!"
+      
+           *>     Find matching loop exit line and redirect there.
+               perform varying ls-loop-idx from 1 by 1
+               until ls-loop-idx > l-num-loops 
+
+                   if l-loop-end(ls-loop-idx) = l-cur-line-num then 
+                         
+                       move l-loop-start(ls-loop-idx) to l-cur-line-num
+                       exit perform 
+                   end-if 
+               end-perform
+           end-if 
+           
+           exit paragraph.
+
+
+
+       handle-loop-until-end.               
+           call "logger" using "LOOP UNTIL :: Processing loop end"
+               
+      *>   Check to see if condition is valid before continuing.
+           call "conditional-processor" using 
+               ls-line-text(length(ws-loop-until):)
+               l-variable-table
+               ls-conditional-ret-val
+           end-call 
+               
+           call "logger" using ls-conditional-ret-val
+
+      *>   Set line to end if conditional statement check fails.
+           if ls-conditional-ret-val = 0 then                    
+               call "logger" using "LOOP UNTIL :: VALUE FALSE!"
+      
+           *>     Find matching loop exit line and redirect there.
+               perform varying ls-loop-idx from 1 by 1
+               until ls-loop-idx > l-num-loops 
+
+                   if l-loop-end(ls-loop-idx) = l-cur-line-num then 
+                         
+                       move l-loop-start(ls-loop-idx) to l-cur-line-num
+                       exit perform 
+                   end-if 
+               end-perform
+           end-if 
+           
+           exit paragraph.           
 
 
        end program loop-handler.
