@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-10-21
+      * Last Modified: 2021-10-25
       * Purpose: During loading, populates loop table with start and end
       *          line locations.
       * Tectonics: ./build.sh
@@ -55,6 +55,7 @@
       *>   Check if line is a loop, if so add to loop table.
            if upper-case(l-src-code-str(1:length(ws-while)))
                = ws-while 
+              or upper-case(l-src-code-str(1:length(ws-do))) = ws-do   
            then 
                add 1 to l-num-loops
                add 1 to ws-nested-idx
@@ -64,7 +65,7 @@
                move l-num-loops to ls-num-loops-disp
                move ws-nested-idx to ls-nested-idx-disp
                call "logger" using concatenate(
-                   "LOAD :: found WHILE-WEND loop START at: " 
+                   "LOAD :: found loop START at: " 
                    ls-cur-line-num-disp
                    " : number of loops: " ls-num-loops-disp
                    " : nested level: " ls-nested-idx-disp)
@@ -73,6 +74,8 @@
 
            if upper-case(l-src-code-str(1:length(ws-wend)))
                = ws-wend 
+               or upper-case(l-src-code-str(1:length(ws-loop))) 
+               = ws-loop  
            then                               
                move l-cur-line-num to l-loop-end(ws-nested-idx) 
 
@@ -80,7 +83,7 @@
                move l-num-loops to ls-num-loops-disp
                move ws-nested-idx to ls-nested-idx-disp
                call "logger" using concatenate(
-                   "LOAD :: found WHILE-WEND loop END at: " 
+                   "LOAD :: found loop END at: " 
                    ls-cur-line-num-disp
                    " : number of loops: " ls-num-loops-disp
                    " : nested level: " ls-nested-idx-disp)                   

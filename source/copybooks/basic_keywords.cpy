@@ -25,10 +25,16 @@
 
        78  ws-input                   value "INPUT ".
 
-       78  ws-do                      value "DO ".
-       78  ws-loop                    value "LOOP ".
+       78  ws-do                      value "DO".
+       78  ws-do-while                value "DO WHILE ".
+       78  ws-do-until                value "DO UNTIL ".
+       78  ws-loop                    value "LOOP".
+       78  ws-loop-while              value "LOOP WHILE ".
+       78  ws-loop-until              value "LOOP UNTIL ".
+
        78  ws-while                   value "WHILE ".
        78  ws-wend                    value "WEND ".
+       
        78  ws-for                     value "FOR ".
        78  ws-next                    value "NEXT ".
 

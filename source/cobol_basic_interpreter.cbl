@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-10-25
+      * Last Modified: 2021-10-26
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -298,6 +298,10 @@
                ws-source-data-temp(1:length(ws-while))) = ws-while) 
                or (upper-case(
                ws-source-data-temp(1:length(ws-wend))) = ws-wend) 
+               or (upper-case(
+               ws-source-data-temp(1:length(ws-do))) = ws-do)
+               or (upper-case(
+               ws-source-data-temp(1:length(ws-loop))) = ws-loop)
                    call "loop-handler" using 
                        ws-source-data-temp
                        ws-line-idx
