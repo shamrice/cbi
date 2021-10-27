@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-25
-      * Last Modified: 2021-10-26
+      * Last Modified: 2021-10-27
       * Purpose: Directs control flow to proper entry and exit 
       *          processing if current line is loop related
       * Tectonics: ./build.sh
@@ -113,7 +113,7 @@
                    
                when upper-case(ls-line-text(1:length(ws-for)))
                    = ws-for 
-                   call "for-loop-start-handler" using 
+                   call "for-loop-handler" using 
                        ls-line-text
                        l-cur-line-num
                        l-loop-boundary-table
@@ -122,7 +122,12 @@
 
                when upper-case(ls-line-text(1:length(ws-next)))
                    = ws-next 
-                   perform handle-for-loop-end
+                   call "for-loop-end-handler" using 
+                       ls-line-text
+                       l-cur-line-num
+                       l-loop-boundary-table
+                       l-variable-table
+                   end-call 
 
            end-evaluate
 
@@ -330,23 +335,11 @@
 
 
        handle-for-loop-end.
-           call "logger" using "FOR LOOP END"
-           perform varying ls-loop-idx from 1 by 1
-           until ls-loop-idx > l-num-loops 
-               call "logger" using concatenate(
-                   "FOR LOOP : checking end of " ls-loop-idx 
-                   " : l-loop-end: " l-loop-end(ls-loop-idx) 
-                   " : cur line: " ls-cur-line-num-disp)
-               end-call 
+           call "logger" using "FOR LOOP END"      
 
-               if l-loop-end(ls-loop-idx) = l-cur-line-num then  
-                   compute l-cur-line-num = 
-                       l-loop-start(ls-loop-idx) - 1
-                   end-compute 
-                   exit perform  
-               end-if 
-           end-perform 
+           
 
+           
            exit paragraph.
 
 

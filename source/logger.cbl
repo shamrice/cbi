@@ -1,7 +1,7 @@
       *>*****************************************************************
       *> Author: Erik Eriksen
       *> Create Date: 2020-12-26 (originally for CRSSR)
-      *> Last Updated: 2021-10-10
+      *> Last Updated: 2021-10-27
       *> Purpose: File logger for cobol-basic-interpreter
       *> Tectonics:
       *>     ./build.sh
@@ -50,7 +50,7 @@
        77  ws-log-buffer                 pic x(:BUFFER-SIZE:).
 
        77  ws-file-name                  pic x(18) 
-                                         value "cbas_UNSET.log".
+                                         value "cbi_UNSET.log".
 
       * 78  ws-log-enabled-switch         value "==ENABLE-LOG==".
       * 78  ws-log-disabled-switch        value "==DISABLE-LOG==".
@@ -63,6 +63,13 @@
            using l-log-text.
 
        main-procedure.
+      *     goback
+
+
+      *>   TODO : create an entry point to enable/disable log
+      *>          Also keep log file open for the duration of the 
+      *>          program instead of open/closing the file for each 
+      *>          line.
 
       * If log text is disable log flag or enable log flag, turn log enabled
       * switch on and off as needed.
@@ -84,7 +91,7 @@
            
       * Dynamically create log file name using date in file name.
            string
-               "cbas" delimited by size
+               "cbi" delimited by size
                "_" delimited by size  
                ws-year delimited by size
                ws-month delimited by size
