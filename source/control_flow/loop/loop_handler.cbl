@@ -130,7 +130,6 @@
                    end-call 
 
            end-evaluate
-
            
            goback.
 
@@ -330,17 +329,6 @@
            end-if 
            
            exit paragraph.           
-
-
-
-
-       handle-for-loop-end.
-           call "logger" using "FOR LOOP END"      
-
-           
-
-           
-           exit paragraph.
 
 
        end program loop-handler.
