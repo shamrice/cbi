@@ -28,7 +28,7 @@
  
        local-storage section.    
            
-       01  ls-loop-idx               pic 9(10) comp.
+       01  ls-loop-idx               pic 9(4) comp.
 
        01  ls-conditional-ret-val    pic 9.
 
@@ -44,7 +44,7 @@
 
 
        01  l-loop-boundary-table.
-           05  l-num-loops           pic 9(10) comp value 0. 
+           05  l-num-loops           pic 9(4) comp value 0. 
            05  l-loop-data           occurs 0 to unbounded times
                                      depending on l-num-loops.               
                10  l-loop-start      pic 9(10). *>TODO Make comp 
@@ -111,6 +111,18 @@
                when upper-case(trim(ls-line-text)) = ws-loop
                    perform handle-no-condition-loop-end
                    
+               when upper-case(ls-line-text(1:length(ws-for)))
+                   = ws-for 
+                   call "for-loop-start-handler" using 
+                       ls-line-text
+                       l-cur-line-num
+                       l-loop-boundary-table
+                       l-variable-table
+                   end-call 
+
+               when upper-case(ls-line-text(1:length(ws-next)))
+                   = ws-next 
+                   perform handle-for-loop-end
 
            end-evaluate
 
@@ -313,6 +325,29 @@
            end-if 
            
            exit paragraph.           
+
+
+
+
+       handle-for-loop-end.
+           call "logger" using "FOR LOOP END"
+           perform varying ls-loop-idx from 1 by 1
+           until ls-loop-idx > l-num-loops 
+               call "logger" using concatenate(
+                   "FOR LOOP : checking end of " ls-loop-idx 
+                   " : l-loop-end: " l-loop-end(ls-loop-idx) 
+                   " : cur line: " ls-cur-line-num-disp)
+               end-call 
+
+               if l-loop-end(ls-loop-idx) = l-cur-line-num then  
+                   compute l-cur-line-num = 
+                       l-loop-start(ls-loop-idx) - 1
+                   end-compute 
+                   exit perform  
+               end-if 
+           end-perform 
+
+           exit paragraph.
 
 
        end program loop-handler.

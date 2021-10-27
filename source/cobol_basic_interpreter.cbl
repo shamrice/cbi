@@ -91,7 +91,7 @@
                      
                                           pic 9(16) value zeros.    
        01  ws-loop-boundary-table.
-           05  ws-num-loops               pic 9(10) comp. 
+           05  ws-num-loops               pic 9(4) comp. 
            05  ws-loop-data               occurs 0 to 1000 times
                                           depending on ws-num-loops.               
                10  ws-loop-start          pic 9(10). *>TODO Make comp 
@@ -99,7 +99,7 @@
 
 
        01  ws-sub-boundary-table.
-           05  ws-num-subs                pic 9(10) comp. 
+           05  ws-num-subs                pic 9(4) comp. 
            05  ws-sub-data                occurs 0 to 1000 times
                                           depending on ws-num-subs.    
                10  ws-sub-name            pic x(32).           
@@ -302,6 +302,10 @@
                ws-source-data-temp(1:length(ws-do))) = ws-do)
                or (upper-case(
                ws-source-data-temp(1:length(ws-loop))) = ws-loop)
+               or (upper-case(
+               ws-source-data-temp(1:length(ws-for))) = ws-for)
+               or (upper-case(
+               ws-source-data-temp(1:length(ws-next))) = ws-next)
                    call "loop-handler" using 
                        ws-source-data-temp
                        ws-line-idx

@@ -36,7 +36,10 @@
        78  ws-wend                    value "WEND ".
 
        78  ws-for                     value "FOR ".
+       78  ws-to                      value " TO ".
+       78  ws-step                    value " STEP ".
        78  ws-next                    value "NEXT ".
+       
 
        78  ws-sub                     value "SUB ".
        78  ws-end-sub                 value "END SUB".

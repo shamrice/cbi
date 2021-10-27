@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-25
-      * Last Modified: 2021-10-25
+      * Last Modified: 2021-10-27
       * Purpose: Process the CALL command with parameter.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -39,7 +39,7 @@
        01  l-cur-line-num            pic 9(10) comp.
 
        01  l-sub-boundary-table.
-           05  l-num-subs            pic 9(10) comp. 
+           05  l-num-subs            pic 9(4) comp. 
            05  l-sub-data            occurs 0 to 1000 times
                                      depending on l-num-subs.   
                10  l-sub-name        pic x(32).                                                 

@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-10-26
+      * Last Modified: 2021-10-27
       * Purpose: During loading, populates loop table with start and end
       *          line locations.
       * Tectonics: ./build.sh
@@ -26,19 +26,19 @@
 
        copy "copybooks/basic_keywords.cpy".
 
-       01  ws-nested-idx             pic 9(10) comp value 0.
+       01  ws-nested-idx             pic 9(4) comp value 0.
 
-       01  ws-nested-loop-idx        pic 9(10)  
+       01  ws-nested-loop-idx        pic 9(4)  
                                      occurs 0 to 1000 times 
                                      depending on ws-nested-idx.
 
        local-storage section.
        
        01  ls-cur-line-num-disp      pic 9(10).
-       01  ls-num-loops-disp         pic 9(10).
-       01  ls-nested-idx-disp        pic 9(10).
+       01  ls-num-loops-disp         pic 9(4).
+       01  ls-nested-idx-disp        pic 9(4).
 
-       01  ls-end-loop-idx           pic 9(10).
+       01  ls-end-loop-idx           pic 9(4).
 
        linkage section.       
 
@@ -47,7 +47,7 @@
        01  l-cur-line-num            pic 9(10) comp.
 
        01  l-loop-boundary-table.
-           05  l-num-loops           pic 9(10) comp value 0. 
+           05  l-num-loops           pic 9(4) comp value 0. 
            05  l-loop-data           occurs 0 to unbounded times
                                      depending on l-num-loops.               
                10  l-loop-start      pic 9(10). *>TODO Make comp 
@@ -62,6 +62,7 @@
            if upper-case(l-src-code-str(1:length(ws-while)))
                = ws-while 
               or upper-case(l-src-code-str(1:length(ws-do))) = ws-do   
+              or upper-case(l-src-code-str(1:length(ws-for))) = ws-for
            then 
                add 1 to l-num-loops
                add 1 to ws-nested-idx
@@ -88,6 +89,8 @@
                = ws-wend 
                or upper-case(l-src-code-str(1:length(ws-loop))) 
                = ws-loop  
+               or upper-case(l-src-code-str(1:length(ws-next))) 
+               = ws-next
            then                               
       
       *>      Get related start/end loop index based on current nest level.

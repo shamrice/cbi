@@ -85,14 +85,14 @@
                                      depending on l-num-lines. 
 
        01  l-loop-boundary-table.
-           05  l-num-loops           pic 9(10) comp value 0. 
+           05  l-num-loops           pic 9(4) comp value 0. 
            05  l-loop-data           occurs 0 to unbounded times
                                      depending on l-num-loops.               
                10  l-loop-start      pic 9(10). *>TODO Make comp 
                10  l-loop-end        pic 9(10).
 
        01  l-sub-boundary-table.
-           05  l-num-subs            pic 9(10) comp. 
+           05  l-num-subs            pic 9(4) comp. 
            05  l-sub-data            occurs 0 to 1000 times
                                      depending on l-num-subs.  
                10  l-sub-name        pic x(32).                                                  
