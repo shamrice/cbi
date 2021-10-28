@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-26
-      * Last Modified: 2021-10-27
+      * Last Modified: 2021-10-28
       * Purpose: Process and handles FOR loop start/end lines.
       *          Main entry point handles loop start & top. 
       *          'for-loop-end-handler' entry point handles loop ending
@@ -68,9 +68,7 @@
        01  ls-assignment-str         pic x(1024).
 
        01  ls-new-var-value          pic 9(16).
-      * 01  ls-conditional-str        pic x(1024).
-      * 01  ls-conditional-operator   pic x(3).
-      
+ 
        01  ls-next-var-name          pic x(1024).
 
        linkage section.       
@@ -127,9 +125,7 @@
                    into ls-for-loop-parts(ls-parts-idx)
                    with pointer ls-unstring-idx              
                end-unstring 
-
                
-
                call "logger" using ls-for-loop-parts(ls-parts-idx)
 
                evaluate ls-parts-idx 
@@ -149,7 +145,6 @@
                end-evaluate 
 
                add 1 to ls-parts-idx 
-
                
            end-perform 
 
@@ -266,15 +261,13 @@
 
            if ws-for-loop-start-val(ls-working-for-loop-idx) 
                > ws-for-loop-end-val(ls-working-for-loop-idx) 
-           then  
-               *> move " < " to ls-conditional-operator
+           then                 
                if numval(ls-var-value) 
                    < ws-for-loop-end-val(ls-working-for-loop-idx) 
                then 
                    perform set-current-line-to-loop-exit-and-go-back
                end-if                    
-           else 
-      *         move " > " to ls-conditional-operator
+           else       
                if numval(ls-var-value) 
                    > ws-for-loop-end-val(ls-working-for-loop-idx) 
                then 
@@ -283,24 +276,13 @@
 
            end-if 
 
-      *     move function concatenate(
-      *         trim(ws-for-loop-var(ls-working-for-loop-idx))
-      *         ls-conditional-operator
-      *         ws-for-loop-end-val(ls-working-for-loop-idx))
-      *         to ls-conditional-str
-               
-      *     call "conditional-processor" using 
-      *         ls-conditional-str 
-      *         l-variable-table
-      *         ls-conditional-ret-val
-      *     end-call 
-           
-
            exit paragraph.
 
 
 
-       set-step-value.           
+       set-step-value.  
+       *>  TODO : STEP value can also be variable not just int!
+
            if ls-for-loop-parts(ls-parts-idx) = spaces then 
                move 1 to ws-for-loop-step(ls-working-for-loop-idx) 
            else 
@@ -332,12 +314,23 @@
 
 
 
-
+      ******************************************************************
+      * Author: Erik Eriksen
+      * Create Date: 2021-10-27
+      * Last Modified: 2021-10-28
+      * Purpose: Entry point for handling 'NEXT {var}' syntax of 
+      *          FOR...NEXT loops. Increments iteratator by STEP amount
+      *          then checks if loop should continue or not. If not, 
+      *          exits loop. 
+      ******************************************************************
        entry "for-loop-end-handler" using 
            l-src-code-str l-cur-line-num 
            l-loop-boundary-table l-variable-table.
 
-           call "logger" using "**************** HANDLE END LOOP*****"
+           call "logger" using concatenate(
+               "FOR-LOOP-END-HANDLER :: Enter handler with line: " 
+               trim(l-src-code-str))
+           end-call 
 
       *>   Get for loop iterator variable name from NEXT statement           
            move upper-case(l-src-code-str) to ls-line-to-process
@@ -346,7 +339,6 @@
            replacing all ws-next by spaces 
 
            move trim(ls-line-to-process) to ls-next-var-name
-
             
       *>   Find existing loop entry to get IDX in memory
            perform varying ls-working-for-loop-idx from 1 by 1 
@@ -355,10 +347,24 @@
                if ws-for-loop-var(ls-working-for-loop-idx) 
                = ls-next-var-name
                then  
-                   call "logger" using "*** FOUND VAR! *****"                  
+                   call "logger" using concatenate(
+                       "FOR-LOOP-END-HANDLER :: Found FOR loop info "
+                       " in for loop data table for iterator: " 
+                       trim(ls-next-var-name))
+                   end-call 
                    exit perform
                end-if  
            end-perform 
+
+      *>   If can't be found, leave the loop. 
+           if ls-working-for-loop-idx > ws-num-for-loops then 
+               call "logger" using concatenate(
+                   "FOR-LOOP-END-HANDLER :: ERROR : Failed to find FOR "
+                   "loop info for iterator: " trim(ls-next-var-name)
+                   " : Possible NEXT without FOR. Exiting loop.")
+               end-call 
+               perform set-current-line-to-loop-exit-and-go-back
+           end-if 
            
       *>   Get current value of variable.
            call "get-var-value" using 
@@ -407,10 +413,14 @@
                l-variable-table
            end-call 
 
-
-    
-           if ls-new-var-value 
-               > ws-for-loop-end-val(ls-working-for-loop-idx)
+      *>   Check exit condition of loop. If not, return to top.
+           if (ws-for-loop-step(ls-working-for-loop-idx) > 0 
+                   and ls-new-var-value 
+                   > ws-for-loop-end-val(ls-working-for-loop-idx))
+               or 
+               (ws-for-loop-step(ls-working-for-loop-idx) < 0 
+                   and ls-new-var-value 
+                   < ws-for-loop-end-val(ls-working-for-loop-idx))
            then 
                perform set-current-line-to-loop-exit-and-go-back
            else 
@@ -419,7 +429,8 @@
 
                    move l-cur-line-num to ls-cur-line-num-disp
                    call "logger" using concatenate(
-                       "FOR LOOP : checking end of " ls-loop-idx 
+                       "FOR-LOOP-END-HANDLER :: checking end of " 
+                       ls-loop-idx 
                        " : l-loop-end: " l-loop-end(ls-loop-idx) 
                        " : cur line: " ls-cur-line-num-disp)
                    end-call 
@@ -427,9 +438,13 @@
                    if l-loop-end(ls-loop-idx) = l-cur-line-num then  
                        compute l-cur-line-num = 
                            l-loop-start(ls-loop-idx)
-                       end-compute 
-                       call "logger" using "*********EXIT PERFORM******"
-                       call "logger" using "****BACK TO THE TOP********"
+                       end-compute                        
+                       move l-cur-line-num to ls-cur-line-num-disp
+                       call "logger" using concatenate(
+                           "FOR-LOOP-END-HANDLER :: Top of FOR loop "
+                           "found. Redirecting to top of loop at: "
+                           ls-cur-line-num-disp)
+                       end-call                                                      
                        exit perform  
                    end-if 
                end-perform 
