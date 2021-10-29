@@ -27,8 +27,6 @@
 
        copy "copybooks/basic_keywords.cpy".
 
-      *> TODO : There is a bug here where it's attempting to create a 
-      *>        new idx for each loop iteration. Crashes after 1000 loops
        01  ws-for-loop-data-table.
            05  ws-num-for-loops          pic 9(4) comp.
            05  ws-for-loop-data          occurs 0 to 1000 times 
