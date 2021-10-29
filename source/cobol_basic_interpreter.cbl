@@ -162,6 +162,9 @@
            end-call 
          
            if not ws-run-program then               
+               if ws-enable-logging then 
+                   call "disable-logger"
+               end-if 
                stop run 
            end-if                  
 
