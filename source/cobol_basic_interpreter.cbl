@@ -40,6 +40,10 @@
        01  ws-line-idx-disp           pic 9(10) value 0.                    
 
        01  ws-source-data-temp        pic x(1024).
+
+      *> TODO: this ODO table currently allocates ~64MiB of RAM 
+      *> 64k lines of BASIC is an insanely large program. Reducing this
+      *> number in the future to 8k or 16k might make more sense.
        01  ws-source-data-table.
            05  ws-num-lines           pic 9(10) comp value 0.
            05  ws-source-data-read    pic x(1024) 
@@ -246,6 +250,7 @@
                    call "set-cursor-color" using 
                        ws-source-data-temp
                        ws-text-colors
+                       ws-variable-table
                    end-call 
                
 
@@ -255,6 +260,7 @@
                    call "set-cursor-position" using 
                        ws-source-data-temp
                        ws-screen-position
+                       ws-variable-table
                    end-call       
               
 
