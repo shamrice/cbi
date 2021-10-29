@@ -335,6 +335,7 @@
 
                when other 
                    perform check-assign-value-to-variable
+                   perform check-implicit-sub-call
                                     
 
            end-evaluate 
@@ -374,5 +375,48 @@
            exit paragraph.
 
 
+
+       check-implicit-sub-call.
+      *>   A lot of this code is duplication of the check & assign code
+      *>   can probably be refactored into something better.
+           unstring trim(ws-source-data-temp)
+               delimited by space 
+               into ws-assert-check-val
+           end-unstring
+
+           call "is-keyword" using 
+               ws-assert-check-val
+               ws-keyword-check-ret-val
+           end-call 
+
+           if ws-keyword-check-ret-val = 1 then 
+               exit paragraph 
+           end-if
+
+           inspect ws-source-data-temp
+               tallying ws-assignment-count for all "="
+           
+           if ws-assignment-count > 0 then 
+               exit paragraph
+           end-if 
+          
+           call "logger" using concatenate(
+               "PARSE :: IMPLICIT CALL : Attempting to make implicit "
+               "SUB call for line: " trim(ws-source-data-temp))
+           end-call 
+
+           string 
+               ws-call
+               trim(ws-assert-check-val)
+               into ws-source-data-temp
+           end-string           
+
+           call "call-cmd" using 
+               ws-source-data-temp
+               ws-line-idx 
+               ws-sub-boundary-table
+           end-call 
+           
+           exit paragraph.
 
        end program cobol-basic-interpreter.

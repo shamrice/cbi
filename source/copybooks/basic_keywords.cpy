@@ -44,5 +44,17 @@
        78  ws-sub                     value "SUB ".
        78  ws-end-sub                 value "END SUB".
        78  ws-call                    value "CALL ".
+       78  ws-goto                    value "GOTO ".
 
-       
+       78  ws-select-case             value "SELECT CASE".
+       78  ws-case                    value "CASE".
+       78  ws-end-select              value "END SELECT".
+
+      *>   Unused/not implemented keywords
+       78  ws-declare                 value "DECLARE ".
+       78  ws-return                  value "RETURN".
+       78  ws-screen                  value "SCREEN".
+       78  ws-line                    value "LINE ".
+       78  ws-circle                  value "CIRCLE ".
+       78  ws-sound                   value "SOUND".
+       78  ws-play                    value "PLAY".

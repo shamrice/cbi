@@ -56,11 +56,15 @@
 
            if l-num-subs = 0 then 
                call "logger" using concatenate(
-                   "PARSE :: CALL without any SUBs declared. Ignoring.")
+                   "CALL :: CALL without any SUBs declared. Ignoring.")
                end-call 
                goback 
            end-if 
 
+           call "logger" using concatenate(
+               "CALL :: CALL entered with string: "
+               trim(l-src-code-str))
+           end-call 
 
            move trim(upper-case(l-src-code-str(length(ws-call):)))
                to ls-temp-sub-name

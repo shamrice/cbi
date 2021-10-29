@@ -64,7 +64,18 @@
                all ws-for 
                all ws-next 
                all ws-sub     
-               all ws-call 
+               all ws-call
+               all ws-goto  
+               all ws-select-case 
+               all ws-case
+               all ws-end-select 
+               all ws-declare 
+               all ws-return 
+               all ws-screen 
+               all ws-line 
+               all ws-circle 
+               all ws-sound 
+               all ws-play 
                
            
            if ls-keyword-found-count > 0 then 
