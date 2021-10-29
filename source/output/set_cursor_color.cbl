@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-10-12
+      * Last Modified: 2021-10-29
       * Purpose: Processed the COLOR command and sets cursor color
       * Tectonics: ./build.sh
       ******************************************************************
@@ -25,14 +25,19 @@
 
        copy "copybooks/basic_keywords.cpy".
 
-       local-storage section.
-       
-       01  ls-var-idx                   pic 9(4) comp value 0.
+       local-storage section.              
 
-       01  ls-comma-count               pic 9(10) comp value zero.
+       01  ls-comma-count                pic 9 comp value zero.
       
-       01  ls-temp-param-buffer         pic x(1024).
-       01  ls-temp-param-values         pic x(1024) occurs 10 times.          
+       01  ls-temp-param-buffer          pic x(1024).
+       01  ls-temp-param-values          pic x(1024) occurs 2 times.  
+
+       01  ls-variable-temp-data.
+           05  ls-var-name               pic x(16).
+           05  ls-var-type               pic x(8).
+           05  ls-var-value              pic x(1024).
+           05  ls-var-value-num          pic 9(16).
+           05  ls-var-ret-code           pic 9.
 
        linkage section.       
 
@@ -42,11 +47,23 @@
            05  l-text-fg-color           pic 99 value 7.
            05  l-text-bg-color           pic 99 value 0.
            05  l-text-fg-highlight-sw    pic a value 'N'.
-               88  l-text-fg-highlight  value 'Y'.
-               88  l-text-fg-lowlight   value 'N'.
+               88  l-text-fg-highlight   value 'Y'.
+               88  l-text-fg-lowlight    value 'N'.
            
+       01  l-variable-table.
+           05  l-num-variables           pic 9(4) comp.
+           05  l-variables               occurs 0 to unbounded times
+                                         depending on l-num-variables. 
+               10  l-variable-type       pic x(8) value spaces.
+                   88  l-type-integer    value "INTEGER".
+                   88  l-type-string     value "STRING".
+               10  l-variable-name       pic x(16) value spaces.
+               10  l-variable-value      pic x(1024) value spaces.
+               10  l-variable-value-num  redefines l-variable-value
+                                         pic 9(16) value zeros. 
 
-       procedure division using l-src-code-str l-text-colors.   
+       procedure division using 
+           l-src-code-str l-text-colors l-variable-table.   
 
        main-procedure.
 
@@ -66,8 +83,14 @@
                move spaces to ls-temp-param-values(2) 
            end-if 
 
-           if ls-temp-param-values(1) not = spaces then 
-               move ls-temp-param-values(1) to l-text-fg-color
+           if ls-temp-param-values(1) not = spaces then
+               if trim(ls-temp-param-values(1)) is numeric then 
+                   move ls-temp-param-values(1) to l-text-fg-color
+               else 
+                   move ls-temp-param-values(1) to ls-var-name 
+                   perform set-value-from-var
+                   move ls-var-value to l-text-fg-color                    
+               end-if 
                if l-text-fg-color > 7 then 
                    set l-text-fg-highlight to true 
                    subtract 8 from l-text-fg-color 
@@ -77,7 +100,13 @@
            end-if 
 
            if ls-temp-param-values(2) not = spaces then 
-               move ls-temp-param-values(2) to l-text-bg-color
+               if trim(ls-temp-param-values(2)) is numeric then 
+                   move ls-temp-param-values(2) to l-text-bg-color
+               else 
+                   move trim(ls-temp-param-values(2)) to ls-var-name 
+                   perform set-value-from-var
+                   move ls-var-value to l-text-bg-color                    
+               end-if                    
                if l-text-bg-color > 7 then                            
                    subtract 8 from l-text-bg-color                        
                end-if 
@@ -94,5 +123,27 @@
            end-call 
 
            goback.
+
+
+
+
+       set-value-from-var.           
+           call "get-var-value" using 
+               l-variable-table
+               ls-var-name
+               ls-var-type 
+               ls-var-value
+               ls-var-ret-code
+           end-call
+
+           if ls-var-ret-code = 0 or ls-var-type not = "INTEGER" then 
+               call "logger" using concatenate(
+                   "COLOR :: Failed to get value for variable: "
+                   trim(ls-var-name) " : Defaulting to 0.")
+               end-call 
+               move 0 to ls-var-value
+           end-if            
+
+           exit paragraph.
 
        end program set-cursor-color.
