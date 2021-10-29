@@ -1,12 +1,11 @@
       *>*****************************************************************
       *> Author: Erik Eriksen
       *> Create Date: 2020-12-26 (originally for CRSSR)
-      *> Last Updated: 2021-10-27
+      *> Last Updated: 2021-10-28
       *> Purpose: File logger for cobol-basic-interpreter
       *> Tectonics:
       *>     ./build.sh
       *>*****************************************************************
-
        replace ==:BUFFER-SIZE:== by ==32768==.
 
        identification division.
@@ -26,7 +25,7 @@
 
        file section.
            FD fd-log-file.
-           01 f-log-text-raw                 pic x(:BUFFER-SIZE:).
+           01 f-log-text-raw             pic x(:BUFFER-SIZE:).
 
 
        working-storage section.
@@ -50,55 +49,22 @@
        77  ws-log-buffer                 pic x(:BUFFER-SIZE:).
 
        77  ws-file-name                  pic x(18) 
-                                         value "cbi_UNSET.log".
-
-      * 78  ws-log-enabled-switch         value "==ENABLE-LOG==".
-      * 78  ws-log-disabled-switch        value "==DISABLE-LOG==".
-
+                                         value "cbi_UNSET.log".   
 
        linkage section.
-       01  l-log-text                     pic x any length.
+       01  l-log-text                    pic x any length.
 
-       procedure division
-           using l-log-text.
+
+       procedure division using l-log-text.
 
        main-procedure.
-      *     goback
 
-
-      *>   TODO : create an entry point to enable/disable log
-      *>          Also keep log file open for the duration of the 
-      *>          program instead of open/closing the file for each 
-      *>          line.
-
-      * If log text is disable log flag or enable log flag, turn log enabled
-      * switch on and off as needed.
-      *     if l-log-text = ws-log-disabled-switch then
-      *         set ws-log-disabled to true
-      *     end-if 
-
-      *     if l-log-text = ws-log-enabled-switch then 
-      *         set ws-log-enabled to true
-      *     end-if
-
-      *     if ws-log-disabled then 
-      *         goback
-      *     end-if 
+           if ws-log-disabled then 
+               goback 
+           end-if 
 
            move spaces to ws-log-buffer
-
            move function current-date to ws-date-record
-           
-      * Dynamically create log file name using date in file name.
-           string
-               "cbi" delimited by size
-               "_" delimited by size  
-               ws-year delimited by size
-               ws-month delimited by size
-               ws-day delimited by size 
-               ".log" delimited by size 
-               into ws-file-name
-           end-string
 
       * Build formatted log line for output.         
            string 
@@ -120,11 +86,54 @@
                l-log-text delimited by size
                into ws-log-buffer
            end-string
-
-           open extend fd-log-file
-               write f-log-text-raw from ws-log-buffer
-           close fd-log-file
+           
+           write f-log-text-raw from ws-log-buffer           
 
            goback.
        
+
+
+      *>*****************************************************************
+      *> Author: Erik Eriksen
+      *> Create Date: 2021-10-28
+      *> Last Updated: 2021-10-28
+      *> Purpose: Enables logging, sets file name, and opens the log 
+      *>          file for writing.
+      *> Tectonics:
+      *>     ./build.sh
+      *>*****************************************************************
+       entry "enable-logger".
+           set ws-log-enabled to true 
+
+      *> Dynamically create log file name using date as file name.
+           move function current-date to ws-date-record
+      
+           string
+               "cbi" delimited by size
+               "_" delimited by size  
+               ws-year delimited by size
+               ws-month delimited by size
+               ws-day delimited by size 
+               ".log" delimited by size 
+               into ws-file-name
+           end-string
+
+           open extend fd-log-file
+           goback.
+
+
+
+      *>*****************************************************************
+      *> Author: Erik Eriksen
+      *> Create Date: 2021-10-28
+      *> Last Updated: 2021-10-28
+      *> Purpose: Disables the logging flag and closes the log file.
+      *> Tectonics:
+      *>     ./build.sh
+      *>*****************************************************************
+       entry "disable-logger".
+           set ws-log-disabled to true 
+           close fd-log-file
+           goback.
+
        end program logger.

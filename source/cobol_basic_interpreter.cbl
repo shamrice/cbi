@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-10-26
+      * Last Modified: 2021-10-28
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -53,6 +53,10 @@
        01  ws-list-program-sw         pic a value 'N'.
            88  ws-list-program        value 'Y'.
            88  ws-not-list-program    value 'N'.
+
+       01  ws-logging-sw              pic a value 'N'.
+           88  ws-enable-logging      value 'Y'.
+           88  ws-disable-logging     value 'N'.
 
        01  ws-exit-program-sw         pic a value 'N'.
            88  ws-exit-program        value 'Y'.
@@ -137,9 +141,14 @@
                ws-command-line-args
                ws-input-source-file-name
                ws-list-program-sw
-               ws-run-program-sw               
+               ws-run-program-sw      
+               ws-logging-sw         
            end-call 
            
+           if ws-enable-logging then 
+               call "enable-logger"
+           end-if 
+
            call "load-program" using 
                ws-input-source-file-name 
                ws-source-data-table
@@ -153,6 +162,10 @@
            end-if                  
 
            perform parse-and-run-program
+
+           if ws-enable-logging then 
+               call "disable-logger"
+           end-if 
 
            stop run.
 

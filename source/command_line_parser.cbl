@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-10-14
+      * Last Modified: 2021-10-28
       * Purpose: Parses command line arguements
       * Tectonics: ./build.sh
       ******************************************************************
@@ -25,11 +25,12 @@
        working-storage section.
 
        01  ws-temp-param                pic x(512).
-       01  ws-param-pointer             pic 9(5) comp.       
+       01  ws-param-pointer             pic 9(4) comp.       
 
        78  ws-help-param                value "--HELP".
        78  ws-list-param                value "--LIST".
        78  ws-run-param                 value "--RUN".
+       78  ws-logging-param             value "--LOGGING".
 
        local-storage section.
        
@@ -47,9 +48,13 @@
            88  l-run-program            value 'Y'.
            88  l-not-run-program        value 'N'.
 
+       01  l-logging-sw                 pic a.
+           88  l-enable-logging         value 'Y'.
+           88  l-disable-logging        value 'N'.
+
        procedure division using 
            l-command-line-args l-input-source-file-name 
-           l-list-program-sw l-run-program-sw.  
+           l-list-program-sw l-run-program-sw l-logging-sw.  
 
        main-procedure.
 
@@ -93,6 +98,9 @@
                when ws-list-param
                    set l-list-program to true 
 
+               when ws-logging-param
+                   set l-enable-logging to true 
+
                when other 
                    move trim(ws-temp-param) to l-input-source-file-name
                 
@@ -106,14 +114,18 @@
            display space 
            display "Options:"
            display 
-               "   --run - Run the program after loading without "
+               "      --run - Run the program after loading without "
                "prompt. (Default if no parameters are entered.)"
            end-display 
            display 
-               "  --list - Print out program source code to display."
+               "     --list - Print out program source code to display."
            end-display 
            display 
-               "  --help - This help text."
+               "  --logging - Turns on interpreter logging while "
+               "running and/or listing a program."
+           end-display 
+           display 
+               "     --help - This help text."
            display spaces 
            display 
                "  [FILE] - File name of BASIC program to list "
