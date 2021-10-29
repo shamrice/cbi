@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-26
-      * Last Modified: 2021-10-28
+      * Last Modified: 2021-10-29
       * Purpose: Process and handles FOR loop start/end lines.
       *          Main entry point handles loop start & top. 
       *          'for-loop-end-handler' entry point handles loop ending
@@ -27,6 +27,8 @@
 
        copy "copybooks/basic_keywords.cpy".
 
+      *> TODO : There is a bug here where it's attempting to create a 
+      *>        new idx for each loop iteration. Crashes after 1000 loops
        01  ws-for-loop-data-table.
            05  ws-num-for-loops          pic 9(4) comp.
            05  ws-for-loop-data          occurs 0 to 1000 times 
@@ -36,10 +38,7 @@
                10  ws-for-loop-start-val pic 9(10).
                10  ws-for-loop-end-val   pic 9(10).
                10  ws-for-loop-step      pic S9(16).
-               10  ws-for-loop-init      pic a.
-                   88  ws-is-init        value 'Y'.
-                   88  ws-not-init       value 'N'.
- 
+               
        local-storage section.    
        
        01  ls-line-to-process        pic x(1024).
@@ -151,6 +150,7 @@
            goback.
            
 
+
        init-new-for-loop-record.
            add 1 to ws-num-for-loops
 
@@ -158,8 +158,6 @@
 
            move upper-case(ls-for-loop-parts(ls-parts-idx))
                to ws-for-loop-var(ls-working-for-loop-idx)
-
-           set ws-not-init(ls-working-for-loop-idx) to true 
                
            exit paragraph.
 
@@ -167,20 +165,22 @@
 
        set-variable-name.
 
-      *>   If no loops in memory, add new one with variable name.
+      *>   If no loops in memory, add new one with variable name.           
            if ws-num-for-loops = 0 then 
+               call "logger" using "CREATING NEW"
                perform init-new-for-loop-record
                exit paragraph
            end-if 
-
+          
       *>   Otherwise, find existing entry 
            perform varying ls-working-for-loop-idx from 1 by 1 
            until ls-working-for-loop-idx > ws-num-for-loops 
 
+           call "logger" using ws-for-loop-var(ls-working-for-loop-idx) 
+
                if ws-for-loop-var(ls-working-for-loop-idx) 
-               = ls-for-loop-parts(ls-parts-idx)
-               then 
-                   set ws-is-init(ls-working-for-loop-idx) to true
+               = upper-case(ls-for-loop-parts(ls-parts-idx))
+               then       
                    exit paragraph
                end-if  
            end-perform 
@@ -192,11 +192,6 @@
 
 
        assign-start-value.
-           if ws-is-init(ls-working-for-loop-idx) then 
-               call "logger" using "***LOOP ALREADY INIT. NO ASSIGN!"
-               exit paragraph 
-           end-if 
-
       *>   TODO : Start value can also be a variable, not just an int!
 
            move ls-for-loop-parts(ls-parts-idx) 
@@ -213,8 +208,6 @@
                ls-assignment-str 
                l-variable-table
            end-call 
-
-           set ws-is-init(ls-working-for-loop-idx) to true 
 
            exit paragraph.
 
@@ -260,7 +253,7 @@
            end-if 
 
            if ws-for-loop-start-val(ls-working-for-loop-idx) 
-               > ws-for-loop-end-val(ls-working-for-loop-idx) 
+               > ws-for-loop-end-val(ls-working-for-loop-idx)                
            then                 
                if numval(ls-var-value) 
                    < ws-for-loop-end-val(ls-working-for-loop-idx) 
@@ -296,11 +289,9 @@
        set-current-line-to-loop-exit-and-go-back.
            call "logger" using concatenate(
                "FOR-LOOP-START-HANDLER :: Exiting for loop. "
-               "Setting line num to end of for loop and setting "
-               "init=false for " ls-working-for-loop-idx)
+               "Setting line num to end of for loop " 
+               ls-working-for-loop-idx)
            end-call
-
-           set ws-not-init(ls-working-for-loop-idx) to true 
 
            perform varying ls-loop-idx from 1 by 1 
            until ls-loop-idx > l-num-loops 
