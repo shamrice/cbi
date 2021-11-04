@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-10-27
+      * Last Modified: 2021-11-04
       * Purpose: During loading, populates loop table with start and end
       *          line locations.
       * Tectonics: ./build.sh
@@ -29,7 +29,7 @@
        01  ws-nested-idx             pic 9(4) comp value 0.
 
        01  ws-nested-loop-idx        pic 9(4)  
-                                     occurs 0 to 1000 times 
+                                     occurs 0 to 9999 times 
                                      depending on ws-nested-idx.
 
        local-storage section.
@@ -85,12 +85,13 @@
                end-call 
            end-if 
 
-           if upper-case(l-src-code-str(1:length(ws-wend)))
+           if ws-nested-idx > 0 and (
+               upper-case(l-src-code-str(1:length(ws-wend)))
                = ws-wend 
                or upper-case(l-src-code-str(1:length(ws-loop))) 
                = ws-loop  
                or upper-case(l-src-code-str(1:length(ws-next))) 
-               = ws-next
+               = ws-next)
            then                               
       
       *>      Get related start/end loop index based on current nest level.

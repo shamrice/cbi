@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-10-25
+      * Last Modified: 2021-11-04
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -184,7 +184,8 @@
                display trim(f-source-code-line)
            end-if 
 
-      *> Figure out quote start and end locations.          
+      *> Figure out quote start and end locations.   
+           move zeros to ls-num-quote-pairs       
            inspect f-source-code-line
            tallying ls-quote-count for all '"'.
 
@@ -251,7 +252,7 @@
                    end-unstring
 
       *> Make sure that the colon is not in quoted text. 
-                   
+                                      
                    set ls-colon-not-in-quote to true 
 
                    perform varying ls-quote-pair-idx from 1 by 1 
@@ -261,7 +262,7 @@
                            and ws-starting-pointer 
                            < ls-q-end-idx(ls-quote-pair-idx)
                        then 
-                           set ls-colon-in-quote to true 
+                           set ls-colon-in-quote to true                            
                            exit perform 
                        end-if 
 
@@ -272,7 +273,7 @@
                        add 1 to l-num-lines
 
                        move trim(ls-source-data-temp)
-                          to l-source-data-read(l-num-lines)
+                          to l-source-data-read(l-num-lines)                       
                    end-if 
 
                end-perform

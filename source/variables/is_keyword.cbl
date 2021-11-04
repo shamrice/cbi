@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-10-25
+      * Last Modified: 2021-11-04
       * Purpose: Checks if value passed is a BASIC keyword or not.
       *          Returns true(1) if it is or false(0) if it is not.
       * Tectonics: ./build.sh
@@ -72,6 +72,7 @@
                all ws-declare 
                all ws-return 
                all ws-screen 
+               all ws-width 
                all ws-line 
                all ws-circle 
                all ws-sound 

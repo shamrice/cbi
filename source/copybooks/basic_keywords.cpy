@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-10-25
+      * Last Modified: 2021-11-04
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -54,6 +54,7 @@
        78  ws-declare                 value "DECLARE ".
        78  ws-return                  value "RETURN".
        78  ws-screen                  value "SCREEN".
+       78  ws-width                   value "WIDTH".
        78  ws-line                    value "LINE ".
        78  ws-circle                  value "CIRCLE ".
        78  ws-sound                   value "SOUND".
