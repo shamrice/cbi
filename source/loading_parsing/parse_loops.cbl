@@ -71,7 +71,7 @@
                move l-num-loops to ls-num-loops-disp
                move ws-nested-idx to ls-nested-idx-disp
                call "logger" using concatenate(
-                   "LOAD :: found loop START at: " 
+                   "LOAD:PARSE-LOOPS :: found loop START at: " 
                    ls-cur-line-num-disp
                    " : number of loops: " ls-num-loops-disp
                    " : nested level: " ls-nested-idx-disp
@@ -100,7 +100,7 @@
                move l-num-loops to ls-num-loops-disp
                move ws-nested-idx to ls-nested-idx-disp
                call "logger" using concatenate(
-                   "LOAD :: found loop END at: " 
+                   "LOAD:PARSE-LOOPS :: found loop END at: " 
                    ls-cur-line-num-disp
                    " : for loop idx: " ls-end-loop-idx
                    " : related start line: " 

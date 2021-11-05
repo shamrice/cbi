@@ -63,7 +63,7 @@
                move l-cur-line-num to ls-cur-line-num-disp
                move l-num-subs to ls-num-subs-disp               
                call "logger" using concatenate(
-                   "PARSE-SUBS :: Found new SUB. Name: "
+                   "LOAD:PARSE-SUBS :: Found new SUB. Name: "
                    trim(l-sub-name(l-num-subs))
                    " : START at: " 
                    ls-cur-line-num-disp
@@ -79,7 +79,7 @@
                move l-cur-line-num to ls-cur-line-num-disp
                move l-num-subs to ls-num-subs-disp               
                call "logger" using concatenate(
-                   "PARSE-SUBS :: Found END SUB for: " 
+                   "LOAD:PARSE-SUBS :: Found END SUB for: " 
                    trim(l-sub-name(l-num-subs))
                    " : at: " 
                    ls-cur-line-num-disp

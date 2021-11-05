@@ -98,6 +98,7 @@
            05  ws-if-data                 occurs 0 to 9999 times
                                           depending on ws-num-ifs.
                10  ws-if-start            pic 9(5).
+               10  ws-num-elseifs         pic 99 comp.
                10  ws-elseif-start        pic 9(5) occurs 99 times.
                10  ws-else-start          pic 9(5). 
                10  ws-if-end              pic 9(5).
