@@ -5,7 +5,7 @@
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
-      ******************************************************************z
+      ******************************************************************
 
        78  ws-comment-rem             value "REM ".
        78  ws-comment-tic             value "'".

@@ -1,13 +1,16 @@
       ******************************************************************
       * Author: Erik Eriksen
-      * Create Date: 2021-10-25
-      * Last Modified: 2021-11-05
-      * Purpose: During loading, populates sub table with start and end
-      *          line locations.
+      * Create Date: 2021-11-04
+      * Last Modified: 2021-11-04
+      * Purpose: During loading, populates the potential line label 
+      *          table. These are destinations used by GOTO or GOSUB.
+      *          Seeing that line labels will look like implicit SUB
+      *          calls, these entries are not 100% guaranteed to be 
+      *          correct (for now).
       * Tectonics: ./build.sh
       ******************************************************************
        identification division.
-       program-id. parse-subs.
+       program-id. parse-line-labels.
 
        environment division.
        
@@ -38,7 +41,6 @@
        01  l-cur-line-num            pic 9(10) comp.
 
        copy "copybooks/linkage_section/l_sub_boundary_table.cpy".
-
 
        procedure division using 
            l-src-code-str l-cur-line-num l-sub-boundary-table.   
@@ -90,4 +92,4 @@
 
            goback.
 
-       end program parse-subs.
+       end program parse-line-labels.

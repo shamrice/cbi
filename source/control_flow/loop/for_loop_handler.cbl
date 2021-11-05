@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-26
-      * Last Modified: 2021-10-29
+      * Last Modified: 2021-11-05
       * Purpose: Process and handles FOR loop start/end lines.
       *          Main entry point handles loop start & top. 
       *          'for-loop-end-handler' entry point handles loop ending
@@ -74,26 +74,10 @@
  
        01  l-cur-line-num            pic 9(10) comp.
 
+       copy "copybooks/linkage_section/l_loop_boundary_table.cpy".
 
-       01  l-loop-boundary-table.
-           05  l-num-loops           pic 9(4) comp value 0. 
-           05  l-loop-data           occurs 0 to unbounded times
-                                     depending on l-num-loops.               
-               10  l-loop-start      pic 9(10). *>TODO Make comp 
-               10  l-loop-end        pic 9(10).
-
-       01  l-variable-table.
-           05  l-num-variables           pic 9(4) comp.
-           05  l-variables               occurs 0 to unbounded times
-                                         depending on l-num-variables. 
-               10  l-variable-type       pic x(8) value spaces.
-                   88  l-type-integer    value "INTEGER".
-                   88  l-type-string     value "STRING".
-               10  l-variable-name       pic x(16) value spaces.
-               10  l-variable-value      pic x(1024) value spaces.
-               10  l-variable-value-num  redefines l-variable-value
-                                         pic 9(16) value zeros.       
-              
+       copy "copybooks/linkage_section/l_variable_table.cpy".
+       
 
        procedure division using 
            l-src-code-str l-cur-line-num 

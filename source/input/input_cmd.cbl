@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-14
-      * Last Modified: 2021-10-21
+      * Last Modified: 2021-11-05
       * Purpose: Process the INPUT command with parameter.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -62,17 +62,8 @@
                88  l-text-fg-highlight  value 'Y'.
                88  l-text-fg-lowlight   value 'N'.
 
-       01  l-variable-table.
-           05  l-num-variables           pic 9(4) comp.
-           05  l-variables               occurs 0 to unbounded times
-                                         depending on l-num-variables. 
-               10  l-variable-type       pic x(8) value spaces.
-                   88  l-type-integer    value "INTEGER".
-                   88  l-type-string     value "STRING".
-               10  l-variable-name       pic x(16) value spaces.
-               10  l-variable-value      pic x(1024) value spaces.
-               10  l-variable-value-num  redefines l-variable-value
-                                         pic 9(16) value zeros.  
+       copy "copybooks/linkage_section/l_variable_table.cpy".
+       
 
        procedure division using 
            l-src-code-str l-screen-position l-text-colors 

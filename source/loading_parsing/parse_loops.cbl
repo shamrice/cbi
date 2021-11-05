@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-04
+      * Last Modified: 2021-11-05
       * Purpose: During loading, populates loop table with start and end
       *          line locations.
       * Tectonics: ./build.sh
@@ -40,18 +40,13 @@
 
        01  ls-end-loop-idx           pic 9(4).
 
-       linkage section.       
+       linkage section.              
 
        01  l-src-code-str            pic x(1024). 
 
        01  l-cur-line-num            pic 9(10) comp.
-
-       01  l-loop-boundary-table.
-           05  l-num-loops           pic 9(4) comp value 0. 
-           05  l-loop-data           occurs 0 to unbounded times
-                                     depending on l-num-loops.               
-               10  l-loop-start      pic 9(10). *>TODO Make comp 
-               10  l-loop-end        pic 9(10).
+       
+       copy "copybooks/linkage_section/l_loop_boundary_table.cpy".
 
        procedure division using 
            l-src-code-str l-cur-line-num l-loop-boundary-table.   
