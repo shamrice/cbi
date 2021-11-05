@@ -28,7 +28,8 @@
        01  ws-temp-cmd-buffer            pic x(256).
        01  ws-temp-param-buffer          pic x(1024).
 
-       local-storage section.
+       local-storage section.       
+
        01  ls-keyword-count              pic 9(10) comp value zero.
        01  ls-assignment-count           pic 9 comp value zero.
 
@@ -67,8 +68,17 @@
                trim(l-src-code-str))
            end-call 
 
-           move upper-case(trim(l-src-code-str(4:)))
-               to ls-temp-param-buffer
+      *> TODO : currently dim & dim shared are treated the same. 
+           if upper-case(l-src-code-str(1:length(ws-dim-shared))) 
+               = ws-dim-shared
+           then 
+               move upper-case(trim(
+                   l-src-code-str(length(ws-dim-shared):)))
+                   to ls-temp-param-buffer
+           else                 
+               move upper-case(trim(l-src-code-str(length(ws-dim):)))
+                   to ls-temp-param-buffer
+           end-if 
 
       *>   Get and set variable name as well as increment variable count.
            unstring ls-temp-param-buffer

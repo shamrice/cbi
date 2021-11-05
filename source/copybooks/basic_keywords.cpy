@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-04
+      * Last Modified: 2021-11-05
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -20,6 +20,7 @@
        78  ws-sleep                   value "SLEEP ".
 
        78  ws-dim                     value "DIM ".
+       78  ws-dim-shared              value "DIM SHARED ".
        78  ws-integer-type            value "AS INTEGER".
        78  ws-string-type             value "AS STRING".
 
@@ -45,12 +46,24 @@
        78  ws-end-sub                 value "END SUB".
        78  ws-call                    value "CALL ".
        78  ws-goto                    value "GOTO ".
+       
 
+      *>   Unused/not yet implemented keywords
+       78  ws-if                      value "IF ".
+       78  ws-elseif                  value "ELSEIF ".
+       78  ws-end-if                  value "END IF".
+       
        78  ws-select-case             value "SELECT CASE".
        78  ws-case                    value "CASE".
        78  ws-end-select              value "END SELECT".
 
-      *>   Unused/not implemented keywords
+       78  ws-const                   value "CONST ".
+
+       78  ws-on-error                value "ON ERROR".
+
+       78  ws-open                    value "OPEN".
+       78  ws-close                   value "CLOSE".
+
        78  ws-declare                 value "DECLARE ".
        78  ws-return                  value "RETURN".
        78  ws-screen                  value "SCREEN".

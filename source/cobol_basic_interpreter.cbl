@@ -289,7 +289,12 @@
 
                when upper-case(
                    ws-source-data-temp(1:length(ws-dim))) = ws-dim
-           
+                   or 
+                   upper-case(
+                   ws-source-data-temp(1:length(ws-dim-shared))) 
+                   = ws-dim-shared
+      *> TODO: Currently all variables are global so dim and dim shared are 
+      *>       treated the same.           
                    call "allocate-var" using 
                        ws-source-data-temp
                        ws-variable-table 
