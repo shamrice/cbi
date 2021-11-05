@@ -36,8 +36,8 @@
        
        01  ws-input-source-file-name  pic x(1024) value spaces.
 
-       01  ws-line-idx                pic 9(10) comp value 0.
-       01  ws-line-idx-disp           pic 9(10) value 0.                    
+       01  ws-line-idx                pic 9(5) comp value 0.
+       01  ws-line-idx-disp           pic 9(5) value 0.                    
 
        01  ws-source-data-temp        pic x(1024).
 
@@ -45,7 +45,7 @@
       *> 64k lines of BASIC is an insanely large program. Reducing this
       *> number in the future to 8k or 16k might make more sense.
        01  ws-source-data-table.
-           05  ws-num-lines           pic 9(10) comp value 0.
+           05  ws-num-lines           pic 9(5) comp value 0.
            05  ws-source-data-read    pic x(1024) 
                                       occurs 0 to 64000 times 
                                       depending on ws-num-lines.       
@@ -72,12 +72,7 @@
 
        01  ws-temp-cmd-buffer         pic x(256).
        01  ws-temp-param-buffer       pic x(1024).
-       
-
-       01  ws-space-count             pic 9(10) comp value zero.
-       01  ws-comma-count             pic 9(10) comp value zero.
-       01  ws-keyword-count           pic 9(10) comp value zero.
-       
+              
        01  ws-assignment-count        pic 9 comp value zero.
        
        01  ws-allocate-ret-val        pic 9 value 0.  
@@ -102,17 +97,17 @@
            05  ws-num-ifs                 pic 9(4) comp. 
            05  ws-if-data                 occurs 0 to 9999 times
                                           depending on ws-num-ifs.
-               10  ws-if-start            pic 9(10).
-               10  ws-elseif-start        pic 9(10) occurs 99 times.
-               10  ws-else-start          pic 9(10). 
-               10  ws-if-end              pic 9(10).
+               10  ws-if-start            pic 9(5).
+               10  ws-elseif-start        pic 9(5) occurs 99 times.
+               10  ws-else-start          pic 9(5). 
+               10  ws-if-end              pic 9(5).
 
        01  ws-loop-boundary-table.
            05  ws-num-loops               pic 9(4) comp. 
            05  ws-loop-data               occurs 0 to 1000 times
                                           depending on ws-num-loops.               
-               10  ws-loop-start          pic 9(10). *>TODO Make comp 
-               10  ws-loop-end            pic 9(10).                                      
+               10  ws-loop-start          pic 9(5). *>TODO Make comp 
+               10  ws-loop-end            pic 9(5).                                      
 
 
        01  ws-sub-boundary-table.
@@ -120,10 +115,10 @@
            05  ws-sub-data                occurs 0 to 1000 times
                                           depending on ws-num-subs.    
                10  ws-sub-name            pic x(32).           
-               10  ws-sub-start           pic 9(10). *>TODO Make comp 
-               10  ws-sub-end             pic 9(10).  
+               10  ws-sub-start           pic 9(5). *>TODO Make comp 
+               10  ws-sub-end             pic 9(5).  
                10  ws-sub-cur-nest        pic 9(4) value 0.
-               10  ws-sub-last-call       pic 9(10) occurs 1000 times.
+               10  ws-sub-last-call       pic 9(5) occurs 1000 times.
                                          *>idx of last call is cur nest.                  
 
        01  ws-text-colors.
@@ -194,9 +189,6 @@
                move spaces to ws-temp-cmd-buffer
                move spaces to ws-temp-param-buffer
               
-               move zeros to ws-space-count
-               move zeros to ws-comma-count    
-               move zeros to ws-keyword-count   
                move zero to ws-assignment-count       
 
                move ws-line-idx to ws-line-idx-disp

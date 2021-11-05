@@ -35,8 +35,8 @@
 
        01  ws-input-source-file-name  pic x(1024).
 
-       01  ws-line-idx                pic 9(10) comp value 0.
-       01  ws-line-idx-disp           pic 9(10) value 0.
+       01  ws-line-idx                pic 9(5) comp value 0.
+       01  ws-line-idx-disp           pic 9(5) value 0.
 
        01  ws-colon-count             pic 9(4) value zero.
        01  ws-starting-pointer        pic 9(4) comp.
@@ -77,7 +77,7 @@
        01  l-input-file-name         pic x(1024).
 
        01  l-source-data-table.
-           05  l-num-lines           pic 9(10) comp value 0.
+           05  l-num-lines           pic 9(5) comp value 0.
            05  l-source-data-read    pic x(1024) 
                                      occurs 0 to unbounded times 
                                      depending on l-num-lines. 

@@ -30,13 +30,13 @@
        01  ls-temp-sub-name          pic x(32).    
        01  ls-sub-idx                pic 9(4) comp. 
 
-       01  ls-cur-line-num-disp      pic 9(10).
+       01  ls-cur-line-num-disp      pic 9(5).
 
        linkage section.       
 
        01  l-src-code-str            pic x(1024). 
  
-       01  l-cur-line-num            pic 9(10) comp.
+       01  l-cur-line-num            pic 9(5) comp.
 
        copy "copybooks/linkage_section/l_sub_boundary_table.cpy".
 

@@ -31,10 +31,10 @@
            05  ws-num-for-loops          pic 9(4) comp.
            05  ws-for-loop-data          occurs 0 to 1000 times 
                                          depending on ws-num-for-loops.
-               10  ws-for-loop-line      pic 9(10).
+               10  ws-for-loop-line      pic 9(5).
                10  ws-for-loop-var       pic x(1024).
-               10  ws-for-loop-start-val pic 9(10).
-               10  ws-for-loop-end-val   pic 9(10).
+               10  ws-for-loop-start-val pic 9(16).
+               10  ws-for-loop-end-val   pic 9(16).
                10  ws-for-loop-step      pic S9(16).
                
        local-storage section.    
@@ -43,7 +43,7 @@
 
        01  ls-conditional-ret-val    pic 9.
 
-       01  ls-cur-line-num-disp      pic 9(10).
+       01  ls-cur-line-num-disp      pic 9(5).
 
        01  ls-variable-temp-data.
            05  ls-var-name           pic x(16).
@@ -72,12 +72,12 @@
 
        01  l-src-code-str            pic x(1024). 
  
-       01  l-cur-line-num            pic 9(10) comp.
+       01  l-cur-line-num            pic 9(5) comp.
 
        copy "copybooks/linkage_section/l_loop_boundary_table.cpy".
 
        copy "copybooks/linkage_section/l_variable_table.cpy".
-       
+
 
        procedure division using 
            l-src-code-str l-cur-line-num 
