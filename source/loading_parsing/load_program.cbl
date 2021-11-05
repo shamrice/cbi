@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-11-04
+      * Last Modified: 2021-11-05
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -27,7 +27,7 @@
        file section.
 
        fd  fd-basic-source-file.
-       01  f-source-code-line               pic x(1024).     
+       01  f-source-code-line         pic x(1024).     
 
        working-storage section.
 
@@ -38,8 +38,8 @@
        01  ws-line-idx                pic 9(10) comp value 0.
        01  ws-line-idx-disp           pic 9(10) value 0.
 
-       01  ws-colon-count             pic 9(10) value zero.
-       01  ws-starting-pointer        pic 9(10) comp.
+       01  ws-colon-count             pic 9(4) value zero.
+       01  ws-starting-pointer        pic 9(4) comp.
       
        
        local-storage section.
@@ -50,16 +50,14 @@
 
        01  ls-source-data-temp        pic x(1024).        
 
-       01  ls-quote-count             pic 9(6).
+       01  ls-quote-count             pic 9(4) comp.
 
-       01  ls-quote-pair-idx          pic 9(6) comp.
+       01  ls-quote-pair-idx          pic 9(4) comp.
 
-      *> TODO : this shouldn't be a table. No reason to store the whole
-      *>        program's quote locations. Just the current line being 
-      *>        read and parsed!
+      *> Number of quoted pairs in a source code line.
        01  ls-quote-table.
-           05  ls-num-quote-pairs     pic 9(6).
-           05  ls-quote-location      occurs 0 to 999999 times 
+           05  ls-num-quote-pairs     pic 9(4).
+           05  ls-quote-location      occurs 0 to 9999 times 
                                       depending on ls-num-quote-pairs.
                10  ls-q-start-idx     pic 9(4).
                10  ls-q-end-idx       pic 9(4).
@@ -68,7 +66,7 @@
            88  ls-quote-type-start    value 'S'.
            88  ls-quote-type-end      value 'E'.
 
-       01  ls-line-char-idx           pic 9(4) .
+       01  ls-line-char-idx           pic 9(4) comp.
 
        01  ls-colon-in-quote-sw       pic a value 'N'.
            88  ls-colon-in-quote      value 'Y'.
@@ -76,7 +74,7 @@
 
        linkage section.    
 
-       01  l-input-file-name        pic x(1024).
+       01  l-input-file-name         pic x(1024).
 
        01  l-source-data-table.
            05  l-num-lines           pic 9(10) comp value 0.
@@ -204,7 +202,7 @@
 
                            call "logger" using concatenate(
                                "LOAD :: quote START at: " 
-                               ls-line-char-idx
+                               ls-q-start-idx(ls-num-quote-pairs)
                                " for line: " 
                                trim(f-source-code-line)) 
                            end-call 
@@ -213,13 +211,12 @@
                            compute ls-q-end-idx(ls-num-quote-pairs) 
                                = ls-line-char-idx + 1
                            end-compute 
-      *                     move ls-line-char-idx
-      *                         to ls-q-end-idx(ls-num-quote-pairs) 
 
                            set ls-quote-type-end to true 
 
                            call "logger" using concatenate(
-                               "LOAD :: quote END at: " ls-line-char-idx
+                               "LOAD :: quote END at: " 
+                               ls-q-end-idx(ls-num-quote-pairs) 
                                " for line: " 
                                trim(f-source-code-line))
                            end-call 
