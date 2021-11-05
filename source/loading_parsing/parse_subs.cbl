@@ -69,6 +69,8 @@
                    ls-cur-line-num-disp
                    " : Number of subs: " ls-num-subs-disp)
                end-call 
+
+               goback 
            end-if 
 
            if upper-case(l-src-code-str(1:length(ws-end-sub)))

@@ -78,6 +78,8 @@
                    " : nested loop idx: " 
                    ws-nested-loop-idx(ws-nested-idx))
                end-call 
+
+               goback 
            end-if 
 
            if ws-nested-idx > 0 and (
