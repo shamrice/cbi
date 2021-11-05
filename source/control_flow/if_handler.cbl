@@ -42,12 +42,14 @@
 
        01  l-cur-line-num                pic 9(10) comp.
 
+       copy "copybooks/linkage_section/l_if_boundary_table.cpy".
+
        copy "copybooks/linkage_section/l_variable_table.cpy".
-            
-       
+                   
 
        procedure division using 
-           l-src-code-str l-cur-line-num l-variable-table.   
+           l-src-code-str l-cur-line-num 
+           l-if-boundary-table l-variable-table.   
 
        main-procedure.
 

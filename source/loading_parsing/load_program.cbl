@@ -86,6 +86,8 @@
 
        copy "copybooks/linkage_section/l_sub_boundary_table.cpy".
 
+       copy "copybooks/linkage_section/l_if_boundary_table.cpy".
+
 
        01  l-list-program-sw         pic a.
            88  l-list-program        value 'Y'.
@@ -94,6 +96,7 @@
        procedure division using 
            l-input-file-name l-source-data-table
            l-loop-boundary-table l-sub-boundary-table
+           l-if-boundary-table
            l-list-program-sw.  
 
        main-procedure.
@@ -290,7 +293,13 @@
                l-source-data-read(l-num-lines)
                l-num-lines 
                l-sub-boundary-table
-           end-call                
+           end-call  
+
+           call "parse-ifs" using 
+               l-source-data-read(l-num-lines)
+               l-num-lines 
+               l-if-boundary-table
+           end-call               
 
            exit paragraph.                                  
 

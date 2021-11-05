@@ -6,6 +6,7 @@ BUILD_STRING="cobc -O2 -x --debug -fstatic-call \
     loading_parsing/load_program.cbl \
     loading_parsing/parse_loops.cbl \
     loading_parsing/parse_subs.cbl \
+    loading_parsing/parse_ifs.cbl \
     loading_parsing/parse_line_labels.cbl \
     variables/allocate_var.cbl \
     variables/assign_var.cbl \

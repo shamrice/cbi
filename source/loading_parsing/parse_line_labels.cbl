@@ -47,6 +47,8 @@
 
        main-procedure.
 
+      *> TODO: IMPLEMENT THIS. This is currently a copy/paste of SUB parsing
+
       *>   Check if line is a sub, if so add to sub table.
 
       *>   Subroutines cannot be defined inside another sub, so no
@@ -65,7 +67,7 @@
                move l-cur-line-num to ls-cur-line-num-disp
                move l-num-subs to ls-num-subs-disp               
                call "logger" using concatenate(
-                   "PARSE-SUBS :: Found new SUB. Name: "
+                   "PARSE-LINE-LABELS :: Found new LABEL. Name: "
                    trim(l-sub-name(l-num-subs))
                    " : START at: " 
                    ls-cur-line-num-disp
@@ -81,7 +83,7 @@
                move l-cur-line-num to ls-cur-line-num-disp
                move l-num-subs to ls-num-subs-disp               
                call "logger" using concatenate(
-                   "PARSE-SUBS :: Found END SUB for: " 
+                   "PARSE-LINE-LABELS :: Found END SUB for: " 
                    trim(l-sub-name(l-num-subs))
                    " : at: " 
                    ls-cur-line-num-disp
