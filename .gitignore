@@ -1,4 +1,5 @@
 source/bin/**
+source/tests/**
 source/*.log
 source/*.bas
 
