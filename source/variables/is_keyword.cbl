@@ -79,6 +79,7 @@
                all ws-play 
                all ws-if 
                all ws-elseif 
+               all ws-else 
                all ws-end-if 
                all ws-const 
                all ws-dim-shared

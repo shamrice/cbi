@@ -47,12 +47,15 @@
        78  ws-call                    value "CALL ".
        78  ws-goto                    value "GOTO ".
        
+       78  ws-and                     value " AND ".
+       78  ws-or                      value " OR ".
 
-      *>   Unused/not yet implemented keywords
        78  ws-if                      value "IF ".
        78  ws-elseif                  value "ELSEIF ".
+       78  ws-else                    value "ELSE".
        78  ws-end-if                  value "END IF".
-       
+
+      *>   Unused/not yet implemented keywords             
        78  ws-select-case             value "SELECT CASE".
        78  ws-case                    value "CASE".
        78  ws-end-select              value "END SELECT".

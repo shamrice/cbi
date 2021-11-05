@@ -341,6 +341,17 @@
                    end-call 
 
 
+               when (upper-case(
+               ws-source-data-temp(1:length(ws-if))) = ws-if) 
+               or (upper-case(
+               ws-source-data-temp(1:length(ws-elseif))) = ws-elseif)
+                   call "if-handler" using 
+                       ws-source-data-temp
+                       ws-line-idx
+                       ws-variable-table
+                   end-call 
+
+
                when other 
                    perform check-assign-value-to-variable
                    perform check-implicit-sub-call

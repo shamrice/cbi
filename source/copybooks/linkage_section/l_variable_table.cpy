@@ -16,4 +16,3 @@
                10  l-variable-value      pic x(1024) value spaces.
                10  l-variable-value-num  redefines l-variable-value
                                          pic 9(16) value zeros.   
-                                         

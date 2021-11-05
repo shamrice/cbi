@@ -2,8 +2,9 @@
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
       * Last Modified: 2021-11-05
-      * Purpose: Processes conditional statement and returns if true (1)       
-      *          or false (0).
+      * Purpose: Processes a single conditional statement and returns 
+      *          if true (1) or false (0).
+      *          This should be called from the conditional-statement-handler
       * Tectonics: ./build.sh
       ******************************************************************
        identification division.
@@ -34,6 +35,8 @@
        78  ws-less-than-equal-to         value "<=".
 
        local-storage section.
+
+       01  ls-num-var-disp               pic 9(4).
 
        01  ls-space-count                pic 9(4) comp.
 
@@ -168,7 +171,7 @@
                                    "CONDITIONAL-PROCESSOR :: WARNING :" 
                                    " Item: " 
                                    trim(ls-temp-statement-value) 
-                                   " is not a defined variable or of "
+                                   " is not a defined variable or of"
                                    " string or numeric type. Returning "
                                    " FALSE.")
                                end-call 
@@ -341,6 +344,9 @@
        substitute-variable-val-if-exists.
 
            set ls-not-sub-val-with-var to true 
+
+           move l-num-variables to ls-num-var-disp
+           call "logger" using ls-num-var-disp
 
            if l-num-variables > 0 then 
 

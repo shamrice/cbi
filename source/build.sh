@@ -16,8 +16,10 @@ BUILD_STRING="cobc -O2 -x --debug -fstatic-call \
     output/set_cursor_color.cbl \
     output/set_cursor_position.cbl \
     control_flow/sleep_program.cbl \
-    control_flow/conditional_processor.cbl \
     control_flow/call_cmd.cbl \
+    control_flow/if_handler.cbl \
+    control_flow/conditional/conditional_processor.cbl \
+    control_flow/conditional/conditional_statement_handler.cbl \
     control_flow/subroutine/sub_handler.cbl \
     control_flow/loop/loop_handler.cbl \
     control_flow/loop/for_loop_handler.cbl \
