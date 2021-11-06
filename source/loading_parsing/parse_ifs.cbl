@@ -54,11 +54,6 @@
            l-src-code-str l-cur-line-num l-if-boundary-table.   
 
        main-procedure.
-
-           call "logger" using concatenate(
-               "LOAD:PARSE-IFS :: Enter PARSE-IFS with line: "
-               trim(l-src-code-str))
-           end-call 
       
       *>   Check if line is start of IF, if so add to loop table.
            if upper-case(l-src-code-str(1:length(ws-if)))
@@ -82,7 +77,8 @@
                    " : number of IFs: " ls-num-ifs-disp
                    " : nested level: " ls-nested-idx-disp
                    " : nested loop idx: " 
-                   ws-nested-if-idx(ws-nested-idx))
+                   ws-nested-if-idx(ws-nested-idx)
+                   " : Line: " trim(l-src-code-str))
                end-call 
                goback 
            end-if 
@@ -115,7 +111,8 @@
                    " : number of IFs: " ls-num-ifs-disp
                    " : number of ELSEIFs in IF: "
                        ls-num-elseifs-disp
-                   " : nested level: " ls-nested-idx-disp)                   
+                   " : nested level: " ls-nested-idx-disp
+                   " : Line: " trim(l-src-code-str))
                end-call                
                goback 
            end-if 
@@ -142,7 +139,8 @@
                    " : related start line: " 
                        l-if-start(ls-else-idx)
                    " : number of IFs: " ls-num-ifs-disp
-                   " : nested level: " ls-nested-idx-disp)                   
+                   " : nested level: " ls-nested-idx-disp
+                   " : Line: " trim(l-src-code-str)) 
                end-call 
                goback                
            end-if 
@@ -168,7 +166,8 @@
                    " : related start line: " 
                        l-if-start(ls-end-if-idx)
                    " : number of IFs: " ls-num-ifs-disp
-                   " : nested level: " ls-nested-idx-disp)                   
+                   " : nested level: " ls-nested-idx-disp 
+                   " : Line: " trim(l-src-code-str)) 
                end-call 
 
                subtract 1 from ws-nested-idx               
