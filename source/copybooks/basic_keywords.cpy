@@ -52,7 +52,7 @@
 
        78  ws-if                      value "IF ".
        78  ws-elseif                  value "ELSEIF ".
-       78  ws-else                    value "ELSE".
+       78  ws-else                    value "ELSE ".
        78  ws-end-if                  value "END IF".
 
       *>   Unused/not yet implemented keywords             

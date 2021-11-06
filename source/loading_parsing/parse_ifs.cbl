@@ -71,6 +71,7 @@
                move l-num-ifs to ws-nested-if-idx(ws-nested-idx)
       
                move l-cur-line-num to l-if-start(l-num-ifs) 
+               set l-if-not-processed(l-num-ifs) to true 
 
                move l-cur-line-num to ls-cur-line-num-disp
                move l-num-ifs to ls-num-ifs-disp

@@ -94,14 +94,17 @@
                                           pic 9(16) value zeros.    
 
        01  ws-if-boundary-table.
-           05  ws-num-ifs                 pic 9(4) comp. 
-           05  ws-if-data                 occurs 0 to 9999 times
-                                          depending on ws-num-ifs.
-               10  ws-if-start            pic 9(5).
-               10  ws-num-elseifs         pic 99 comp.
-               10  ws-elseif-start        pic 9(5) occurs 99 times.
-               10  ws-else-start          pic 9(5). 
-               10  ws-if-end              pic 9(5).
+           05  ws-num-ifs                  pic 9(4) comp. 
+           05  ws-if-data                  occurs 0 to 9999 times
+                                           depending on ws-num-ifs.
+               10  ws-if-processed-sw      pic a.
+                   88  ws-if-processed     value 'Y'.
+                   88  ws-if-not-processed value 'N'.
+               10  ws-if-start             pic 9(5).
+               10  ws-num-elseifs          pic 99 comp.
+               10  ws-elseif-start         pic 9(5) occurs 99 times.
+               10  ws-else-start           pic 9(5). 
+               10  ws-if-end               pic 9(5).
 
        01  ws-loop-boundary-table.
            05  ws-num-loops               pic 9(4) comp. 
@@ -348,6 +351,10 @@
                ws-source-data-temp(1:length(ws-if))) = ws-if) 
                or (upper-case(
                ws-source-data-temp(1:length(ws-elseif))) = ws-elseif)
+               or (upper-case(
+               ws-source-data-temp(1:length(ws-else))) = ws-else)
+               or (upper-case(
+               ws-source-data-temp(1:length(ws-end-if))) = ws-end-if)
                    call "if-handler" using 
                        ws-source-data-temp
                        ws-line-idx
