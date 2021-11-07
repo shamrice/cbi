@@ -72,7 +72,8 @@
                perform allocate-new-variable
            end-if 
            
-      *> Assign new value to variable   
+      *> Assign new value to variable
+      *> TODO : CHECK IF ASSIGNMENT IS FROM ANOTHER VARIABLE!!!   
            if l-type-integer(ls-var-idx) then 
                move trim(ls-temp-param-values(2))
                    to l-variable-value-num(ls-var-idx) 

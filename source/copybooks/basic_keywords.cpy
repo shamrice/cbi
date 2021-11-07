@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-07
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -51,6 +51,7 @@
        78  ws-or                      value " OR ".
 
        78  ws-if                      value "IF ".
+       78  ws-then                    value "THEN".
        78  ws-elseif                  value "ELSEIF ".
        78  ws-else                    value "ELSE ".
        78  ws-end-if                  value "END IF".

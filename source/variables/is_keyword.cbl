@@ -46,6 +46,8 @@
 
        main-procedure.
 
+      *> TODO: this appears to pull some false-postives. like MAINLOOP
+      *>       will be caught because of LOOP.
            inspect upper-case(l-new-var-name)
            tallying ls-keyword-found-count for
                all ws-comment-rem
@@ -78,6 +80,7 @@
                all ws-sound 
                all ws-play 
                all ws-if 
+               all ws-then 
                all ws-elseif 
                all ws-else 
                all ws-end-if 

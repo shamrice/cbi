@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-05
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-07
       * Purpose: Handles a IF statements and moves current line number 
       *          to the correct location based on processing of the 
       *          statement.      
@@ -156,7 +156,13 @@
                        end-compute                        
 
                    when other 
-                       compute l-cur-line-num = l-if-end(ls-if-idx) - 1                        
+                *> Check if END IF exists before setting.
+                       if l-if-end(ls-if-idx) > 0 then 
+                           compute l-cur-line-num = 
+                               l-if-end(ls-if-idx) - 1
+                           end-compute                   
+                       end-if 
+
 
                end-evaluate
            end-if             

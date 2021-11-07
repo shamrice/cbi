@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-07
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -44,6 +44,8 @@
        
        local-storage section.
        
+       01  ls-source-code-line        pic x(1024).
+
        01  ls-eof-sw                  pic a value 'N'.
            88  ls-eof                 value 'Y'.
            88  ls-not-eof             value 'N'.
@@ -71,6 +73,17 @@
        01  ls-colon-in-quote-sw       pic a value 'N'.
            88  ls-colon-in-quote      value 'Y'.
            88  ls-colon-not-in-quote  value 'N'.
+
+       01  ls-single-line-if-sw       pic a value 'N'.
+           88  ls-single-line-if      value 'Y'.
+           88  ls-not-single-line-if  value 'N'.
+
+       01  ls-single-line-if-parts.
+           05  ls-if-start-part       pic x(1024).
+           05  ls-if-end-parts        pic x(1024).
+
+       01  ls-if-count                pic 9(4).
+       01  ls-then-count              pic 9(4).
 
        linkage section.    
 
@@ -127,7 +140,14 @@
                    read fd-basic-source-file                        
                    at end set ls-eof to true 
                    not at end 
-                       perform load-source-code-data                       
+      *> TODO : there should be some process at load time that converts 
+      *>        all keywords to uppercase while leaving the rest of the 
+      *>        line alone.  
+                       move f-source-code-line to ls-source-code-line
+                       perform process-single-line-if
+                       if not ls-single-line-if then                  
+                           perform load-source-code-data
+                       end-if 
                    end-read 
 
                end-perform 
@@ -166,22 +186,69 @@
            goback.
 
 
+
+       process-single-line-if.
+
+           set ls-not-single-line-if to true 
+           move spaces to ls-single-line-if-parts
+           move zeros to ls-if-count
+           move zeros to ls-then-count 
+
+           inspect upper-case(ls-source-code-line)
+           tallying 
+               ls-if-count for all ws-if 
+               ls-then-count for all ws-then                
+           
+           if ls-if-count > 0 and ls-then-count > 0 then 
+               call "logger" using "FOUND IF STATEMENT!. Check single."
+               
+      *>   TODO: keywords need to be uppercased for this to work. Currently
+      *>         anything but an uppercase THEN will be ignored.
+               unstring ls-source-code-line
+                   delimited by ws-then 
+                   into ls-if-start-part ls-if-end-parts
+               end-unstring
+
+               call "logger" using ls-if-start-part
+               call "logger" using ls-if-end-parts
+
+      *>   If single line IF, break processing up into parts and load
+      *>   them. Append END IF to the end of the IF new block.
+               if ls-if-end-parts not = spaces then 
+                   set ls-single-line-if to true 
+
+                   move ls-if-start-part to ls-source-code-line
+                   perform load-source-code-data
+
+                   move ls-if-end-parts to ls-source-code-line
+                   perform load-source-code-data
+
+                   move ws-end-if to ls-source-code-line
+                   perform load-source-code-data
+
+               end-if 
+           end-if 
+
+           exit paragraph.       
+
+
+
        load-source-code-data.
 
            if l-list-program then 
-               display trim(f-source-code-line)
+               display trim(ls-source-code-line)
            end-if 
 
       *> Figure out quote start and end locations.   
            move zeros to ls-num-quote-pairs       
-           inspect f-source-code-line
+           inspect ls-source-code-line
            tallying ls-quote-count for all '"'.
 
            if ls-quote-count > 0 then 
                perform varying ls-line-char-idx from 1 by 1
-               until ls-line-char-idx > length(f-source-code-line) 
+               until ls-line-char-idx > length(ls-source-code-line) 
 
-                   if f-source-code-line(ls-line-char-idx:1) = '"' then 
+                   if ls-source-code-line(ls-line-char-idx:1) = '"' then 
 
                        if not ls-quote-type-start then 
                            add 1 to ls-num-quote-pairs
@@ -194,7 +261,7 @@
                                "LOAD :: quote START at: " 
                                ls-q-start-idx(ls-num-quote-pairs)
                                " for line: " 
-                               trim(f-source-code-line)) 
+                               trim(ls-source-code-line)) 
                            end-call 
                        
                        else 
@@ -208,7 +275,7 @@
                                "LOAD :: quote END at: " 
                                ls-q-end-idx(ls-num-quote-pairs) 
                                " for line: " 
-                               trim(f-source-code-line))
+                               trim(ls-source-code-line))
                            end-call 
                                                      
                        end-if 
@@ -219,7 +286,7 @@
 
       *> Check to see if line is split by colons. 
            move zeros to ws-colon-count
-           inspect f-source-code-line 
+           inspect ls-source-code-line 
            tallying ws-colon-count for all ":"                       
 
            if ws-colon-count > 0 then 
@@ -232,7 +299,7 @@
                
                perform ws-colon-count times
 
-                   unstring f-source-code-line
+                   unstring ls-source-code-line
                        delimited by ":" 
                        into ls-source-data-temp
                        with pointer ws-starting-pointer
@@ -269,17 +336,17 @@
                if ws-starting-pointer > 1 and ls-colon-not-in-quote then 
                    add 1 to l-num-lines
 
-                   move trim(f-source-code-line(ws-starting-pointer:))
+                   move trim(ls-source-code-line(ws-starting-pointer:))
                        to l-source-data-read(l-num-lines)
                else *> colon exists in quoted text in the string. parse normal
                    add 1 to l-num-lines
-                   move trim(f-source-code-line)
+                   move trim(ls-source-code-line)
                        to l-source-data-read(l-num-lines)
                end-if 
                                                       
            else
                add 1 to l-num-lines
-               move trim(f-source-code-line)
+               move trim(ls-source-code-line)
                    to l-source-data-read(l-num-lines)
            end-if 
             
