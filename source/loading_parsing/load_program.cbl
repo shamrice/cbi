@@ -140,6 +140,9 @@
                    read fd-basic-source-file                        
                    at end set ls-eof to true 
                    not at end 
+                       if l-list-program then 
+                           display trim(f-source-code-line)
+                       end-if                   
       *> TODO : there should be some process at load time that converts 
       *>        all keywords to uppercase while leaving the rest of the 
       *>        line alone.  
@@ -163,9 +166,9 @@
                display "-----------------------------"
                display spaces 
                display spaces        
-               display "-----------------------------"
-               display "Printing read file contents:"
-               display "----------------------------"
+               display "-------------------------------"
+               display "Printing parsed file contents:"
+               display "-------------------------------"
 
                perform varying ws-line-idx 
                from 1 by 1 until ws-line-idx > l-num-lines
@@ -200,7 +203,7 @@
                ls-then-count for all ws-then                
            
            if ls-if-count > 0 and ls-then-count > 0 then 
-               call "logger" using "FOUND IF STATEMENT!. Check single."
+               call "logger" using "LOAD :: checking single line IF"
                
       *>   TODO: keywords need to be uppercased for this to work. Currently
       *>         anything but an uppercase THEN will be ignored.
@@ -233,11 +236,7 @@
 
 
 
-       load-source-code-data.
-
-           if l-list-program then 
-               display trim(ls-source-code-line)
-           end-if 
+       load-source-code-data. 
 
       *> Figure out quote start and end locations.   
            move zeros to ls-num-quote-pairs       
