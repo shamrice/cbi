@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-07
+      * Last Modified: 2021-11-08
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -46,6 +46,7 @@
        78  ws-end-sub                 value "END SUB".
        78  ws-call                    value "CALL ".
        78  ws-goto                    value "GOTO ".
+       78  ws-gosub                   value "GOSUB ".
        
        78  ws-and                     value " AND ".
        78  ws-or                      value " OR ".

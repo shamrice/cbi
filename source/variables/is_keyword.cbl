@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-08
       * Purpose: Checks if value passed is a BASIC keyword or not.
       *          Returns true(1) if it is or false(0) if it is not.
       * Tectonics: ./build.sh
@@ -68,6 +68,7 @@
                all ws-sub     
                all ws-call
                all ws-goto  
+               all ws-gosub
                all ws-select-case 
                all ws-case
                all ws-end-select 

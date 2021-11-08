@@ -339,6 +339,26 @@
                        ws-sub-boundary-table
                    end-call 
 
+
+               when (upper-case(
+               ws-source-data-temp(1:length(ws-gosub))) = ws-gosub) 
+               or (upper-case(
+               ws-source-data-temp(1:length(ws-goto))) = ws-goto) 
+                   call "gosub-goto-cmd" using 
+                       ws-source-data-temp
+                       ws-line-idx
+                       ws-line-label-boundary-table
+                   end-call 
+
+
+               when upper-case(ws-source-data-temp) = ws-return             
+                   call "gosub-return-handler" using 
+                       ws-source-data-temp
+                       ws-line-idx
+                       ws-line-label-boundary-table
+                   end-call                                
+
+
                when (upper-case(
                ws-source-data-temp(1:length(ws-while))) = ws-while) 
                or (upper-case(
