@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-10-28
+      * Last Modified: 2021-11-08
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -123,7 +123,18 @@
                10  ws-sub-end             pic 9(5).  
                10  ws-sub-cur-nest        pic 9(4) value 0.
                10  ws-sub-last-call       pic 9(5) occurs 1000 times.
-                                         *>idx of last call is cur nest.                  
+                                         *>idx of last call is cur nest.
+
+       01  ws-line-label-boundary-table.
+           05  ws-num-line-labels         pic 9(4) comp. 
+           05  ws-line-label-data         occurs 0 to 1000 times
+                                          depending 
+                                          on ws-num-line-labels.    
+               10  ws-label-name          pic x(32).           
+               10  ws-label-start         pic 9(5). *>TODO Make comp 
+               10  ws-label-end           pic 9(5). *> For GOSUBs RETURN
+               10  ws-label-last-call     pic 9(5). *> No nesting in GOSUB
+
 
        01  ws-text-colors.
            05  ws-text-fg-color           pic 99 value 7.
@@ -167,6 +178,7 @@
                ws-loop-boundary-table
                ws-sub-boundary-table
                ws-if-boundary-table
+               ws-line-label-boundary-table
                ws-list-program-sw
            end-call 
          

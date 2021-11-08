@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-11-07
+      * Last Modified: 2021-11-08
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -101,6 +101,8 @@
 
        copy "copybooks/linkage_section/l_if_boundary_table.cpy".
 
+       copy "copybooks/linkage_section/l_line_label_boundary_table.cpy".
+
 
        01  l-list-program-sw         pic a.
            88  l-list-program        value 'Y'.
@@ -110,6 +112,7 @@
            l-input-file-name l-source-data-table
            l-loop-boundary-table l-sub-boundary-table
            l-if-boundary-table
+           l-line-label-boundary-table
            l-list-program-sw.  
 
        main-procedure.
@@ -326,7 +329,14 @@
                        add 1 to l-num-lines
 
                        move trim(ls-source-data-temp)
-                          to l-source-data-read(l-num-lines)                       
+                          to l-source-data-read(l-num-lines)    
+               
+                       *> check if it's a line label.
+                       call "parse-line-labels" using 
+                           l-source-data-read(l-num-lines)
+                           l-num-lines 
+                           l-line-label-boundary-table
+                       end-call                                              
                    end-if 
 
                end-perform
@@ -365,7 +375,20 @@
                l-source-data-read(l-num-lines)
                l-num-lines 
                l-if-boundary-table
-           end-call               
+           end-call  
+
+
+      *>   Check for GOSUB returns. 
+           if upper-case(trim(
+               l-source-data-read(l-num-lines)(1:length(ws-return))
+               )) = ws-return 
+           then 
+               call "parse-line-labels" using 
+                   l-source-data-read(l-num-lines)
+                   l-num-lines 
+                   l-line-label-boundary-table
+               end-call  
+           end-if 
 
            exit paragraph.                                  
 
