@@ -1,5 +1,5 @@
 
-BUILD_STRING="cobc -O2 -x --debug -fstatic-call \
+BUILD_STRING="cobc -O2 -x --debug -fstatic-call -lncurses \
     cobol_basic_interpreter.cbl \
     command_line_parser.cbl \
     logger.cbl \
@@ -12,6 +12,7 @@ BUILD_STRING="cobc -O2 -x --debug -fstatic-call \
     variables/assign_var.cbl \
     variables/is_keyword.cbl \
     variables/get_var_value.cbl \
+    input/inkey_func.cbl \
     input/input_cmd.cbl  \
     output/print_text.cbl \
     output/set_cursor_color.cbl \

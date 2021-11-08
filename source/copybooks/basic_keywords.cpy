@@ -57,6 +57,8 @@
        78  ws-else                    value "ELSE ".
        78  ws-end-if                  value "END IF".
 
+       78  ws-inkey                   value "INKEY$".
+
       *>   Unused/not yet implemented keywords             
        78  ws-select-case             value "SELECT CASE".
        78  ws-case                    value "CASE".

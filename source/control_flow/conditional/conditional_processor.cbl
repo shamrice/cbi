@@ -15,6 +15,7 @@
        configuration section.
 
        repository. 
+           function inkey-func 
            function all intrinsic.          
 
        special-names.           
@@ -344,6 +345,16 @@
        substitute-variable-val-if-exists.
 
            set ls-not-sub-val-with-var to true 
+
+      *>   Check if val should be subbed with INKEY$ value.
+           if upper-case(trim(ls-temp-statement-value)) = ws-inkey then 
+               move function inkey-func
+                   to ls-part-value(ls-num-parts)  
+               
+               set ls-type-string(ls-num-parts) to true 
+               set ls-sub-val-with-var to true
+               exit paragraph 
+           end-if 
 
            move l-num-variables to ls-num-var-disp
            call "logger" using ls-num-var-disp

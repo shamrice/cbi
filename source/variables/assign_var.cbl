@@ -13,6 +13,7 @@
        configuration section.
 
        repository. 
+           function inkey-func
            function all intrinsic.          
 
        special-names.           
@@ -83,11 +84,19 @@
                    " : from: " trim(ls-temp-param-values(2)))
                end-call                       
            else
-               inspect ls-temp-param-values(2)
-               replacing first '"' by space 
+       
+      *>       Check if value INKEY$
+               if trim(ls-temp-param-values(2)) = ws-inkey then 
+                   move trim(inkey-func)
+                   to l-variable-value(ls-var-idx)    
+               else 
 
-               move trim(ls-temp-param-values(2))
-                   to l-variable-value(ls-var-idx)
+                   inspect ls-temp-param-values(2)
+                   replacing first '"' by space 
+
+                   move trim(ls-temp-param-values(2))
+                       to l-variable-value(ls-var-idx)
+               end-if 
            end-if 
 
            *> remove leading and trailing '"' for strings
@@ -105,18 +114,21 @@
                    length(l-variable-value(ls-var-idx)) - ls-space-count
                end-compute 
                
-               if l-variable-value(ls-var-idx)(ls-end-quote-idx:1) 
-               = '"' then                
-                   move spaces 
-                   to l-variable-value(ls-var-idx)(ls-end-quote-idx:)
-               else 
-                   call "logger" using concatenate(
-                       "ASSIGNMENT :: WARNING : variable: " 
-                       trim(l-variable-name(ls-var-idx))
-                       " assigned to type STRING but does not have "
-                       "proper quotes in value. Assigning anyway but "
-                       "data may be incorrect.")
-                   end-call 
+               if ls-end-quote-idx > 0 then 
+                   if l-variable-value(ls-var-idx)(ls-end-quote-idx:1) 
+                   = '"' then                
+                       move spaces 
+                       to l-variable-value
+                           (ls-var-idx)(ls-end-quote-idx:)
+                   else 
+                       call "logger" using concatenate(
+                              "ASSIGNMENT :: WARNING : variable: " 
+                           trim(l-variable-name(ls-var-idx))
+                           " assigned to type STRING but does not have "
+                           "proper quotes in value. Assigning anyway "
+                           "but data may be incorrect.")
+                       end-call 
+                   end-if 
                end-if 
            end-if 
 
