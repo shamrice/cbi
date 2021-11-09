@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-08
+      * Last Modified: 2021-11-09
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -26,7 +26,7 @@
 
        78  ws-input                   value "INPUT ".
 
-       78  ws-do                      value "DO ".
+       78  ws-do                      value "DO".
        78  ws-do-while                value "DO WHILE ".
        78  ws-do-until                value "DO UNTIL ".
        78  ws-loop                    value "LOOP ".

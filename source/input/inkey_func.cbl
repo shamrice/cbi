@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-08
-      * Last Modified: 2021-11-08
+      * Last Modified: 2021-11-09
       * Purpose: Process INKEY$ - get kb input.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -43,15 +43,14 @@
            move spaces to l-user-input
 
       *>   Hide cursor... in fast loops the hide/unhide still flashes.
-      *     call static "curs_set" using by value 0 
+           call static "curs_set" using by value 0 
           
-           accept l-user-input                
+           accept l-user-input    
+               at 0181            
                with 
                auto-skip no-echo 
                timeout after 5 
-           end-accept            
-       
-      *     call static "curs_set" using by value 1
+           end-accept                             
 
            goback.
            

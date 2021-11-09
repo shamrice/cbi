@@ -336,7 +336,9 @@
                            l-source-data-read(l-num-lines)
                            l-num-lines 
                            l-line-label-boundary-table
-                       end-call                                              
+                       end-call   
+
+                       perform run-parsing-sub-programs                                           
                    end-if 
 
                end-perform
@@ -359,6 +361,13 @@
                    to l-source-data-read(l-num-lines)
            end-if 
             
+           perform run-parsing-sub-programs
+
+           exit paragraph.
+
+
+       run-parsing-sub-programs.
+
            call "parse-loops" using 
                l-source-data-read(l-num-lines)
                l-num-lines 

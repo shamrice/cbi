@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-08
+      * Last Modified: 2021-11-09
       * Purpose: Checks if value passed is a BASIC keyword or not.
       *          Returns true(1) if it is or false(0) if it is not.
       * Tectonics: ./build.sh
@@ -29,6 +29,8 @@
     
        local-storage section.
 
+       01  ls-new-var-name-temp          pic x(1024).
+
        01  ls-keyword-found-count        pic 9(4) comp.
        01  ls-keyword-found-count-disp   pic 9(4).
    
@@ -46,65 +48,60 @@
 
        main-procedure.
 
-      *> TODO: this appears to pull some false-postives. like MAINLOOP
-      *>       will be caught because of LOOP.
-           inspect upper-case(l-new-var-name)
-           tallying ls-keyword-found-count for
-               all ws-comment-rem
-               all ws-cls 
-               all ws-color 
-               all ws-print 
-               all ws-locate 
-               all ws-end
-               all ws-system
-               all ws-stop
-               all ws-input 
-               all ws-do 
-               all ws-loop 
-               all ws-while 
-               all ws-wend 
-               all ws-for 
-               all ws-next 
-               all ws-sub     
-               all ws-call
-               all ws-goto  
-               all ws-gosub
-               all ws-select-case 
-               all ws-case
-               all ws-end-select 
-               all ws-declare 
-               all ws-return 
-               all ws-screen 
-               all ws-width 
-               all ws-line 
-               all ws-circle 
-               all ws-sound 
-               all ws-play 
-               all ws-if 
-               all ws-then 
-               all ws-elseif 
-               all ws-else 
-               all ws-end-if 
-               all ws-const 
-               all ws-dim-shared
-               all ws-on-error 
-               all ws-open 
-               all ws-close 
+           set l-return-code-false to true 
 
+           move upper-case(l-new-var-name) to ls-new-var-name-temp
+
+           inspect ls-new-var-name-temp
+           replacing 
+               all ws-comment-rem by spaces 
+               all ws-cls by spaces 
+               all ws-color by spaces 
+               all ws-print by spaces 
+               all ws-locate by spaces 
+               all ws-end by spaces 
+               all ws-system by spaces 
+               all ws-stop by spaces 
+               all ws-input by spaces 
+               all ws-do by spaces 
+               all ws-loop by spaces  
+               all ws-while by spaces 
+               all ws-wend by spaces  
+               all ws-for by spaces  
+               all ws-next by spaces  
+               all ws-sub by spaces 
+               all ws-call by spaces 
+               all ws-goto by spaces 
+               all ws-gosub by spaces 
+               all ws-select-case by spaces 
+               all ws-case by spaces 
+               all ws-end-select by spaces  
+               all ws-declare by spaces  
+               all ws-return by spaces  
+               all ws-screen by spaces  
+               all ws-width by spaces  
+               all ws-line by spaces  
+               all ws-circle by spaces  
+               all ws-sound by spaces  
+               all ws-play by spaces  
+               all ws-if by spaces  
+               all ws-then by spaces  
+               all ws-elseif by spaces  
+               all ws-else by spaces  
+               all ws-end-if by spaces  
+               all ws-const by spaces  
+               all ws-dim-shared by spaces 
+               all ws-on-error by spaces  
+               all ws-open by spaces  
+               all ws-close by spaces
                
-           
-           if ls-keyword-found-count > 0 then 
+           if ls-new-var-name-temp = spaces then 
                set l-return-code-true to true 
-           else 
-               set l-return-code-false to true 
            end-if 
-
-           move ls-keyword-found-count to ls-keyword-found-count-disp
 
            call "logger" using concatenate(
                "IS-KEYWORD :: Variable name checked: " 
-               upper-case(trim(l-new-var-name))
-               " : keyword count: " ls-keyword-found-count-disp
+               upper-case(trim(l-new-var-name))               
                " : returning: " l-return-code)
            end-call 
 

@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-14
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-09
       * Purpose: Process the INPUT command with parameter.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -197,6 +197,10 @@
            subtract 1 from l-scr-row 
            compute l-scr-col = ls-input-str-end-idx - 1
                
+
+      *>   Turn cursor in if it's currently off.
+           call static "curs_set" using by value 1               
+
            accept ls-temp-input-val at l-screen-position
 
            add 1 to l-scr-row 

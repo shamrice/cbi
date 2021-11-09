@@ -52,7 +52,7 @@
            l-src-code-str l-cur-line-num l-loop-boundary-table.   
 
        main-procedure.
-
+                      
       *>   Check if line is a loop, if so add to loop table.
            if upper-case(l-src-code-str(1:length(ws-while)))
                = ws-while 
