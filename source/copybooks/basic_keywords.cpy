@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-09
+      * Last Modified: 2021-11-11
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -10,6 +10,8 @@
        78  ws-comment-rem             value "REM ".
        78  ws-comment-tic             value "'".
        
+       78  ws-screen                  value "SCREEN ".
+
        78  ws-cls                     value "CLS ".
        78  ws-color                   value "COLOR ".
        78  ws-print                   value "PRINT ".
@@ -72,8 +74,7 @@
        78  ws-close                   value "CLOSE".
 
        78  ws-declare                 value "DECLARE ".
-       78  ws-return                  value "RETURN".
-       78  ws-screen                  value "SCREEN".
+       78  ws-return                  value "RETURN".       
        78  ws-width                   value "WIDTH".
        78  ws-line                    value "LINE ".
        78  ws-circle                  value "CIRCLE ".

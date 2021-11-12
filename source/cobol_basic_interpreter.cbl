@@ -262,6 +262,22 @@
                    end-call 
                
 
+      *>       SCREEN command currently only emulates how the background
+      *>       is drawn. In SCREEN 0, CLS causes a background fill to 
+      *>       occur. In SCREEN 7 & 9, background fills happen during 
+      *>       the COLOR statement.
+               when upper-case(
+                   ws-source-data-temp(1:length(ws-screen))) = ws-screen 
+               
+                   move ws-source-data-temp(length(ws-screen):2)
+                       to ws-screen-mode
+                   
+                   call "logger" using concatenate(
+                       "SCREEN :: Setting screen mode to: " 
+                       ws-screen-mode)
+                   end-call 
+                   
+
                when upper-case(
                    ws-source-data-temp(1:length(ws-sleep))) = ws-sleep 
 
