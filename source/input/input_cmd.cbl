@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-14
-      * Last Modified: 2021-11-09
+      * Last Modified: 2021-11-12
       * Purpose: Process the INPUT command with parameter.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -39,7 +39,7 @@
        01  ls-temp-input-text           pic x(1024).
 
        01  ls-char-idx                  pic 9(4) comp.
-       01  ls-input-str-end-idx         pic 9(4).
+       01  ls-input-str-end-idx         pic 9(4) comp.
 
        01  ls-input-type-sw             pic a value 'N'.
            88  ls-input-type-normal     value 'N'.
@@ -94,7 +94,7 @@
            call "logger" using concatenate(
                "INPUT :: "
                " type: " ls-input-type-sw
-               " end idx: " ls-input-str-end-idx
+             *>  " end idx: " ls-input-str-end-idx
                " input statement: " trim(l-src-code-str)
                " param buffer: " trim(ls-temp-param-buffer)
                " text: " trim(ls-temp-input-text)
@@ -134,15 +134,11 @@
                goback 
            end-if 
               
-      *>   Remove leading and end quote from input text string.
+      *>   Get input text string to be printed.
            move ls-temp-param-buffer(1:ls-input-str-end-idx) 
            to ls-temp-input-text
                
-           inspect ls-temp-input-text 
-           replacing first '"' by space  
-
-           move spaces to ls-temp-input-text(ls-input-str-end-idx:)
-
+  
       *>   Get input destination variable name
                *> TODO : Unstring into chain of variables delimited by 
                *>        a comma. 
@@ -151,9 +147,10 @@
 
 
       *>   Append question mark if semicolon is separator
+      *>   As it calls 'PRINT', needs to be terminated with double quote
            if ls-input-type-question then 
-               move "?" 
-                   to ls-temp-input-text(ls-input-str-end-idx:1)
+               move '? "' 
+                   to ls-temp-input-text(ls-input-str-end-idx:3)
                add 2 to ls-input-str-end-idx
            end-if 
 
@@ -173,8 +170,8 @@
        handle-input-var-only.
 
            set ls-input-type-question to true            
-           move "?" to ls-temp-input-text           
-           move 5 to ls-input-str-end-idx           
+           move '"? "' to ls-temp-input-text           
+           move 4 to ls-input-str-end-idx           
 
            call "print-text" using 
                ls-temp-input-text 
@@ -191,17 +188,29 @@
 
 
 
-       display-and-accept-input.
-      *>   TODO : improve this
+       display-and-accept-input.      
       *>   Set location of cursor after input text and accept.
            subtract 1 from l-scr-row 
            compute l-scr-col = ls-input-str-end-idx - 1
                
 
-      *>   Turn cursor in if it's currently off.
+      *>   Turn cursor on if it's currently off.
            call static "curs_set" using by value 1               
 
-           accept ls-temp-input-val at l-screen-position
+           if l-text-fg-highlight then 
+               accept ls-temp-input-val 
+                   at l-screen-position
+                   with highlight 
+                   foreground-color l-text-fg-color
+                   background-color l-text-bg-color                   
+               end-accept 
+           else 
+               accept ls-temp-input-val 
+                   at l-screen-position
+                   with foreground-color l-text-fg-color
+                   background-color l-text-bg-color
+               end-accept 
+           end-if 
 
            add 1 to l-scr-row 
            move 1 to l-scr-col 
@@ -213,7 +222,7 @@
                    trim(ls-temp-input-val))
                    to ls-assign-var-str               
            else 
-
+               *> If string, add quotes in assignment.
                move concatenate(
                    upper-case(trim(ls-temp-param-values(1)))
                    ' = "'
