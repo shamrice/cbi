@@ -42,7 +42,7 @@
 
            move spaces to l-user-input
 
-      *>   Hide cursor... in fast loops the hide/unhide still flashes.
+      *>   Hide cursor until it's unhidden again.
            call static "curs_set" using by value 0 
           
            accept l-user-input    

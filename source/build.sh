@@ -14,6 +14,8 @@ BUILD_STRING="cobc -O2 -x --debug -fstatic-call -lncurses \
     variables/get_var_value.cbl \
     input/inkey_func.cbl \
     input/input_cmd.cbl  \
+    output/clear_screen.cbl \
+    output/paint_background.cbl \
     output/print_text.cbl \
     output/set_cursor_color.cbl \
     output/set_cursor_position.cbl \

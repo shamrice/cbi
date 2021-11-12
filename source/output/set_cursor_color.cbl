@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-11
       * Purpose: Processed the COLOR command and sets cursor color
       * Tectonics: ./build.sh
       ******************************************************************
@@ -24,8 +24,11 @@
        working-storage section.
 
        copy "copybooks/basic_keywords.cpy".
+         
+       01  ws-prev-bg-color     pic 99.
 
-       local-storage section.              
+       
+       local-storage section.       
 
        01  ls-comma-count                pic 9 comp value zero.
       
@@ -51,10 +54,12 @@
                88  l-text-fg-lowlight    value 'N'.
            
        copy "copybooks/linkage_section/l_variable_table.cpy".
+
+       01  l-screen-mode                 pic 99.
        
 
        procedure division using 
-           l-src-code-str l-text-colors l-variable-table.   
+           l-src-code-str l-text-colors l-variable-table l-screen-mode.   
 
        main-procedure.
 
@@ -103,6 +108,19 @@
                end-if 
            end-if                        
 
+      *> In screen mode 7 & 9, COLOR statement paints background.
+      *> In screen mode 0 (default) CLS paints background.
+           if l-text-bg-color not = ws-prev-bg-color 
+               and (l-screen-mode = 7 or l-screen-mode = 9)
+           then                
+               call "paint-background" using 
+                   l-text-colors
+                   l-variable-table
+               end-call 
+           end-if
+
+           move l-text-bg-color to ws-prev-bg-color 
+
            call "logger" using concatenate(
                "COLOR :: ws-text-fg-color: " l-text-fg-color 
                " ws-text-bg-color: " l-text-bg-color 
@@ -136,5 +154,7 @@
            end-if            
 
            exit paragraph.
+
+
 
        end program set-cursor-color.

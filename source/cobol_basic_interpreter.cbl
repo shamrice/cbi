@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-11-08
+      * Last Modified: 2021-11-11
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -35,6 +35,8 @@
            05  filler                        pic x.
        
        01  ws-input-source-file-name  pic x(1024) value spaces.
+
+       01  ws-screen-mode             pic 99.
 
        01  ws-line-idx                pic 9(5) comp value 0.
        01  ws-line-idx-disp           pic 9(5) value 0.                    
@@ -197,7 +199,9 @@
 
            stop run.
 
-       parse-and-run-program.
+
+
+       parse-and-run-program.           
 
            perform varying ws-line-idx from 1 by 1 
            until ws-line-idx > ws-num-lines or ws-exit-program
@@ -249,12 +253,13 @@
                    exit paragraph 
            
 
-               when upper-case(ws-source-data-temp) = ws-cls 
-
-                   display space blank screen 
-                   move 1 to ws-scr-col
-                   move 1 to ws-scr-row 
-                   call "logger" using "CLS"
+               when upper-case(ws-source-data-temp) = ws-cls       
+                   call "clear-screen" using 
+                       ws-screen-mode 
+                       ws-screen-position
+                       ws-text-colors 
+                       ws-variable-table
+                   end-call 
                
 
                when upper-case(
@@ -272,6 +277,7 @@
                        ws-source-data-temp
                        ws-text-colors
                        ws-variable-table
+                       ws-screen-mode 
                    end-call 
                
 

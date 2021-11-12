@@ -235,6 +235,9 @@
            end-perform 
 
       *>   TODO : Currently only handles one statement (no AND or OR)
+      *>          Updated: the multiple statements will be handled by 
+      *>                   the conditional statement handler which calls
+      *>                   this.
 
            if ls-type-integer(1) and ls-type-integer(3) then 
                set ls-conditional-check-numeric to true 
