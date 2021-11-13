@@ -431,6 +431,13 @@
 
        check-assign-value-to-variable.           
 
+      *>   LET keyword is ignored, replace it with spaces.
+           if upper-case(ws-source-data-temp(1:length(ws-let))) = ws-let
+           then 
+               move spaces 
+               to ws-source-data-temp(1:length(ws-let))
+           end-if 
+
            unstring trim(ws-source-data-temp)
                delimited by space 
                into ws-assert-check-val
