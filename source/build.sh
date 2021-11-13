@@ -5,6 +5,7 @@ BUILD_STRING="cobc -O2 -x --debug -fstatic-call -lncurses \
     logger.cbl \
     loading_parsing/load_program.cbl \
     loading_parsing/parse_loops.cbl \
+    loading_parsing/parse_selects.cbl \
     loading_parsing/parse_subs.cbl \
     loading_parsing/parse_ifs.cbl \
     loading_parsing/parse_line_labels.cbl \

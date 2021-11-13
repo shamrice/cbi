@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-11-11
+      * Last Modified: 2021-11-13
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -108,6 +108,22 @@
                10  ws-else-start           pic 9(5). 
                10  ws-if-end               pic 9(5).
 
+
+
+       01  ws-select-boundary-table.
+           05  ws-num-selects                  pic 9(4) comp. 
+           05  ws-select-data                  occurs 0 to 9999 times
+                                               depending on 
+                                               ws-num-selects.
+               10  ws-select-processed-sw      pic a.
+                   88  ws-select-processed     value 'Y'.
+                   88  ws-select-not-processed value 'N'.
+               10  ws-select-start             pic 9(5).
+               10  ws-num-cases                pic 99 comp.
+               10  ws-case-start               pic 9(5) occurs 99 times.               
+               10  ws-select-end               pic 9(5).
+
+
        01  ws-loop-boundary-table.
            05  ws-num-loops               pic 9(4) comp. 
            05  ws-loop-data               occurs 0 to 1000 times
@@ -180,6 +196,7 @@
                ws-loop-boundary-table
                ws-sub-boundary-table
                ws-if-boundary-table
+               ws-select-boundary-table
                ws-line-label-boundary-table
                ws-list-program-sw
            end-call 

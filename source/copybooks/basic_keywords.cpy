@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-12
+      * Last Modified: 2021-11-13
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -59,13 +59,14 @@
        78  ws-else                    value "ELSE ".
        78  ws-end-if                  value "END IF".
 
-       78  ws-inkey                   value "INKEY$".
-
-      *>   Unused/not yet implemented keywords             
        78  ws-select-case             value "SELECT CASE".
-       78  ws-case                    value "CASE".
+       78  ws-case                    value "CASE ".
+       78  ws-case-else               value "CASE ELSE".
        78  ws-end-select              value "END SELECT".
 
+       78  ws-inkey                   value "INKEY$".
+
+      *>   Unused/not yet implemented keywords                    
        78  ws-const                   value "CONST ".
 
        78  ws-on-error                value "ON ERROR".

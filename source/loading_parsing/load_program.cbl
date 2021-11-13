@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-11-08
+      * Last Modified: 2021-11-13
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -101,6 +101,8 @@
 
        copy "copybooks/linkage_section/l_if_boundary_table.cpy".
 
+       copy "copybooks/linkage_section/l_select_boundary_table.cpy".
+
        copy "copybooks/linkage_section/l_line_label_boundary_table.cpy".
 
 
@@ -112,6 +114,7 @@
            l-input-file-name l-source-data-table
            l-loop-boundary-table l-sub-boundary-table
            l-if-boundary-table
+           l-select-boundary-table
            l-line-label-boundary-table
            l-list-program-sw.  
 
@@ -386,6 +389,11 @@
                l-if-boundary-table
            end-call  
 
+           call "parse-selects" using 
+               l-source-data-read(l-num-lines)
+               l-num-lines 
+               l-select-boundary-table
+           end-call 
 
       *>   Check for GOSUB returns. 
            if upper-case(trim(
