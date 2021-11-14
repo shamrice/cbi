@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-13
+      * Last Modified: 2021-11-14
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -66,6 +66,9 @@
 
        78  ws-inkey                   value "INKEY$".
 
+       78  ws-let                     value "LET ".
+     
+
       *>   Unused/not yet implemented keywords                    
        78  ws-const                   value "CONST ".
 
@@ -78,8 +81,11 @@
        78  ws-return                  value "RETURN".       
        78  ws-width                   value "WIDTH".
        78  ws-line                    value "LINE ".
+       78  ws-pset                    value "PSET ".
+       78  ws-paint                   value "PAINT ".
+       78  ws-draw                    value "DRAW ".
        78  ws-circle                  value "CIRCLE ".
        78  ws-sound                   value "SOUND".
        78  ws-play                    value "PLAY".
 
-       78  ws-let                     value "LET ".
+       78  ws-put                     value "PUT ".
