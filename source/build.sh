@@ -24,6 +24,7 @@ BUILD_STRING="cobc -O2 -x --debug -fstatic-call -lncurses \
     control_flow/call_cmd.cbl \
     control_flow/gosub_goto_cmd.cbl \
     control_flow/if_handler.cbl \
+    control_flow/select_handler.cbl \
     control_flow/conditional/conditional_processor.cbl \
     control_flow/conditional/conditional_statement_handler.cbl \
     control_flow/subroutine/gosub_return_handler.cbl \

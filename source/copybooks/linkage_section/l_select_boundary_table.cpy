@@ -13,8 +13,9 @@
                                               l-num-selects.
                10  l-select-processed-sw      pic a.
                    88  l-select-processed     value 'Y'.
-                   88  l-select-not-processed value 'N'.
+                   88  l-select-not-processed value 'N'.                   
                10  l-select-start             pic 9(5).
+               10  l-select-check-val         pic x(1024).
                10  l-num-cases                pic 99 comp.
                10  l-case-start               pic 9(5) occurs 99 times.
                10  l-select-end               pic 9(5).

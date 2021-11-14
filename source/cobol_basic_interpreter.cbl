@@ -119,6 +119,7 @@
                    88  ws-select-processed     value 'Y'.
                    88  ws-select-not-processed value 'N'.
                10  ws-select-start             pic 9(5).
+               10  ws-select-check-val         pic x(1024).
                10  ws-num-cases                pic 99 comp.
                10  ws-case-start               pic 9(5) occurs 99 times.               
                10  ws-select-end               pic 9(5).
@@ -432,6 +433,23 @@
                        ws-if-boundary-table
                        ws-variable-table
                    end-call 
+
+
+               when (upper-case(
+               ws-source-data-temp(1:length(ws-select-case))) 
+                   = ws-select-case) 
+               or (upper-case(
+               ws-source-data-temp(1:length(ws-case))) = ws-case)
+               or (upper-case(
+               ws-source-data-temp(1:length(ws-end-select))) 
+                   = ws-end-select)               
+                   call "select-handler" using 
+                       ws-source-data-temp
+                       ws-line-idx
+                       ws-select-boundary-table
+                       ws-variable-table
+                   end-call 
+
 
 
                when other 

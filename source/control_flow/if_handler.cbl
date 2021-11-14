@@ -69,9 +69,6 @@
            end-call
 
       *>   Remove ending "THEN" if exists...
-      *>   TODO : what about instances where statements follow THEN
-      *>          on the same line??
-      *>          line should be split on THEN.. perhaps at load time??
            move reverse(ls-line-text) to ls-line-text-temp
 
            inspect ls-line-text-temp  
@@ -229,8 +226,7 @@
                l-variable-table
                ls-conditional-ret-val
            end-call 
-
-      *> TODO: 
+       
       *> If true, move to next line. mark if condition as handled. when 
       *> reaches next elseif or else, will jump to end if.
 
