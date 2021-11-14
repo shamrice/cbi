@@ -89,3 +89,7 @@
        78  ws-play                    value "PLAY".
 
        78  ws-put                     value "PUT ".
+
+       78  ws-defint                  value "DEFINT ".
+
+       

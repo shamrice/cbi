@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-10
+      * Last Modified: 2021-11-14
       * Purpose: Assigns value to a variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -64,6 +64,16 @@
                delimited by "="
                into ls-temp-param-values(1) ls-temp-param-values(2) 
            end-unstring
+
+      *>   TODO : currently will just treat CONST assignments as regular
+      *>          assignments. Should be flagged so cannot be 
+      *>          reassigned later.
+           if upper-case(ls-temp-param-values(1)(1:length(ws-const))) 
+               = ws-const 
+           then 
+               move spaces 
+               to ls-temp-param-values(1)(1:length(ws-const))
+           end-if 
 
       *> Check to see if right hand of assignment is variable. If so,
       *> substitute the correct value in its place.

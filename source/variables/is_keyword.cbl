@@ -88,8 +88,7 @@
                all ws-then by spaces  
                all ws-elseif by spaces  
                all ws-else by spaces  
-               all ws-end-if by spaces  
-               all ws-const by spaces  
+               all ws-end-if by spaces                 
                all ws-dim-shared by spaces 
                all ws-on-error by spaces  
                all ws-open by spaces  
@@ -98,6 +97,7 @@
                all ws-paint by spaces 
                all ws-put by spaces 
                all ws-draw by spaces 
+               all ws-defint by spaces 
                
            if ls-new-var-name-temp = spaces then 
                set l-return-code-true to true 
