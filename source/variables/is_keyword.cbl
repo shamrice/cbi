@@ -98,7 +98,9 @@
                all ws-paint by spaces 
                all ws-put by spaces 
                all ws-draw by spaces 
-               all ws-defint by spaces 
+               all ws-defint by spaces
+               all ws-inkey by spaces 
+               all ws-chr by spaces  
                
            if ls-new-var-name-temp = spaces then 
                set l-return-code-true to true 

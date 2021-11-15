@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-17
-      * Last Modified: 2021-11-11
+      * Last Modified: 2021-11-15
       * Purpose: Process the PRINT command.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -13,6 +13,7 @@
        configuration section.
 
        repository. 
+           function ascii-code-to-char
            function all intrinsic.          
 
        special-names.           
@@ -158,6 +159,17 @@
 
 
        set-variable-value.
+
+      *>   Check for CHR$() function.
+           if upper-case(trim(ls-temp-str-buffer(1:length(ws-chr))))
+               = ws-chr 
+           then 
+               move ascii-code-to-char(
+                   ls-temp-str-buffer, l-variable-table) 
+               to ls-temp-str-buffer
+               exit paragraph
+           end-if 
+
 
            perform varying ls-temp-variable-idx from 1 by 1 
            until ls-temp-variable-idx > l-num-variables

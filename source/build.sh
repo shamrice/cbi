@@ -13,6 +13,7 @@ BUILD_STRING="cobc -O2 -x --debug -fstatic-call -lncurses \
     variables/assign_var.cbl \
     variables/is_keyword.cbl \
     variables/get_var_value.cbl \
+    input/ascii_code_to_char_func.cbl \
     input/inkey_func.cbl \
     input/input_cmd.cbl  \
     output/clear_screen.cbl \

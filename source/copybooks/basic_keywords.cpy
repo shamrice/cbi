@@ -65,6 +65,7 @@
        78  ws-end-select              value "END SELECT".
 
        78  ws-inkey                   value "INKEY$".
+       78  ws-chr                     value "CHR$".
 
        78  ws-let                     value "LET ".
      

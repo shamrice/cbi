@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-08
-      * Last Modified: 2021-11-09
+      * Last Modified: 2021-11-15
       * Purpose: Process INKEY$ - get kb input.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -27,10 +27,11 @@
 
        local-storage section.
        
+       01  ls-user-key-in            pic x.
 
        linkage section.       
 
-       01  l-user-input              pic x(1). 
+       01  l-user-input              pic xx. 
 
        procedure division returning l-user-input.
 
@@ -45,12 +46,16 @@
       *>   Hide cursor until it's unhidden again.
            call static "curs_set" using by value 0 
           
-           accept l-user-input    
+           accept ls-user-key-in    
                at 0181            
                with 
                auto-skip no-echo 
                timeout after 5 
            end-accept                             
+
+      *> Do additional transformation here for arrow keys and function 
+      *> keys
+           move ls-user-key-in to l-user-input
 
            goback.
            
