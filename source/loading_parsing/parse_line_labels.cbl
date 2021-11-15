@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-04
-      * Last Modified: 2021-11-08
+      * Last Modified: 2021-11-15
       * Purpose: During loading, populates the potential line label 
       *          table. These are destinations used by GOTO or GOSUB.
       *          Seeing that line labels will look like implicit SUB
@@ -64,7 +64,7 @@
 
             *>   If RETURN, assume it was for the last label found.
            if upper-case(l-src-code-str(1:length(ws-return)))
-               = ws-return 
+               = ws-return and l-num-line-labels > 0 
            then                               
                move l-cur-line-num to l-label-end(l-num-line-labels) 
 

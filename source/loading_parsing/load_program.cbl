@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-11-13
+      * Last Modified: 2021-11-15
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -50,7 +50,13 @@
            88  ls-eof                 value 'Y'.
            88  ls-not-eof             value 'N'.
 
-       01  ls-source-data-temp        pic x(1024).        
+       01  ls-source-data-temp-cur    pic x(1024).   
+       01  ls-source-data-temp-prev   pic x(1024).          
+       01  ls-source-data-end         pic x(1024). 
+       01  ls-last-colon-idx          pic 9(4) comp value 1.
+
+       01  ls-comment-tic-count       pic 9(4) comp.
+       01  ls-comment-space-replace   pic 9(4) comp.
 
        01  ls-quote-count             pic 9(4) comp.
 
@@ -73,6 +79,10 @@
        01  ls-colon-in-quote-sw       pic a value 'N'.
            88  ls-colon-in-quote      value 'Y'.
            88  ls-colon-not-in-quote  value 'N'.
+
+       01  ls-comment-tic-in-quote-sw pic a value 'N'.
+           88  ls-tic-in-quote        value 'Y'.
+           88  ls-tic-not-in-quote    value 'N'.           
 
        01  ls-single-line-if-sw       pic a value 'N'.
            88  ls-single-line-if      value 'Y'.
@@ -152,7 +162,10 @@
       *> TODO : there should be some process at load time that converts 
       *>        all keywords to uppercase while leaving the rest of the 
       *>        line alone.  
-                       move f-source-code-line to ls-source-code-line
+                       move f-source-code-line to ls-source-code-line                       
+
+                       perform remove-comment-from-line
+
                        perform process-single-line-if
                        if not ls-single-line-if then                  
                            perform load-source-code-data
@@ -241,11 +254,11 @@
            exit paragraph.       
 
 
-
-       load-source-code-data. 
+       set-quote-locations-in-line.
 
       *> Figure out quote start and end locations.   
-           move zeros to ls-num-quote-pairs       
+           move zeros to ls-num-quote-pairs 
+           move zeros to ls-quote-count       
            inspect ls-source-code-line
            tallying ls-quote-count for all '"'.
 
@@ -289,6 +302,14 @@
                end-perform 
            end-if 
 
+           exit paragraph.       
+
+
+
+       load-source-code-data. 
+
+           perform set-quote-locations-in-line           
+
       *> Check to see if line is split by colons. 
            move zeros to ws-colon-count
            inspect ls-source-code-line 
@@ -296,75 +317,116 @@
 
            if ws-colon-count > 0 then 
                call "logger" using concatenate(
-                   "Found " ws-colon-count " colons in line.")
+                   "LOAD :: Found " ws-colon-count " colons in line.")
                end-call 
 
-      *> Unstring line into multiple in-memory lines.
-               move 1 to ws-starting-pointer
-               
-               perform ws-colon-count times
 
+      *> Unstring line into multiple in-memory lines.
+               move 1 to ws-starting-pointer               
+
+               perform ws-colon-count times
+      
                    unstring ls-source-code-line
                        delimited by ":" 
-                       into ls-source-data-temp
+                       into ls-source-data-temp-cur
                        with pointer ws-starting-pointer
                    end-unstring
+                   
+                   call "logger" using concatenate(
+                       "LOAD :: Line part: " ls-source-data-temp-cur)
+                   end-call 
 
-      *> Make sure that the colon is not in quoted text. 
-                                      
                    set ls-colon-not-in-quote to true 
 
-                   perform varying ls-quote-pair-idx from 1 by 1 
-                   until ls-quote-pair-idx > ls-num-quote-pairs
-                       if ws-starting-pointer > 
-                           ls-q-start-idx(ls-quote-pair-idx)
-                           and ws-starting-pointer 
-                           < ls-q-end-idx(ls-quote-pair-idx)
-                       then 
-                           set ls-colon-in-quote to true                            
-                           exit perform 
-                       end-if 
+      *> Check if colon is in quote, if so, append data to output line
+      *> but don't start a new line yet.
+                   if ls-num-quote-pairs > 0 then 
+                       perform varying ls-quote-pair-idx from 1 by 1 
+                       until ls-quote-pair-idx > ls-num-quote-pairs
+                           if ws-starting-pointer > 
+                               ls-q-start-idx(ls-quote-pair-idx)
+                               and ws-starting-pointer 
+                               < ls-q-end-idx(ls-quote-pair-idx)
+                           then 
+                               set ls-colon-in-quote to true 
+                               call "logger" using "COLON IN QUOTE"
+                               
+                               string 
+                                   trim(ls-source-data-temp-prev)
+                                   trim(ls-source-data-temp-cur)
+                                   into ls-source-data-temp-prev
+                               end-string 
 
-                   end-perform 
+                               call "logger" using concatenate(
+                                   "LOAD :: Colon in quote. Appending "
+                                   "current to previous: " 
+                                   ls-source-data-temp-prev)
+                               end-call
 
-      *> If not quoted, then generate new line.
+                               exit perform 
+                           end-if 
+                       end-perform 
+                   end-if 
+
+      *> Once colon is found not in quotes, create a new line by 
+      *> combining unstrung line parts. 
                    if ls-colon-not-in-quote then 
                        add 1 to l-num-lines
 
-                       move trim(ls-source-data-temp)
-                          to l-source-data-read(l-num-lines)    
-               
-                       *> check if it's a line label.
-                       call "parse-line-labels" using 
-                           l-source-data-read(l-num-lines)
-                           l-num-lines 
-                           l-line-label-boundary-table
-                       end-call   
+                       string 
+                           trim(ls-source-data-temp-prev)
+                           trim(ls-source-data-temp-cur)
+                           into ls-source-data-end
+                       end-string 
+                   
 
-                       perform run-parsing-sub-programs                                           
+                       move ls-source-data-end
+                       to l-source-data-read(l-num-lines)
+
+                       call "logger" using concatenate(
+                           "LOAD :: Final output line: "
+                           l-source-data-read(l-num-lines))
+                       end-call 
+                                               
+                       perform run-parsing-sub-programs
+
+                       move spaces to ls-source-data-temp-prev
+                       move spaces to ls-source-data-end
+                       move ws-starting-pointer to ls-last-colon-idx
                    end-if 
 
-               end-perform
-                           
-      *> Add any text that may be after last colon in new line
-               if ws-starting-pointer > 1 and ls-colon-not-in-quote then 
-                   add 1 to l-num-lines
+               end-perform 
 
-                   move trim(ls-source-code-line(ws-starting-pointer:))
-                       to l-source-data-read(l-num-lines)
-               else *> colon exists in quoted text in the string. parse normal
+      *>   Add any trailing text after final colon to a new line
+               if ws-starting-pointer > 1 then 
+                   add 1 to l-num-lines
+                                     
+                   move trim(ls-source-code-line(ls-last-colon-idx:))
+                   to l-source-data-read(l-num-lines)
+                   
+                   call "logger" using concatenate(
+                       "LOAD :: Adding trailing line from splitting: "
+                       l-source-data-read(l-num-lines))
+                   end-call 
+
+                   perform run-parsing-sub-programs
+               end-if 
+
+           else
+           
+               if ls-source-code-line not = spaces then 
                    add 1 to l-num-lines
                    move trim(ls-source-code-line)
                        to l-source-data-read(l-num-lines)
-               end-if 
-                                                      
-           else
-               add 1 to l-num-lines
-               move trim(ls-source-code-line)
-                   to l-source-data-read(l-num-lines)
-           end-if 
-            
-           perform run-parsing-sub-programs
+
+                   call "logger" using concatenate(
+                       "LOAD :: Adding line (no colons): "
+                       l-source-data-read(l-num-lines))
+                   end-call 
+
+                   perform run-parsing-sub-programs
+               end-if
+           end-if                                 
 
            exit paragraph.
 
@@ -408,5 +470,75 @@
            end-if 
 
            exit paragraph.                                  
+
+
+
+
+       remove-comment-from-line.
+
+           perform set-quote-locations-in-line
+
+           move zeros to ls-comment-tic-count
+
+           inspect ls-source-code-line 
+               tallying ls-comment-tic-count for all ws-comment-tic
+
+           if ls-comment-tic-count = 0 then 
+      *         call "logger" using concatenate(
+      *             "*****************NO COMMENTS FOUND IN: " 
+      *             trim(ls-source-code-line))
+      *         end-call 
+               exit paragraph
+           end-if 
+
+           
+           set ls-tic-not-in-quote to true. 
+
+           perform varying ls-line-char-idx from 1 by 1 
+           until ls-line-char-idx > length(ls-source-code-line) 
+               
+               if ls-source-code-line(ls-line-char-idx:1) 
+                   = ws-comment-tic
+               then 
+
+                   if ls-num-quote-pairs > 0 then                    
+                       perform varying ls-quote-pair-idx from 1 by 1 
+                       until ls-quote-pair-idx > ls-num-quote-pairs
+
+                           if ls-line-char-idx > 
+                               ls-q-start-idx(ls-quote-pair-idx)
+                               and ls-line-char-idx 
+                               < ls-q-end-idx(ls-quote-pair-idx)
+                           then 
+                               set ls-tic-in-quote to true 
+                               exit perform 
+                           end-if 
+                       end-perform 
+                   end-if 
+
+                   if ls-tic-not-in-quote then 
+
+                       call "logger" using concatenate(
+                           "LOAD :: Comments found in: " 
+                           trim(ls-source-code-line))
+                       end-call 
+
+                       
+                       move spaces 
+                       to ls-source-code-line(ls-line-char-idx:)
+
+                       call "logger" using concatenate(
+                           "LOAD :: New line data: " 
+                           trim(ls-source-code-line))
+                       end-call 
+
+                       exit perform 
+                   end-if 
+               end-if 
+
+           end-perform 
+
+           exit paragraph.
+
 
        end program load-program.
