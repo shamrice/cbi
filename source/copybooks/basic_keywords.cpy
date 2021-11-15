@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-14
+      * Last Modified: 2021-11-15
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -87,9 +87,9 @@
        78  ws-circle                  value "CIRCLE ".
        78  ws-sound                   value "SOUND".
        78  ws-play                    value "PLAY".
+       78  ws-beep                    value "BEEP".
 
        78  ws-put                     value "PUT ".
 
        78  ws-defint                  value "DEFINT ".
 
-       

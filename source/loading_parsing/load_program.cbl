@@ -322,7 +322,10 @@
 
 
       *> Unstring line into multiple in-memory lines.
-               move 1 to ws-starting-pointer               
+               move 1 to ws-starting-pointer  
+               move 1 to ls-last-colon-idx 
+               move spaces to ls-source-data-temp-cur
+               move spaces to ls-source-data-temp-prev             
 
                perform ws-colon-count times
       
@@ -349,7 +352,6 @@
                                < ls-q-end-idx(ls-quote-pair-idx)
                            then 
                                set ls-colon-in-quote to true 
-                               call "logger" using "COLON IN QUOTE"
                                
                                string 
                                    trim(ls-source-data-temp-prev)
@@ -387,7 +389,14 @@
                            "LOAD :: Final output line: "
                            l-source-data-read(l-num-lines))
                        end-call 
-                                               
+
+                       *> check if it's a line label.
+                       call "parse-line-labels" using 
+                           l-source-data-read(l-num-lines)
+                           l-num-lines 
+                           l-line-label-boundary-table
+                       end-call  
+
                        perform run-parsing-sub-programs
 
                        move spaces to ls-source-data-temp-prev
@@ -406,8 +415,16 @@
                    
                    call "logger" using concatenate(
                        "LOAD :: Adding trailing line from splitting: "
+                       ws-starting-pointer " :: "
                        l-source-data-read(l-num-lines))
                    end-call 
+
+                   *> check if it's a line label.
+                   call "parse-line-labels" using 
+                       l-source-data-read(l-num-lines)
+                       l-num-lines 
+                       l-line-label-boundary-table
+                   end-call  
 
                    perform run-parsing-sub-programs
                end-if 
@@ -423,7 +440,13 @@
                        "LOAD :: Adding line (no colons): "
                        l-source-data-read(l-num-lines))
                    end-call 
-
+                   
+                   *> check if it's a line label.
+                   call "parse-line-labels" using 
+                       l-source-data-read(l-num-lines)
+                       l-num-lines 
+                       l-line-label-boundary-table
+                   end-call  
                    perform run-parsing-sub-programs
                end-if
            end-if                                 

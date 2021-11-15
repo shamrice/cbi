@@ -39,6 +39,8 @@
 
        01  ls-assignment-count       pic 9(4).
 
+       01  ls-potential-label-name   pic x(1024).
+
        linkage section.       
 
        01  l-src-code-str            pic x(1024). 
@@ -55,13 +57,7 @@
            if l-src-code-str = spaces then 
                goback 
            end-if 
-
-           call "logger" using concat(
-               "LOAD:PARSE-LINE-LABELS :: enter with: " 
-               trim(l-src-code-str))
-           end-call 
-
-
+           
             *>   If RETURN, assume it was for the last label found.
            if upper-case(l-src-code-str(1:length(ws-return)))
                = ws-return and l-num-line-labels > 0 
@@ -82,22 +78,42 @@
 
 
       *>   If not RETURN, assume new label.
-      *>   Check if line is a keyword or assignment. If not, assume label.           
+      *>   Check if line is a keyword or assignment. If not, assume label.     
+
+      *>   Only take first word of the line to see if it's a label.
+           unstring l-src-code-str
+               delimited by space 
+               into ls-potential-label-name
+           end-unstring
+
+           call "logger" using concat(
+               "LOAD:PARSE-LINE-LABELS :: Potental new line label: " 
+               trim(ls-potential-label-name))
+           end-call 
+
            call "is-keyword" using 
-               l-src-code-str 
+               ls-potential-label-name 
                ls-keyword-check-ret-code
            end-call 
 
            if ls-keyword-check-ret-code > 0 then 
-               call "logger" using "**** IS KEYWORD, SKIPPING..."
+               call "logger" using concatenate(
+                   "LOAD:PARSE-LINE-LABELS :: " 
+                   trim(ls-potential-label-name)
+                   " is a reserved keyword. Skipping...")
+               end-call 
                goback 
            end-if 
 
-           inspect l-src-code-str
+           inspect ls-potential-label-name
                tallying ls-assignment-count for all "="
            
            if ls-assignment-count > 0 then 
-               call "logger" using "**** ASSIGNMENT!"
+               call "logger" using concatenate(
+                   "LOAD:PARSE-LINE-LABELS :: " 
+                   trim(ls-potential-label-name) 
+                   " is an assignment statement. Skipping...")
+               end-call 
                goback 
            end-if 
              
@@ -106,7 +122,7 @@
             
            move l-cur-line-num to l-label-start(l-num-line-labels) 
            
-           move trim(upper-case(l-src-code-str))
+           move trim(upper-case(ls-potential-label-name))
            to l-label-name(l-num-line-labels)
 
            move l-cur-line-num to ls-cur-line-num-disp

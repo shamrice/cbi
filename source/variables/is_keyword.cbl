@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-14
+      * Last Modified: 2021-11-15
       * Purpose: Checks if value passed is a BASIC keyword or not.
       *          Returns true(1) if it is or false(0) if it is not.
       * Tectonics: ./build.sh
@@ -84,6 +84,7 @@
                all ws-circle by spaces  
                all ws-sound by spaces  
                all ws-play by spaces  
+               all ws-beep by spaces 
                all ws-if by spaces  
                all ws-then by spaces  
                all ws-elseif by spaces  
