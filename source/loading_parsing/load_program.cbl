@@ -46,6 +46,8 @@
        
        01  ls-source-code-line        pic x(1024).
 
+       01  ls-potential-line-number   pic x(1024).
+
        01  ls-eof-sw                  pic a value 'N'.
            88  ls-eof                 value 'Y'.
            88  ls-not-eof             value 'N'.
@@ -307,6 +309,45 @@
 
 
        load-source-code-data. 
+       
+      *> Check if start of line is a line number.
+           perform varying ls-line-char-idx from 1 by 1 
+           until ls-line-char-idx > length(ls-source-code-line) 
+
+               if ls-source-code-line(ls-line-char-idx:1) = space then 
+                   move ls-source-code-line(1:ls-line-char-idx) 
+                   to ls-potential-line-number
+
+      *> If line number is found, create new line label entry for it and
+      *> then remove line label from source code line to be processed.
+                   if trim(ls-potential-line-number) is numeric then 
+                       add 1 to l-num-lines
+
+                       move ls-potential-line-number
+                       to l-source-data-read(l-num-lines)                      
+
+                       move trim(ls-source-code-line(ls-line-char-idx:))
+                       to ls-source-code-line
+
+                       call "logger" using concatenate(
+                           "LOAD :: New Line number: "
+                           trim(ls-potential-line-number)
+                           " : Line number data: "
+                           trim(ls-source-code-line))
+                       end-call 
+
+                       *> add line number to line labels
+                       call "parse-line-labels" using 
+                           ls-potential-line-number
+                           l-num-lines 
+                           l-line-label-boundary-table
+                       end-call
+
+                       exit perform 
+                   end-if 
+               end-if 
+           end-perform 
+
 
            perform set-quote-locations-in-line           
 
