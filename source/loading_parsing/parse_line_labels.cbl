@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-04
-      * Last Modified: 2021-11-15
+      * Last Modified: 2021-11-16
       * Purpose: During loading, populates the potential line label 
       *          table. These are destinations used by GOTO or GOSUB.
       *          Seeing that line labels will look like implicit SUB
@@ -105,14 +105,16 @@
                goback 
            end-if 
 
-           inspect ls-potential-label-name
+      *>   Check full line for assignment statment. If exists, do not
+      *>   make a new label.
+           inspect l-src-code-str
                tallying ls-assignment-count for all "="
            
            if ls-assignment-count > 0 then 
                call "logger" using concatenate(
                    "LOAD:PARSE-LINE-LABELS :: " 
                    trim(ls-potential-label-name) 
-                   " is an assignment statement. Skipping...")
+                   " is part of an assignment statement. Skipping...")
                end-call 
                goback 
            end-if 
