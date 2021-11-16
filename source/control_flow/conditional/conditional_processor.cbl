@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-16
       * Purpose: Processes a single conditional statement and returns 
       *          if true (1) or false (0).
       *          This should be called from the conditional-statement-handler
@@ -15,6 +15,7 @@
        configuration section.
 
        repository. 
+           function ascii-code-to-char
            function inkey-func 
            function all intrinsic.          
 
@@ -60,7 +61,7 @@
        01  ls-parts-idx                  pic 9(4) comp.
 
 
-       01  ls-temp-statement-value   pic x(256) value spaces.            
+       01  ls-temp-statement-value       pic x(1024) value spaces.            
        
 
        01  ls-sub-val-with-var-sw        pic a value 'N'.
@@ -358,6 +359,18 @@
                set ls-sub-val-with-var to true
                exit paragraph 
            end-if 
+
+      *>   Check for CHR$() function.
+           if upper-case(trim(
+               ls-temp-statement-value(1:length(ws-chr)))) = ws-chr 
+           then 
+               move ascii-code-to-char(
+                   ls-temp-statement-value, l-variable-table) 
+               to ls-part-value(ls-num-parts)  
+               set ls-type-string(ls-num-parts) to true 
+               set ls-sub-val-with-var to true
+               exit paragraph
+           end-if                
 
            move l-num-variables to ls-num-var-disp
            call "logger" using ls-num-var-disp
