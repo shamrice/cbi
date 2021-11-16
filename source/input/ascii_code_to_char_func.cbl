@@ -55,7 +55,7 @@
 
            move upper-case(l-input-value) to ls-working-input-value
 
-           call "logger" using ls-working-input-value
+      *     call "logger" using ls-working-input-value
 
            inspect ls-working-input-value
                replacing 
@@ -64,7 +64,7 @@
                    all ")" by spaces 
            
            
-           call "logger" using trim(ls-working-input-value)
+      *     call "logger" using trim(ls-working-input-value)
 
            if trim(ls-working-input-value) is numeric then 
                move trim(ls-working-input-value) to ls-ascii-code           

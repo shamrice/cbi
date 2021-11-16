@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-14
+      * Last Modified: 2021-11-16
       * Purpose: Assigns value to a variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -13,6 +13,7 @@
        configuration section.
 
        repository. 
+           function ascii-code-to-char
            function inkey-func
            function all intrinsic.          
 
@@ -135,49 +136,69 @@
            
            if l-type-string(ls-var-idx) then 
      
-      *>         Check if value INKEY$
-               if trim(ls-temp-param-values(2)) = ws-inkey then 
-                   move function inkey-func
-                   to l-variable-value(ls-var-idx)    
-               
-               else 
-               *> remove leading and trailing '"' for strings
-                   inspect ls-temp-param-values(2)
-                   replacing first '"' by space 
+               move trim(ls-temp-param-values(2)) 
+               to ls-temp-param-values(2)
 
-                   move trim(ls-temp-param-values(2))
-                       to l-variable-value(ls-var-idx)
+               call "logger" using concatenate(
+                   "ASSIGNMENT :: New raw assignment value: "
+                   ls-temp-param-values(2))
+               end-call 
+
+               evaluate true 
+      *>           Check if value INKEY$
+                   when ls-temp-param-values(2) = ws-inkey 
+                       move function inkey-func
+                       to l-variable-value(ls-var-idx)    
+
+      *>           Check for CHR$
+                   when upper-case(
+                       ls-temp-param-values(2)(1:length(ws-chr)))
+                       = ws-chr
+
+                       move ascii-code-to-char(
+                           ls-temp-param-values(2), l-variable-table)
+                           to l-variable-value(ls-var-idx)
                
-                   move zeros to ls-space-count   
+                   when other
+               *>  remove leading and trailing '"' for strings
+                       inspect ls-temp-param-values(2)
+                       replacing first '"' by space 
+
+                       move trim(ls-temp-param-values(2))
+                           to l-variable-value(ls-var-idx)
+               
+                       move zeros to ls-space-count   
                        
-                   inspect reverse(l-variable-value(ls-var-idx))
-                   tallying ls-space-count for leading spaces
+                       inspect reverse(l-variable-value(ls-var-idx))
+                       tallying ls-space-count for leading spaces
                
-                   compute ls-end-quote-idx = 
-                       length(l-variable-value(ls-var-idx)) 
-                       - ls-space-count
-                   end-compute 
+                       compute ls-end-quote-idx = 
+                           length(l-variable-value(ls-var-idx)) 
+                           - ls-space-count
+                       end-compute 
                
-                   if ls-end-quote-idx > 0 then 
-                       if l-variable-value
-                           (ls-var-idx)(ls-end-quote-idx:1) = '"' 
-                       then                
-                           move spaces 
-                           to l-variable-value
-                               (ls-var-idx)(ls-end-quote-idx:)
-                       else 
-                           call "logger" using concatenate(
-                               "ASSIGNMENT :: WARNING : variable: " 
-                               trim(l-variable-name(ls-var-idx))
-                               " assigned to type STRING but does not "
-                               "have proper quotes in value. Assigning"
-                               " anyway but data may be incorrect.")
-                           end-call 
+                       if ls-end-quote-idx > 0 then 
+                           if l-variable-value
+                               (ls-var-idx)(ls-end-quote-idx:1) = '"' 
+                           then                
+                               move spaces 
+                               to l-variable-value
+                                   (ls-var-idx)(ls-end-quote-idx:)
+                           else 
+                               call "logger" using concatenate(
+                                   "ASSIGNMENT :: WARNING : variable: " 
+                                   trim(l-variable-name(ls-var-idx))
+                                   " assigned to type STRING but does "
+                                   "not have proper quotes in value. "
+                                   "Assigning anyway but data may be "
+                                   "incorrect.")
+                               end-call 
+                           end-if 
                        end-if 
-                   end-if 
-               end-if 
-           end-if 
 
+               end-evaluate                                                                                                               
+           end-if 
+           
            call "logger" using concatenate(
                "ASSIGNMENT :: variable name: " 
                trim(l-variable-name(ls-var-idx))
