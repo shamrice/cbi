@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-11
-      * Last Modified: 2021-11-11
+      * Last Modified: 2021-11-17
       * Purpose: Clears screen. Also paints background if screen mode 
       *          is 0. 
       * Tectonics: ./build.sh
@@ -26,7 +26,7 @@
 
        copy "copybooks/basic_keywords.cpy".
             
-       01  ws-prev-background-color      pic 99.
+      * 01  ws-prev-background-color      pic 99.
   
        local-storage section.       
     
@@ -65,16 +65,17 @@
            move 1 to l-scr-row 
 
       *> CLS on SCREEN 0 causes the background to be painted.
-           if l-text-bg-color not = ws-prev-background-color 
-               and l-screen-mode = 0 
-           then 
+      *> Modifying IF so that always paints current background.
+      *     if l-text-bg-color not = ws-prev-background-color 
+      *         and l-screen-mode = 0 
+           if l-screen-mode = 0 then 
                call "paint-background" using 
                    l-text-colors
                    l-variable-table
                end-call
            end-if     
 
-           move l-text-bg-color to ws-prev-background-color       
+      *     move l-text-bg-color to ws-prev-background-color       
 
       *>   hide cursor by default on new screens.
            call static "curs_set" using by value 0 
