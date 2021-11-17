@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-16
+      * Last Modified: 2021-11-17
       * Purpose: Assigns value to a variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -60,11 +60,10 @@
        01  ls-running-assign-val-num     pic 9(16).
 
        01  ls-temp-param-buffer          pic x(1024).
-       01  ls-temp-param-value           pic x(1024).
+       01  ls-temp-param-value           pic x(1024).       
 
        01  ls-temp-param-pointer         pic 9(4) comp.
-
-       01  ls-temp-param-values          pic x(1024) occurs 10 times.        
+       
 
        01  ls-temp-alloc-str             pic x(1024) value spaces.     
 
@@ -73,8 +72,8 @@
        01  ls-allocate-return-code       pic 9 value 0.
 
        01  ls-suffix-counts.
-           05  ls-numeric-suffix-count   pic 9(4).
-           05  ls-string-suffix-count    pic 9(4).
+           05  ls-numeric-suffix-count   pic 9(4) comp.
+           05  ls-string-suffix-count    pic 9(4) comp.
 
        01  ls-is-first-value-sw          pic a value 'Y'.
            88  ls-is-first-value         value 'Y'.
@@ -89,6 +88,25 @@
            88  ls-prev-op-div          value '/'.
            88  ls-prev-op-none         value space.            
 
+      *> Number of quoted pairs in a source code line.
+       01  ls-quote-table.
+           05  ls-num-quote-pairs     pic 9(4).
+           05  ls-quote-location      occurs 0 to 9999 times 
+                                      depending on ls-num-quote-pairs.
+               10  ls-q-start-idx     pic 9(4) comp.
+               10  ls-q-end-idx       pic 9(4) comp.
+
+       01  ls-quote-idx               pic 9(4) comp.
+
+       01  ls-quote-type-sw           pic a value 'E'.
+           88  ls-quote-type-start    value 'S'.
+           88  ls-quote-type-end      value 'E'.
+
+       01  ls-quote-delimiter         pic a.
+
+       01  ls-is-in-quote-sw          pic a value 'N'.
+           88  ls-is-in-quote         value 'Y'.
+           88  ls-is-not-in-quote     value 'N'.
 
        linkage section.       
 
@@ -101,10 +119,9 @@
 
        main-procedure.
 
-      *>     **** IN PROGRESS **** 
-      *> TODO: Right hand side of assignment can be more than just a 
-      *>       single value. Need to be able to handle stuff like:
-      *>          x = y + 5 * z - 4
+      *> NOTE: Current implementation only reads equations from left to
+      *>       right. No orders of operations are followed. That'll have
+      *>       to be a later 'TODO'. 
 
 
            unstring trim(l-src-code-str) 
@@ -143,19 +160,55 @@
                perform allocate-new-variable
            end-if 
 
+      *> Find quote locations in assignment statement.
+           move 1 to ls-temp-param-pointer
+           perform until 
+               ls-temp-param-pointer > length(ls-temp-param-buffer)
 
+               unstring ls-temp-param-buffer 
+                   delimited by '"'
+                   into ls-temp-param-value
+                   delimiter in ls-quote-delimiter
+                   with pointer ls-temp-param-pointer
+               end-unstring 
+               
+               if ls-quote-delimiter = '"' then 
+                   if ls-quote-type-end then 
+                       set ls-quote-type-start to true 
+                   
+                       add 1 to ls-num-quote-pairs
+                       move ls-temp-param-pointer 
+                       to ls-q-start-idx(ls-num-quote-pairs)
+
+                       call "logger" using concatenate(
+                           "**** QUOTE START: " ls-temp-param-pointer)
+                       end-call 
+                   else 
+                       set ls-quote-type-end to true 
+
+                       move ls-temp-param-pointer 
+                       to ls-q-end-idx(ls-num-quote-pairs)
+                       call "logger" using concatenate(
+                           "**** QUOTE END: " ls-temp-param-pointer)
+                       end-call 
+                   end-if 
+               end-if 
+           end-perform 
+               
+
+      *> Break down the assignment statement by parts and process as
+      *> needed. Delimiters found in quotes are ignored and appended
+      *> to current quoted string.
            move 1 to ls-temp-param-pointer
            move trim(ls-temp-param-buffer) to ls-temp-param-buffer
-           move spaces to ls-latest-operator           
+           move spaces to ls-latest-operator
+           move spaces to ls-temp-param-value            
            set ls-is-first-value to true 
            
            perform until 
                ls-temp-param-pointer > length(ls-temp-param-buffer)
                
-               move ls-latest-operator to ls-prev-operator
-               
-      *>   TODO: This will currently split even if operator is in quoted
-      *>         string!! that shouldn't be the case!!
+   
                unstring ls-temp-param-buffer 
                    delimited by 
                        ws-add-operator 
@@ -170,110 +223,42 @@
                call "logger" using "****************************"
                call "logger" using ls-temp-param-value 
                call "logger" using ls-latest-operator
+               call "logger" using ls-prev-operator
 
-               if ls-temp-param-value = spaces then 
-                   exit perform 
-               end-if 
+               set ls-is-not-in-quote to true 
 
-               
-      *> Check to see if right hand of assignment is variable. If so,
-      *> substitute the correct value in its place.
-               perform varying ls-var-source-idx from 1 by 1 
-               until ls-var-source-idx > l-num-variables               
-
-                   if trim(upper-case(ls-temp-param-value)) 
-                       = l-variable-name(ls-var-source-idx) 
+      *> Check if delimiter in quotes, if so, append to current working
+      *> string data.
+               perform varying ls-quote-idx from 1 by 1 
+               until ls-quote-idx > ls-num-quote-pairs
+                   if ls-temp-param-pointer > 
+                       ls-q-start-idx(ls-quote-idx)
+                       and ls-temp-param-pointer <
+                       ls-q-end-idx(ls-quote-idx) 
                    then 
-
+                       set ls-is-in-quote to true 
                        call "logger" using concatenate(
-                          "ASSIGNMENT :: Found righthand side variable:" 
-                           trim(l-variable-name(ls-var-source-idx))
-                           " value: " 
-                           trim(l-variable-value(ls-var-source-idx))
-                           " num val: " 
-                           l-variable-value-num(ls-var-source-idx))
+                           "**** IN QUOTE!: " ls-temp-param-pointer)
                        end-call 
-
-                       if l-type-integer(ls-var-source-idx) then 
-                           move l-variable-value-num
-                               (ls-var-source-idx) 
-                           to ls-temp-param-value 
-                               
-                       else 
-                           move l-variable-value(ls-var-source-idx)
-                           to ls-temp-param-value 
-                               
-                       end-if 
+                       string 
+                           trim(ls-temp-param-value)
+                           ls-latest-operator
+                           into ls-temp-param-value
+                       end-string 
                        exit perform 
                    end-if 
-               end-perform
+               end-perform 
 
-              
-               if ls-assign-type-string then 
+               call "logger" using concatenate(
+                   "++++++ ENTERING CALCULATE RUNNING VALUE WITH: "                 
+                   ls-temp-param-value)
+               end-call 
+               perform calculate-running-assignment-value                         
 
-                   move trim(ls-temp-param-value) to ls-temp-param-value
+               if ls-is-not-in-quote then 
+                   move ls-latest-operator to ls-prev-operator
+               end-if 
 
-      *>           Check if value INKEY$
-                   if upper-case(ls-temp-param-value) = ws-inkey then 
-                       move function inkey-func
-                       to ls-temp-param-value
-                   end-if 
-
-      *>           Check for CHR$
-                   if upper-case(ls-temp-param-value(1:length(ws-chr)))
-                       = ws-chr
-                   then 
-                       move ascii-code-to-char(
-                           ls-temp-param-value, l-variable-table)
-                           to ls-temp-param-value
-                   end-if 
-
-                   inspect ls-temp-param-value 
-                       replacing all '"' by spaces 
-
-                   if ls-is-first-value then 
-                       move ls-temp-param-value 
-                       to ls-running-assign-val
-                       set ls-is-not-first-value to true 
-                   else 
-                       if ls-prev-op-add then 
-                           string 
-                               trim(ls-running-assign-val)
-                               trim(ls-temp-param-value)
-                               into ls-running-assign-val
-                           end-string 
-                       end-if 
-                   end-if
-
-               else 
-                   if ls-is-first-value then 
-                       move numval(ls-temp-param-value)
-                       to ls-running-assign-val-num
-                       set ls-is-not-first-value to true 
-                   else 
-                       evaluate true
-                           when ls-prev-op-add
-                               add numval(ls-temp-param-value)
-                               to ls-running-assign-val-num
-
-                           when ls-prev-op-sub
-                               subtract numval(ls-temp-param-value)
-                               from ls-running-assign-val-num
-
-                           when ls-prev-op-mult                                   
-                               multiply ls-running-assign-val-num
-                               by numval(ls-temp-param-value) 
-                               giving ls-running-assign-val-num
-
-                           when ls-prev-op-div
-                               divide ls-running-assign-val-num
-                               by numval(ls-temp-param-value) 
-                               giving ls-running-assign-val-num 
-                         
-                       end-evaluate                                   
-                   end-if 
-               end-if                                    
-               
            end-perform
 
 
@@ -347,6 +332,125 @@
            end-call                     
 
            goback. 
+
+
+
+
+
+       calculate-running-assignment-value.
+               
+      *> Check to see if right hand of assignment is variable. If so,
+      *> substitute the correct value in its place.
+           perform varying ls-var-source-idx from 1 by 1 
+           until ls-var-source-idx > l-num-variables               
+
+               if trim(upper-case(ls-temp-param-value)) 
+                   = l-variable-name(ls-var-source-idx) 
+               then 
+
+                   call "logger" using concatenate(
+                       "ASSIGNMENT :: Found righthand side variable:" 
+                       trim(l-variable-name(ls-var-source-idx))
+                       " value: " 
+                       trim(l-variable-value(ls-var-source-idx))
+                       " num val: " 
+                       l-variable-value-num(ls-var-source-idx))
+                   end-call 
+
+                   if l-type-integer(ls-var-source-idx) then 
+                       move l-variable-value-num
+                           (ls-var-source-idx) 
+                       to ls-temp-param-value 
+                               
+                   else 
+                       move l-variable-value(ls-var-source-idx)
+                       to ls-temp-param-value 
+                               
+                   end-if 
+                   exit perform 
+               end-if 
+           end-perform
+              
+           if ls-assign-type-string then 
+
+               move trim(ls-temp-param-value) to ls-temp-param-value
+
+      *>         Check if value INKEY$
+               if upper-case(ls-temp-param-value) = ws-inkey then 
+                   move function inkey-func
+                   to ls-temp-param-value
+               end-if 
+
+      *>           Check for CHR$
+               if upper-case(ls-temp-param-value(1:length(ws-chr)))
+                   = ws-chr
+               then 
+                   move ascii-code-to-char(
+                       ls-temp-param-value, l-variable-table)
+                       to ls-temp-param-value
+               end-if 
+
+               inspect ls-temp-param-value 
+                   replacing all '"' by spaces 
+
+               if ls-is-first-value then 
+                   move ls-temp-param-value 
+                   to ls-running-assign-val
+                   set ls-is-not-first-value to true 
+
+                   call "logger" using concatenate(
+                       "STRING FIRST VALUE: " ls-running-assign-val)
+                   end-call 
+               else 
+                   if ls-prev-op-add then   
+                                    
+                       call "logger" using concatenate(
+                           "COMBININING: " ls-running-assign-val
+                           " WITH: " ls-temp-param-value)
+                       end-call 
+
+                       string 
+                           trim(ls-running-assign-val)
+                           trim(ls-temp-param-value)
+                           into ls-running-assign-val
+                       end-string                  
+
+                       call "logger" using concatenate(
+                           "END VALUE: " ls-running-assign-val)
+                       end-call 
+                   end-if 
+               end-if
+
+           else 
+               if ls-is-first-value then 
+                   move numval(ls-temp-param-value)
+                   to ls-running-assign-val-num
+                   set ls-is-not-first-value to true 
+               else 
+                   evaluate true
+                       when ls-prev-op-add
+                           add numval(ls-temp-param-value)
+                           to ls-running-assign-val-num
+
+                       when ls-prev-op-sub
+                           subtract numval(ls-temp-param-value)
+                           from ls-running-assign-val-num
+
+                       when ls-prev-op-mult                                   
+                           multiply ls-running-assign-val-num
+                           by numval(ls-temp-param-value) 
+                           giving ls-running-assign-val-num
+
+                       when ls-prev-op-div
+                           divide ls-running-assign-val-num
+                           by numval(ls-temp-param-value) 
+                           giving ls-running-assign-val-num 
+                         
+                   end-evaluate                                   
+               end-if 
+           end-if                                    
+           exit paragraph.
+
 
 
        allocate-new-variable.
