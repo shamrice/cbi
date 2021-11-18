@@ -187,8 +187,7 @@
                to ls-assignment-str
 
            call "assign-var" using 
-               ls-assignment-str 
-               l-variable-table
+               ls-assignment-str                
            end-call 
 
            exit paragraph.
@@ -205,8 +204,7 @@
 
            move ws-for-loop-var(ls-working-for-loop-idx) to ls-var-name
            
-           call "get-var-value" using 
-               l-variable-table
+           call "get-var-value" using                
                ls-var-name 
                ls-var-type 
                ls-var-value
@@ -340,8 +338,7 @@
            end-if 
            
       *>   Get current value of variable.
-           call "get-var-value" using 
-               l-variable-table
+           call "get-var-value" using                
                ls-next-var-name 
                ls-var-type 
                ls-var-value
@@ -382,8 +379,7 @@
                to ls-assignment-str
 
            call "assign-var" using 
-               ls-assignment-str 
-               l-variable-table
+               ls-assignment-str                
            end-call 
 
       *>   Check exit condition of loop. If not, return to top.

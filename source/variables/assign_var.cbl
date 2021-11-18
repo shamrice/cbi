@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-17
+      * Last Modified: 2021-11-18
       * Purpose: Assigns value to a variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -42,6 +42,17 @@
 
        local-storage section.
        
+       copy "copybooks/local_storage/ls_variable.cpy".  
+
+       01  ls-temp-variable.                      
+           05  ls-temp-variable-type       pic x(8) value spaces.
+               88  ls-temp-type-integer    value "INTEGER".
+               88  ls-temp-type-string     value "STRING".
+           05  ls-temp-variable-name       pic x(16) value spaces.
+           05  ls-temp-variable-value      pic x(1024) value spaces.
+           05  ls-temp-variable-value-num  pic 9(16) value zeros.   
+
+
        01  ls-var-idx                    pic 9(4) comp value zero.
 
        01  ls-var-source-idx             pic 9(4) comp.
@@ -112,10 +123,10 @@
 
        01  l-src-code-str                pic x(1024).       
 
-       copy "copybooks/linkage_section/l_variable_table.cpy".
+      * copy "copybooks/linkage_section/l_variable_table.cpy".
            
 
-       procedure division using l-src-code-str l-variable-table.   
+       procedure division using l-src-code-str.   
 
        main-procedure.
 
@@ -141,23 +152,36 @@
 
 
       *> Find existing variable index if exists for assignment destination.
-           perform varying ls-var-idx from 1 by 1 
-           until ls-var-idx > l-num-variables
 
-               if upper-case(ls-assignment-dest) 
-               = l-variable-name(ls-var-idx) then 
-                   if l-type-string(ls-var-idx) then 
-                       set ls-assign-type-string to true 
-                   else 
-                       set ls-assign-type-num to true 
-                   end-if 
-                   exit perform 
-               end-if 
-           end-perform
+           move ls-assignment-dest to ls-variable-name 
+           call "get-variable" using 
+               ls-variable ls-get-variable-return-code
+           end-call 
+
+      *     perform varying ls-var-idx from 1 by 1 
+      *     until ls-var-idx > l-num-variables
+
+      *         if upper-case(ls-assignment-dest) 
+      *         = l-variable-name(ls-var-idx) then 
+      *             if l-type-string(ls-var-idx) then 
+      *                 set ls-assign-type-string to true 
+      *             else 
+      *                 set ls-assign-type-num to true 
+      *             end-if 
+      *             exit perform 
+      *         end-if 
+      *     end-perform
 
       *> If not found, allocate a new variable before assignment.
-           if l-num-variables = 0 or ls-var-idx > l-num-variables then 
+      *     if l-num-variables = 0 or ls-var-idx > l-num-variables then 
+           if ls-get-variable-return-code = 0 then 
                perform allocate-new-variable
+           else 
+               if ls-type-string then 
+                   set ls-assign-type-string to true 
+               else 
+                   set ls-assign-type-num to true 
+               end-if            
            end-if 
 
       *> Find quote locations in assignment statement.
@@ -264,18 +288,21 @@
 
            
       *> Assign new value to variable      
-           if l-type-integer(ls-var-idx) then 
+      *     if l-type-integer(ls-var-idx) then 
+           if ls-assign-type-num then 
                move trim(ls-running-assign-val-num)
-                   to l-variable-value-num(ls-var-idx) 
+      *             to l-variable-value-num(ls-var-idx) 
+                   to ls-variable-value-num
                call "logger" using concatenate(
                    "ASSIGNMENT :: Number value. New value: "
-                   l-variable-value-num(ls-var-idx) 
+                   ls-variable-value-num
                    " : from: " trim(ls-running-assign-val-num))
                end-call                                              
            end-if 
 
            
-           if l-type-string(ls-var-idx) then 
+      *     if l-type-string(ls-var-idx) then 
+           if ls-assign-type-string then 
      
                move trim(ls-running-assign-val) 
                to ls-temp-param-value
@@ -291,29 +318,39 @@
                replacing first '"' by space 
 
                move trim(ls-temp-param-value)
-                   to l-variable-value(ls-var-idx)
+                   to ls-variable-value
+      *             to l-variable-value(ls-var-idx)
             
                move zeros to ls-space-count   
                        
-               inspect reverse(l-variable-value(ls-var-idx))
+      *         inspect reverse(l-variable-value(ls-var-idx))
+               inspect reverse(ls-variable-value)
                tallying ls-space-count for leading spaces
                
+      *         compute ls-end-quote-idx = 
+      *             length(l-variable-value(ls-var-idx)) 
+      *             - ls-space-count
+      *         end-compute 
+
                compute ls-end-quote-idx = 
-                   length(l-variable-value(ls-var-idx)) 
+                   length(ls-variable-value) 
                    - ls-space-count
                end-compute 
-               
+      
+
                if ls-end-quote-idx > 0 then 
-                   if l-variable-value
-                       (ls-var-idx)(ls-end-quote-idx:1) = '"' 
+      *             if l-variable-value
+      *                 (ls-var-idx)(ls-end-quote-idx:1) = '"' 
+                   if ls-variable-value(ls-end-quote-idx:1) = '"' 
                    then                
                        move spaces 
-                       to l-variable-value
-                           (ls-var-idx)(ls-end-quote-idx:)
+                       to ls-variable-value(ls-end-quote-idx:)                       
+      *                 to l-variable-value
+      *                     (ls-var-idx)(ls-end-quote-idx:)
                    else 
                        call "logger" using concatenate(
                            "ASSIGNMENT :: WARNING : variable: " 
-                           trim(l-variable-name(ls-var-idx))
+                           trim(ls-variable-name)
                            " assigned to type STRING but does "
                            "not have proper quotes in value. "
                            "Assigning anyway but data may be "
@@ -323,11 +360,13 @@
                end-if 
            end-if 
            
+           call "set-variable" using ls-variable 
+
            call "logger" using concatenate(
                "ASSIGNMENT :: variable name: " 
-               trim(l-variable-name(ls-var-idx))
-               " new value: " trim(l-variable-value(ls-var-idx))
-               " type: " l-variable-type(ls-var-idx)
+               trim(ls-variable-name)
+               " new value: " trim(ls-variable-value)
+               " type: " ls-variable-type
                " space count: " ls-space-count)
            end-call                     
 
@@ -341,36 +380,48 @@
                
       *> Check to see if right hand of assignment is variable. If so,
       *> substitute the correct value in its place.
-           perform varying ls-var-source-idx from 1 by 1 
-           until ls-var-source-idx > l-num-variables               
+      *     perform varying ls-var-source-idx from 1 by 1 
+      *     until ls-var-source-idx > l-num-variables               
 
-               if trim(upper-case(ls-temp-param-value)) 
-                   = l-variable-name(ls-var-source-idx) 
-               then 
+      *         if trim(upper-case(ls-temp-param-value)) 
+      *             = l-variable-name(ls-var-source-idx) 
+      *         then 
+           
+           move ls-temp-param-value to ls-temp-variable-name 
 
+           call "get-variable" using 
+               ls-temp-variable ls-get-variable-return-code
+           end-call 
+
+           if ls-get-variable-return-code > 0 then 
                    call "logger" using concatenate(
                        "ASSIGNMENT :: Found righthand side variable:" 
-                       trim(l-variable-name(ls-var-source-idx))
+                       trim(ls-temp-variable-name)
                        " value: " 
-                       trim(l-variable-value(ls-var-source-idx))
+                       trim(ls-temp-variable-value)
                        " num val: " 
-                       l-variable-value-num(ls-var-source-idx))
+                       ls-temp-variable-value-num)
                    end-call 
 
-                   if l-type-integer(ls-var-source-idx) then 
-                       move l-variable-value-num
-                           (ls-var-source-idx) 
+      *             if l-type-integer(ls-var-source-idx) then 
+                   if ls-temp-type-integer then 
+      *                 move l-variable-value-num
+      *                     (ls-var-source-idx) 
+                       move ls-temp-variable-value-num
                        to ls-temp-param-value 
                                
                    else 
-                       move l-variable-value(ls-var-source-idx)
+      *                 move l-variable-value(ls-var-source-idx)
+                       move ls-temp-variable-value 
                        to ls-temp-param-value 
                                
                    end-if 
-                   exit perform 
+      *             exit perform 
                end-if 
-           end-perform
+      *     end-perform
               
+           call "logger" using ls-running-assign-val-type-sw
+
            if ls-assign-type-string then 
 
                move trim(ls-temp-param-value) to ls-temp-param-value
@@ -385,8 +436,7 @@
                if upper-case(ls-temp-param-value(1:length(ws-chr)))
                    = ws-chr
                then 
-                   move ascii-code-to-char(
-                       ls-temp-param-value, l-variable-table)
+                   move ascii-code-to-char(ls-temp-param-value)
                        to ls-temp-param-value
                end-if 
 
@@ -493,8 +543,7 @@
            end-if            
 
            call "allocate-var" using 
-               ls-temp-alloc-str
-               l-variable-table
+               ls-temp-alloc-str               
                ls-allocate-return-code
            end-call        
 

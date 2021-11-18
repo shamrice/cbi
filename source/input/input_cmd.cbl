@@ -231,8 +231,7 @@
                    to ls-assign-var-str               
            end-if 
            call "assign-var" using 
-               ls-assign-var-str
-               l-variable-table
+               ls-assign-var-str               
            end-call 
 
            exit paragraph.

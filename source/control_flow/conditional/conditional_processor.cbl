@@ -364,8 +364,7 @@
            if upper-case(trim(
                ls-temp-statement-value(1:length(ws-chr)))) = ws-chr 
            then 
-               move ascii-code-to-char(
-                   ls-temp-statement-value, l-variable-table) 
+               move ascii-code-to-char(ls-temp-statement-value) 
                to ls-part-value(ls-num-parts)  
                set ls-type-string(ls-num-parts) to true 
                set ls-sub-val-with-var to true

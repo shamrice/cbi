@@ -101,8 +101,7 @@
 
 
        set-value-from-var.
-           call "get-var-value" using 
-               l-variable-table
+           call "get-var-value" using                
                ls-var-name
                ls-var-type 
                ls-var-value

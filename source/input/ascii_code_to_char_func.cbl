@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-15
-      * Last Modified: 2021-11-16
+      * Last Modified: 2021-11-18
       * Purpose: Process CHR$ - get character for ASCII code passed in.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -42,12 +42,12 @@
 
        01  l-input-value             pic x(1024). 
 
-       copy "copybooks/linkage_section/l_variable_table.cpy".
+      * copy "copybooks/linkage_section/l_variable_table.cpy".
 
        01  l-char-value              pic x.
 
        procedure division 
-           using l-input-value l-variable-table
+           using l-input-value 
            returning l-char-value.
 
              
@@ -401,8 +401,7 @@
 
        get-value-from-variable.
            move trim(ls-working-input-value) to ls-var-name 
-           call "get-var-value" using 
-               l-variable-table
+           call "get-var-value" using                
                ls-var-name 
                ls-var-type 
                ls-var-value

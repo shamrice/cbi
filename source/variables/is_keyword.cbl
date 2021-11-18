@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-15
+      * Last Modified: 2021-11-18
       * Purpose: Checks if value passed is a BASIC keyword or not.
       *          Returns true(1) if it is or false(0) if it is not.
       * Tectonics: ./build.sh
@@ -101,6 +101,7 @@
                all ws-defint by spaces
                all ws-inkey by spaces 
                all ws-chr by spaces  
+               all ws-dim by spaces 
                
            if ls-new-var-name-temp = spaces then 
                set l-return-code-true to true 

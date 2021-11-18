@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-11-13
+      * Last Modified: 2021-11-18
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -354,8 +354,7 @@
       *> TODO: Currently all variables are global so dim and dim shared are 
       *>       treated the same.           
                    call "allocate-var" using 
-                       ws-source-data-temp
-                       ws-variable-table 
+                       ws-source-data-temp                       
                        ws-allocate-ret-val
                    end-call 
 
@@ -493,8 +492,7 @@
            
            if ws-assignment-count = 1 then 
                call "assign-var" using 
-                   ws-source-data-temp
-                   ws-variable-table
+                   ws-source-data-temp                   
                end-call 
            end-if 
 

@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-26
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-18
       * Purpose: Searches variable table for variable name and sets the
       *          the return parameters to the found value. Return code 
       *          true(1) on success, false(0) on failure.
@@ -28,12 +28,13 @@
          
        local-storage section.
  
-       01  ls-var-idx                   pic 9(4) comp.       
+       copy "copybooks/local_storage/ls_variable.cpy".  
+
+      * 01  ls-var-idx                   pic 9(4) comp.       
    
        linkage section.       
 
-       copy "copybooks/linkage_section/l_variable_table.cpy".       
-
+            
        01  l-var-search-name             pic x(16).      
 
        01  l-return-type                 pic x(8).
@@ -47,7 +48,7 @@
 
 
        procedure division using 
-           l-variable-table l-var-search-name 
+           l-var-search-name 
            l-return-type l-return-val
            l-return-code.   
 
@@ -57,38 +58,57 @@
            move spaces to l-return-val 
            set l-return-code-false to true 
            
-           if l-num-variables = 0 or l-var-search-name = spaces then 
+           move upper-case(l-var-search-name) to l-var-search-name
+
+           move l-var-search-name to ls-variable-name 
+           call "get-variable" using 
+               ls-variable ls-get-variable-return-code
+           end-call 
+
+           if ls-get-variable-return-code = 0 then 
                call "logger" using concatenate(
-                   "GET-VAR-VALUE :: WARNING : No variables or "
-                   "variable name to get is blank. Num variables: " 
-                   l-num-variables " : var-search-name: " 
-                   l-var-search-name)
+                   "GET-VAR-VALUE :: Unable to find variable for: "
+                   trim(ls-variable-name))
                end-call 
                goback 
            end-if 
 
-           move upper-case(l-var-search-name) to l-var-search-name
+      *     if l-num-variables = 0 or l-var-search-name = spaces then 
+      *         call "logger" using concatenate(
+      *             "GET-VAR-VALUE :: WARNING : No variables or "
+      *             "variable name to get is blank. Num variables: " 
+      *             l-num-variables " : var-search-name: " 
+      *             l-var-search-name)
+      *         end-call 
+      *         goback 
+      *     end-if 
 
-           perform varying ls-var-idx from 1 by 1 
-           until ls-var-idx > l-num-variables
+      *     move upper-case(l-var-search-name) to l-var-search-name
 
-               if l-variable-name(ls-var-idx) = l-var-search-name then 
-                   move l-variable-type(ls-var-idx) 
+      *     perform varying ls-var-idx from 1 by 1 
+      *     until ls-var-idx > l-num-variables
+
+      *         if l-variable-name(ls-var-idx) = l-var-search-name then 
+      *             move l-variable-type(ls-var-idx) 
+                   move ls-variable-type
                    to l-return-type
                    
-                   if l-type-integer(ls-var-idx) then 
-                       move l-variable-value-num(ls-var-idx) 
+      *             if l-type-integer(ls-var-idx) then 
+      *                 move l-variable-value-num(ls-var-idx) 
+                    if ls-type-integer then 
+                       move ls-variable-value-num
                        to l-return-val
                    else 
-                       move l-variable-value(ls-var-idx) 
+      *                 move l-variable-value(ls-var-idx) 
+                       move ls-variable-value
                        to l-return-val
                    end-if 
 
                    set l-return-code-true to true 
                    
-                   exit perform 
-               end-if 
-           end-perform 
+      *             exit perform 
+      *         end-if 
+      *     end-perform 
 
            call "logger" using concatenate(
                "GET-VAR-VALUE :: Variable name: " 

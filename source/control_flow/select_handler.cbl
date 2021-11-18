@@ -155,8 +155,7 @@
 
                move trim(ls-line-text) to ls-var-name
 
-               call "get-var-value" using 
-                   l-variable-table
+               call "get-var-value" using                    
                    ls-var-name 
                    ls-var-type 
                    ls-var-value
@@ -272,8 +271,7 @@
            end-if 
 
            move trim(ls-line-text) to ls-var-name 
-           call "get-var-value" using 
-               l-variable-table
+           call "get-var-value" using                
                ls-var-name 
                ls-var-type 
                ls-var-value
