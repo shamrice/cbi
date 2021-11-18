@@ -46,6 +46,8 @@
            88  ls-var-save-action-new     value "NEW".
            88  ls-var-save-action-update  value "UPDATE".
 
+       01  ls-found-var-type              pic x(8).
+
        linkage section.       
 
        01  l-variable.               
@@ -91,7 +93,7 @@
                
                    if ws-variable-name(ws-var-idx) = l-variable-name 
                    then 
-                       move ws-var-idx to ls-found-var-idx
+                       move ws-var-idx to ls-found-var-idx                       
                        exit perform 
                    end-if 
                end-perform 
@@ -101,17 +103,20 @@
                add 1 to ws-num-variables
                move ws-num-variables to ls-found-var-idx
                set ls-var-save-action-new to true 
+           else 
+               move ws-variable-type(ls-found-var-idx) 
+               to l-variable-type 
            end-if 
 
            move l-variable to ws-variables(ls-found-var-idx)           
 
            call "logger" using concatenate(
-               "VARIABLE-REPOSITORY::SET-VARIABLE : "
-               "Action: " ls-var-save-action-sw
-               " : name: " trim(l-variable-name)
-               " : type: " l-variable-type 
-               " : num value: " l-variable-value-num
-               " : value: " trim(l-variable-value))             
+               "VARIABLE-REPOSITORY::SET-VARIABLE"
+               " : Action: " ls-var-save-action-sw
+               " : name: " trim(ws-variable-name(ls-found-var-idx))
+               " : type: " ws-variable-type(ls-found-var-idx) 
+               " : num value: " ws-variable-value-num(ls-found-var-idx)
+               " : value: " trim(ws-variable-value(ls-found-var-idx)))             
            end-call 
 
            goback.
@@ -153,7 +158,7 @@
            end-perform 
                       
            call "logger" using concatenate(
-               "VARIABLE-REPOSITORY::GET-VARIABLE : " 
+               "VARIABLE-REPOSITORY::GET-VARIABLE" 
                " : Return code: " l-return-code              
                " : name: " trim(l-variable-name)
                " : type: " l-variable-type 
