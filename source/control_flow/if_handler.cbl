@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-05
-      * Last Modified: 2021-11-07
+      * Last Modified: 2021-11-18
       * Purpose: Handles a IF statements and moves current line number 
       *          to the correct location based on processing of the 
       *          statement.      
@@ -36,8 +36,8 @@
 
        01  ls-conditional-ret-val        pic 9.       
 
-       01  ls-if-idx                     pic 9(4).
-       01  ls-elseif-idx                 pic 99.
+       01  ls-if-idx                     pic 9(4) comp.
+       01  ls-elseif-idx                 pic 99 comp.
 
        01  ls-elseif-found-sw            pic a value 'N'.
            88  ls-elseif-found           value 'Y'.
@@ -49,18 +49,19 @@
 
        01  l-cur-line-num                pic 9(5) comp.
 
-       copy "copybooks/linkage_section/l_if_boundary_table.cpy".
-
-       copy "copybooks/linkage_section/l_variable_table.cpy".
+       copy "copybooks/linkage_section/l_if_boundary_table.cpy".       
                    
 
        procedure division using 
            l-src-code-str l-cur-line-num 
-           l-if-boundary-table l-variable-table.   
+           l-if-boundary-table.
 
        main-procedure.
 
-           move upper-case(trim(l-src-code-str))
+      *> TODO: Keywords need to be uppercase. Setting the whole line 
+      *>       to uppercase breaks string comparisons. 
+      *     move upper-case(trim(l-src-code-str))
+           move trim(l-src-code-str)
                to ls-line-text
 
            call "logger" using concatenate(
@@ -123,8 +124,7 @@
            replacing first ws-if by spaces 
 
            call "conditional-statement-handler" using 
-               ls-line-text
-               l-variable-table
+               ls-line-text               
                ls-conditional-ret-val
            end-call 
 
@@ -222,8 +222,7 @@
            replacing first ws-elseif by spaces 
 
            call "conditional-statement-handler" using 
-               ls-line-text
-               l-variable-table
+               ls-line-text               
                ls-conditional-ret-val
            end-call 
        

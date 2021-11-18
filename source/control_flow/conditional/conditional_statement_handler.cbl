@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-18
       * Purpose: Handles a conditional statement which can potentially 
       *          contain multiple conditionals. 
       *          Each section is broken up and passed to the the 
@@ -42,16 +42,14 @@
        linkage section.       
 
        01  l-statement                   pic x(1024). 
-
-       copy "copybooks/linkage_section/l_variable_table.cpy".
-            
+        
        01  l-return-code                 pic 9 value 0.
            88  l-return-code-false       value 0.
            88  l-return-code-true        value 1.
 
 
        procedure division using 
-           l-statement l-variable-table l-return-code.   
+           l-statement l-return-code.   
 
        main-procedure.
 
@@ -74,8 +72,7 @@
 
 
                call "conditional-processor" using 
-                   ls-cur-statement
-                   l-variable-table
+                   ls-cur-statement                   
                    ls-conditional-ret-val
                end-call 
       

@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-05
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-18
       * Purpose: Copybook containing definitions for if boundry table
       * Tectonics: ./build.sh
       ******************************************************************

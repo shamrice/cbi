@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-13
-      * Last Modified: 2021-11-13
+      * Last Modified: 2021-11-18
       * Purpose: Handles a SELECT statements and moves current line number 
       *          to the correct location based on processing of the 
       *          statement.      
@@ -30,12 +30,7 @@
        
        local-storage section.
       
-       01  ls-variable-temp-data.
-           05  ls-var-name           pic x(16).
-           05  ls-var-type           pic x(8).
-           05  ls-var-value          pic x(1024).
-           05  ls-var-value-num      pic 9(16).
-           05  ls-var-ret-code       pic 9.
+       copy "copybooks/local_storage/ls_variable.cpy".  
 
        01  ls-check-val-num-temp         pic 9(16).
        01  ls-case-val-num-temp          pic 9(16).       
@@ -48,9 +43,8 @@
 
        01  ls-conditional-operator-count pic 9(4) comp.
 
-       01  ls-select-idx                 pic 9(4).
-       01  ls-case-idx                   pic 99 comp.
-       01  ls-var-idx                    pic 9(4) comp.
+       01  ls-select-idx                 pic 9(4) comp.
+       01  ls-case-idx                   pic 99 comp.       
 
        01  ls-case-found-sw              pic a value 'N'.
            88  ls-case-found             value 'Y'.
@@ -66,17 +60,17 @@
 
        01  l-cur-line-num                pic 9(5) comp.
 
-       copy "copybooks/linkage_section/l_select_boundary_table.cpy".
-
-       copy "copybooks/linkage_section/l_variable_table.cpy".
+       copy "copybooks/linkage_section/l_select_boundary_table.cpy".       
                    
 
        procedure division using 
            l-src-code-str l-cur-line-num 
-           l-select-boundary-table l-variable-table.   
+           l-select-boundary-table.   
 
        main-procedure.
 
+      *> TODO: Keywords need to be uppercase. Setting the whole line 
+      *>       to uppercase breaks string comparisons. 
            move upper-case(trim(l-src-code-str))
                to ls-line-text
 
@@ -142,29 +136,30 @@
       *> TODO : add check for equations as well or string concats.
            if ls-conditional-operator-count > 0 then 
                call "conditional-statement-handler" using 
-                   ls-line-text
-                   l-variable-table
+                   ls-line-text                   
                    ls-conditional-ret-val
                end-call 
 
                move ls-conditional-ret-val 
                to l-select-check-val(ls-select-idx)      
            else 
+
       *>   Check if variable, if so replace it with that value, if not,
       *>   leave value as written.
-
-               move trim(ls-line-text) to ls-var-name
-
-               call "get-var-value" using                    
-                   ls-var-name 
-                   ls-var-type 
-                   ls-var-value
-                   ls-var-ret-code
+               move ls-line-text to ls-variable-name 
+               call "get-variable" using 
+                   ls-variable 
+                   ls-get-variable-return-code
                end-call 
-
-               if ls-var-ret-code > 0 then 
-                   move ls-var-value 
-                   to l-select-check-val(ls-select-idx)
+      
+               if ls-get-variable-return-code > 0 then       
+                   if ls-type-integer then 
+                       move ls-variable-value-num
+                       to l-select-check-val(ls-select-idx)
+                   else     
+                       move ls-variable-value
+                       to l-select-check-val(ls-select-idx)
+                   end-if 
                else                
       *>           Replace any leading or trailing double quotes.
                    inspect ls-line-text replacing leading '"' by spaces
@@ -270,24 +265,24 @@
                set ls-check-val-numeric to true 
            end-if 
 
-           move trim(ls-line-text) to ls-var-name 
-           call "get-var-value" using                
-               ls-var-name 
-               ls-var-type 
-               ls-var-value
-               ls-var-ret-code
+
+           move ls-line-text to ls-variable-name 
+           call "get-variable" using 
+               ls-variable 
+               ls-get-variable-return-code
            end-call 
 
       *>   Only TRUE cases are checked here. If found, SELECT is marked
-      *>   as processed and flow will move to next line.
-           if ls-var-ret-code > 0 then 
-               if ls-var-type = "INTEGER" and ls-check-val-numeric then 
-                   if ls-var-value = ls-check-val-num-temp then 
+      *>   as processed and flow will move to next line.      
+           if ls-get-variable-return-code > 0 then       
+                if ls-type-integer and ls-check-val-numeric then       
+                   if ls-variable-value-num = ls-check-val-num-temp then 
                        set l-select-processed(ls-select-idx) to true 
                        goback 
                    end-if 
-               else 
-                   if ls-var-value = l-select-check-val(ls-select-idx) 
+               else       
+                   if ls-variable-value = 
+                       l-select-check-val(ls-select-idx)       
                    then 
                        set l-select-processed(ls-select-idx) to true 
                        goback 

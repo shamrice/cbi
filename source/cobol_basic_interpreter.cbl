@@ -429,8 +429,7 @@
                    call "if-handler" using 
                        ws-source-data-temp
                        ws-line-idx
-                       ws-if-boundary-table
-                       ws-variable-table
+                       ws-if-boundary-table                       
                    end-call 
 
 
@@ -445,8 +444,7 @@
                    call "select-handler" using 
                        ws-source-data-temp
                        ws-line-idx
-                       ws-select-boundary-table
-                       ws-variable-table
+                       ws-select-boundary-table                       
                    end-call 
 
 
