@@ -83,18 +83,6 @@
        01  ws-assert-check-val        pic x(1024) value spaces.
 
 
-       01  ws-variable-table.
-           05  ws-num-variables           pic 9(4) comp.
-           05  ws-variables               occurs 0 to 1000 times
-                                          depending on ws-num-variables. 
-               10  ws-variable-type       pic x(8) value spaces.
-                   88  ws-type-integer    value "INTEGER".
-                   88  ws-type-string     value "STRING".
-               10  ws-variable-name       pic x(16) value spaces.
-               10  ws-variable-value      pic x(1024) value spaces.
-               10  ws-variable-value-num  redefines ws-variable-value                     
-                                          pic 9(16) value zeros.    
-
        01  ws-if-boundary-table.
            05  ws-num-ifs                  pic 9(4) comp. 
            05  ws-if-data                  occurs 0 to 9999 times
@@ -275,8 +263,7 @@
                    call "clear-screen" using 
                        ws-screen-mode 
                        ws-screen-position
-                       ws-text-colors 
-                       ws-variable-table
+                       ws-text-colors                        
                    end-call 
                
 
@@ -338,8 +325,7 @@
                    call "input-cmd" using 
                        ws-source-data-temp
                        ws-screen-position
-                       ws-text-colors
-                       ws-variable-table 
+                       ws-text-colors                        
                    end-call 
 
                when upper-case(

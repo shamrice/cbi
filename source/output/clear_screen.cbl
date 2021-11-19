@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-11
-      * Last Modified: 2021-11-17
+      * Last Modified: 2021-11-19
       * Purpose: Clears screen. Also paints background if screen mode 
       *          is 0. 
       * Tectonics: ./build.sh
@@ -45,13 +45,11 @@
            05  l-text-fg-highlight-sw    pic a value 'N'.
                88  l-text-fg-highlight   value 'Y'.
                88  l-text-fg-lowlight    value 'N'.
-           
-       copy "copybooks/linkage_section/l_variable_table.cpy".
-              
+
 
        procedure division using 
            l-screen-mode l-screen-position
-           l-text-colors l-variable-table.   
+           l-text-colors.   
 
        main-procedure.
            
@@ -70,8 +68,7 @@
       *         and l-screen-mode = 0 
            if l-screen-mode = 0 then 
                call "paint-background" using 
-                   l-text-colors
-                   l-variable-table
+                   l-text-colors                   
                end-call
            end-if     
 

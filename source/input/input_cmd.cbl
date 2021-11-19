@@ -62,12 +62,9 @@
                88  l-text-fg-highlight  value 'Y'.
                88  l-text-fg-lowlight   value 'N'.
 
-       copy "copybooks/linkage_section/l_variable_table.cpy".
-       
 
        procedure division using 
-           l-src-code-str l-screen-position l-text-colors 
-           l-variable-table.   
+           l-src-code-str l-screen-position l-text-colors.   
 
        main-procedure.
 

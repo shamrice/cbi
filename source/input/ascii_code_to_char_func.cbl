@@ -27,7 +27,7 @@
 
        local-storage section.
        
-       copy "copybooks/local_storage/ls_variable.cpy".   
+       copy "copybooks/local_storage/ls_variable.cpy".
 
        01  ls-ascii-code             pic 9(3).
        01  ls-working-input-value    pic x(1024).
