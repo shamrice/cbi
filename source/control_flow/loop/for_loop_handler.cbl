@@ -37,8 +37,8 @@
                                          ws-working-for-loop-idx.
                10  ws-for-loop-line      pic 9(5).
                10  ws-for-loop-var       pic x(1024).
-               10  ws-for-loop-start-val pic 9(16).
-               10  ws-for-loop-end-val   pic 9(16).
+               10  ws-for-loop-start-val pic S9(16).
+               10  ws-for-loop-end-val   pic S9(16).
                10  ws-for-loop-step      pic S9(16).
                
        local-storage section.    
@@ -58,7 +58,7 @@
 
        01  ls-assignment-str         pic x(1024).
 
-       01  ls-new-var-value          pic 9(16).
+       01  ls-new-var-value          pic S9(16).
  
        01  ls-next-var-name          pic x(1024).
 

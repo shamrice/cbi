@@ -45,7 +45,7 @@
        
        01  ls-output-buffer              pic x(1024).
        
-       01  ls-temp-disp-num-val          pic z(15)9.       
+       01  ls-temp-disp-num-val          pic -(16)9.       
 
     
        linkage section.       

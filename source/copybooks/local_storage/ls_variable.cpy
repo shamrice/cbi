@@ -11,7 +11,6 @@
                88  ls-type-string     value "STRING".
            05  ls-variable-name       pic x(16) value spaces.
            05  ls-variable-value      pic x(1024) value spaces.
-           05  ls-variable-value-num  pic 9(16) value zeros.   
+           05  ls-variable-value-num  pic S9(16) value zeros.   
 
        01  ls-get-variable-return-code pic 9.
-       

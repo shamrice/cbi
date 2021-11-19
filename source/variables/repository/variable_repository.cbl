@@ -37,7 +37,7 @@
                    88  ws-type-string     value "STRING".
                10  ws-variable-name       pic x(16) value spaces.
                10  ws-variable-value      pic x(1024) value spaces.
-               10  ws-variable-value-num  pic 9(16) value zeros.  
+               10  ws-variable-value-num  pic S9(16) value zeros.  
     
        local-storage section.       
 
@@ -55,7 +55,7 @@
            10  l-variable-type       pic x(8).
            10  l-variable-name       pic x(16).
            10  l-variable-value      pic x(1024).
-           10  l-variable-value-num  pic 9(16).
+           10  l-variable-value-num  pic S9(16).
 
        01  l-return-code                 pic 9 value 0.
            88  l-return-code-false       value 0.

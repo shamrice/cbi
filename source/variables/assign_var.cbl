@@ -50,7 +50,7 @@
                88  ls-temp-type-string     value "STRING".
            05  ls-temp-variable-name       pic x(16) value spaces.
            05  ls-temp-variable-value      pic x(1024) value spaces.
-           05  ls-temp-variable-value-num  pic 9(16) value zeros.                 
+           05  ls-temp-variable-value-num  pic S9(16) value zeros.                 
 
        01  ls-space-count                pic 9(10) comp value zero.
 
@@ -63,7 +63,7 @@
            88  ls-assign-type-string     value 'S'.
 
        01  ls-running-assign-val         pic x(1024).
-       01  ls-running-assign-val-num     pic 9(16).
+       01  ls-running-assign-val-num     pic S9(16).
 
        01  ls-temp-param-buffer          pic x(1024).
        01  ls-temp-param-value           pic x(1024).       
@@ -266,12 +266,12 @@
            
       *> Assign new value to variable            
            if ls-assign-type-num then 
-               move trim(ls-running-assign-val-num)      
+               move ls-running-assign-val-num
                    to ls-variable-value-num
                call "logger" using concatenate(
                    "ASSIGNMENT :: Number value. New value: "
                    ls-variable-value-num
-                   " : from: " trim(ls-running-assign-val-num))
+                   " : from: " ls-running-assign-val-num)
                end-call                                              
            end-if 
 

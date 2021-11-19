@@ -34,8 +34,8 @@
 
        01  ls-max-select-idx             usage index.
 
-       01  ls-check-val-num-temp         pic 9(16).
-       01  ls-case-val-num-temp          pic 9(16).       
+       01  ls-check-val-num-temp         pic S9(16).
+       01  ls-case-val-num-temp          pic S9(16).       
 
        01  ls-line-text                  pic x(1024).
 

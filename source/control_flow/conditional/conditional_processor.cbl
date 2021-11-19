@@ -52,7 +52,7 @@
                                               depending on ls-num-parts
                                               indexed by ls-parts-idx.
                10  ls-part-value              pic x(1024) value spaces.
-               10  ls-part-value-num          pic 9(16) value zeros.
+               10  ls-part-value-num          pic S9(16) value zeros.
                10  ls-part-type               pic a(8) value spaces.                   
                    88  ls-part-type-integer   value "INTEGER".
                    88  ls-part-type-string    value "STRING".
