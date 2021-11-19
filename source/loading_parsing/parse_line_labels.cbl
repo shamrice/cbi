@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-04
-      * Last Modified: 2021-11-16
+      * Last Modified: 2021-11-19
       * Purpose: During loading, populates the potential line label 
       *          table. These are destinations used by GOTO or GOSUB.
       *          Seeing that line labels will look like implicit SUB
@@ -37,7 +37,7 @@
 
        01  ls-keyword-check-ret-code pic 9.
 
-       01  ls-assignment-count       pic 9(4).
+       01  ls-assignment-count       pic 9(4) comp.
 
        01  ls-potential-label-name   pic x(1024).
 

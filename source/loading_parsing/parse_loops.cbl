@@ -28,7 +28,7 @@
 
        01  ws-nested-idx             pic 9(4) comp value 0.
 
-       01  ws-nested-loop-idx        pic 9(4)  
+       01  ws-nested-loop-idx        pic 9(4) comp 
                                      occurs 0 to 9999 times 
                                      depending on ws-nested-idx.
 
@@ -38,7 +38,7 @@
        01  ls-num-loops-disp         pic 9(4).
        01  ls-nested-idx-disp        pic 9(4).
 
-       01  ls-end-loop-idx           pic 9(4).
+       01  ls-end-loop-idx           pic 9(4) comp.
 
        linkage section.              
 

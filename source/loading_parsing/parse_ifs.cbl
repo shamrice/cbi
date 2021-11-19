@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-05
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-19
       * Purpose: During loading, populates if table 
       * Tectonics: ./build.sh
       ******************************************************************
@@ -27,7 +27,7 @@
       
        01  ws-nested-idx             pic 9(4) comp value 0.
 
-       01  ws-nested-if-idx          pic 9(4)  
+       01  ws-nested-if-idx          pic 9(4) comp 
                                      occurs 0 to 9999 times 
                                      depending on ws-nested-idx.       
 
@@ -38,9 +38,9 @@
        01  ls-num-elseifs-disp       pic 99.
        01  ls-nested-idx-disp        pic 9(4).
 
-       01  ls-end-if-idx             pic 9(4).
-       01  ls-else-idx               pic 9(4).
-       01  ls-elseif-idx             pic 9(4).
+       01  ls-end-if-idx             pic 9(4) comp.
+       01  ls-else-idx               pic 9(4) comp.
+       01  ls-elseif-idx             pic 9(4) comp.
 
        linkage section.       
 
