@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-15
-      * Last Modified: 2021-11-18
+      * Last Modified: 2021-11-19
       * Purpose: Process CHR$ - get character for ASCII code passed in.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -27,29 +27,20 @@
 
        local-storage section.
        
-       01  ls-variable-temp-data.
-           05  ls-var-name           pic x(16).
-           05  ls-var-type           pic x(8).
-           05  ls-var-value          pic x(1024).
-           05  ls-var-value-num      pic 9(16).
-           05  ls-var-ret-code       pic 9.
-
+       copy "copybooks/local_storage/ls_variable.cpy".   
 
        01  ls-ascii-code             pic 9(3).
        01  ls-working-input-value    pic x(1024).
 
        linkage section.       
 
-       01  l-input-value             pic x(1024). 
-
-      * copy "copybooks/linkage_section/l_variable_table.cpy".
+       01  l-input-value             pic x(1024).       
 
        01  l-char-value              pic x.
 
        procedure division 
            using l-input-value 
            returning l-char-value.
-
              
        main-procedure.
 
@@ -92,10 +83,7 @@
 
       *> TODO: Special mappings for non-displayable ASCII codes. Must
       *> also match INKEY$ return so that can check, for example, 13 CR.
-
-               when 24
-                   move "▒" to l-char-value
-
+ 
                when 33
                    move "!" to l-char-value
                
@@ -400,22 +388,21 @@
 
 
        get-value-from-variable.
-           move trim(ls-working-input-value) to ls-var-name 
-           call "get-var-value" using                
-               ls-var-name 
-               ls-var-type 
-               ls-var-value
-               ls-var-ret-code
+
+           move ls-working-input-value to ls-variable-name 
+           call "get-variable" using
+               ls-variable 
+               ls-get-variable-return-code
            end-call 
 
-           if ls-var-ret-code > 0 and ls-var-type = "INTEGER" then 
-               move ls-var-value to ls-ascii-code
+           if ls-get-variable-return-code > 0 and ls-type-integer then 
+               move ls-variable-value-num to ls-ascii-code
            else 
                move "?" to l-char-value
                call "logger" using concatenate(
                    "ASCII-CODE-TO-CHAR :: Failed to get numeric value "
-                   " to check from variable: " trim(ls-var-name) 
-                   " : Return value was: " trim(ls-var-value) 
+                   " to check from variable: " trim(ls-variable-name) 
+                   " : Return value was: " trim(ls-variable-value) 
                    " : Returning char value of '?'")
                end-call 
                goback 
