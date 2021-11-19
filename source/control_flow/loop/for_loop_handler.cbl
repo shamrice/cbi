@@ -30,7 +30,9 @@
        01  ws-for-loop-data-table.
            05  ws-num-for-loops          pic 9(4) comp.
            05  ws-for-loop-data          occurs 0 to 1000 times 
-                                         depending on ws-num-for-loops.
+                                         depending on ws-num-for-loops
+                                         indexed by 
+                                         ls-working-for-loop-idx.
                10  ws-for-loop-line      pic 9(5).
                10  ws-for-loop-var       pic x(1024).
                10  ws-for-loop-start-val pic 9(16).
@@ -45,11 +47,10 @@
 
        01  ls-cur-line-num-disp      pic 9(5).            
 
-       01  ls-for-loop-parts         pic x(1024) occurs 8 times.
-       01  ls-parts-idx              pic 9 comp.
-       01  ls-unstring-idx           pic 9(4) comp.
-
-       01  ls-working-for-loop-idx   pic 9(4) comp.
+       01  ls-for-loop-parts         pic x(1024) occurs 8 times
+                                     indexed by ls-parts-idx.
+      
+       01  ls-unstring-idx           pic 9(4) comp.      
 
        01  ls-loop-idx               pic 9(4) comp.
 
@@ -84,7 +85,7 @@
            end-if 
 
            move 1 to ls-unstring-idx
-           move 1 to ls-parts-idx
+           set ls-parts-idx to 1
            move l-src-code-str to ls-line-to-process
 
            perform until ls-unstring-idx > length(l-src-code-str)           
@@ -114,7 +115,7 @@
 
                end-evaluate 
 
-               add 1 to ls-parts-idx 
+               set ls-parts-idx up by 1                
                
            end-perform 
 
@@ -125,7 +126,8 @@
        init-new-for-loop-record.
            add 1 to ws-num-for-loops
 
-           move ws-num-for-loops to ls-working-for-loop-idx
+      *     move ws-num-for-loops to ls-working-for-loop-idx
+           set ls-working-for-loop-idx to ws-num-for-loops
 
            move upper-case(ls-for-loop-parts(ls-parts-idx))
                to ws-for-loop-var(ls-working-for-loop-idx)
