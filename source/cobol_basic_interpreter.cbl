@@ -410,8 +410,7 @@
                    call "loop-handler" using 
                        ws-source-data-temp
                        ws-line-idx
-                       ws-loop-boundary-table
-                       ws-variable-table
+                       ws-loop-boundary-table                       
                    end-call 
 
 

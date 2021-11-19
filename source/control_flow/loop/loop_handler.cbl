@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-25
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-19
       * Purpose: Directs control flow to proper entry and exit 
       *          processing if current line is loop related
       * Tectonics: ./build.sh
@@ -43,13 +43,11 @@
        01  l-cur-line-num            pic 9(5) comp.
 
        copy "copybooks/linkage_section/l_loop_boundary_table.cpy".
-
-       copy "copybooks/linkage_section/l_variable_table.cpy".
-                           
+        
 
        procedure division using 
            l-src-code-str l-cur-line-num 
-           l-loop-boundary-table l-variable-table.   
+           l-loop-boundary-table.   
 
        main-procedure.
 
@@ -100,8 +98,7 @@
                    call "for-loop-handler" using 
                        ls-line-text
                        l-cur-line-num
-                       l-loop-boundary-table
-                       l-variable-table
+                       l-loop-boundary-table                       
                    end-call 
 
                when upper-case(ls-line-text(1:length(ws-next)))
@@ -109,8 +106,7 @@
                    call "for-loop-end-handler" using 
                        ls-line-text
                        l-cur-line-num
-                       l-loop-boundary-table
-                       l-variable-table
+                       l-loop-boundary-table                       
                    end-call 
 
            end-evaluate
@@ -124,8 +120,7 @@
                
       *>   Check to see if condition is valid before continuing.
            call "conditional-processor" using 
-               ls-line-text(length(ws-while):)
-               l-variable-table
+               ls-line-text(length(ws-while):)               
                ls-conditional-ret-val
            end-call 
                
@@ -189,8 +184,7 @@
                
       *>   Check to see if condition is valid before continuing.
            call "conditional-processor" using 
-               ls-line-text(length(ws-do-while):)
-               l-variable-table
+               ls-line-text(length(ws-do-while):)               
                ls-conditional-ret-val
            end-call 
                
@@ -224,8 +218,7 @@
                
       *>   Check to see if condition is valid before continuing.
            call "conditional-processor" using 
-               ls-line-text(length(ws-do-until):)
-               l-variable-table
+               ls-line-text(length(ws-do-until):)               
                ls-conditional-ret-val
            end-call 
                
@@ -257,8 +250,7 @@
                
       *>   Check to see if condition is valid before continuing.
            call "conditional-processor" using 
-               ls-line-text(length(ws-loop-while):)
-               l-variable-table
+               ls-line-text(length(ws-loop-while):)               
                ls-conditional-ret-val
            end-call 
                
@@ -289,8 +281,7 @@
                
       *>   Check to see if condition is valid before continuing.
            call "conditional-processor" using 
-               ls-line-text(length(ws-loop-until):)
-               l-variable-table
+               ls-line-text(length(ws-loop-until):)               
                ls-conditional-ret-val
            end-call 
                

@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-26
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-19
       * Purpose: Process and handles FOR loop start/end lines.
       *          Main entry point handles loop start & top. 
       *          'for-loop-end-handler' entry point handles loop ending
@@ -39,26 +39,17 @@
                
        local-storage section.    
        
-       01  ls-line-to-process        pic x(1024).
+       copy "copybooks/local_storage/ls_variable.cpy".  
 
-       01  ls-conditional-ret-val    pic 9.
+       01  ls-line-to-process        pic x(1024).       
 
-       01  ls-cur-line-num-disp      pic 9(5).
-
-       01  ls-variable-temp-data.
-           05  ls-var-name           pic x(16).
-           05  ls-var-type           pic x(8).
-           05  ls-var-value          pic x(1024).
-           05  ls-var-value-num      pic 9(16).
-           05  ls-var-ret-code       pic 9.
-       
-       01  ls-part-temp              pic x(1024).
+       01  ls-cur-line-num-disp      pic 9(5).            
 
        01  ls-for-loop-parts         pic x(1024) occurs 8 times.
        01  ls-parts-idx              pic 9 comp.
        01  ls-unstring-idx           pic 9(4) comp.
 
-       01  ls-working-for-loop-idx   pic 9(4).
+       01  ls-working-for-loop-idx   pic 9(4) comp.
 
        01  ls-loop-idx               pic 9(4) comp.
 
@@ -76,12 +67,10 @@
 
        copy "copybooks/linkage_section/l_loop_boundary_table.cpy".
 
-       copy "copybooks/linkage_section/l_variable_table.cpy".
-
 
        procedure division using 
            l-src-code-str l-cur-line-num 
-           l-loop-boundary-table l-variable-table.   
+           l-loop-boundary-table.   
 
        main-procedure.
 
@@ -202,32 +191,33 @@
                to ws-for-loop-end-val(ls-working-for-loop-idx) 
 
 
-           move ws-for-loop-var(ls-working-for-loop-idx) to ls-var-name
+           move ws-for-loop-var(ls-working-for-loop-idx) 
+               to ls-variable-name
            
-           call "get-var-value" using                
-               ls-var-name 
-               ls-var-type 
-               ls-var-value
-               ls-var-ret-code
+           call "get-variable" using 
+               ls-variable 
+               ls-get-variable-return-code
            end-call 
 
            call "logger" using concatenate(
                "FOR-LOOP-START-HANDLER :: "
-               "var name: " trim(ls-var-name)
-               " : var type: " ls-var-type
-               " : var value: " trim(ls-var-value)
-               " : ret code: " ls-var-ret-code)
+               "var name: " trim(ls-variable-name)
+               " : var type: " ls-variable-type
+               " : var value: " trim(ls-variable-value)
+               " : var value num: " ls-variable-value-num
+               " : ret code: " ls-get-variable-return-code)
            end-call 
            
-           if ls-var-ret-code = 0 or ls-var-type not = "INTEGER" then 
+           if ls-get-variable-return-code = 0 or ls-type-string then 
                call "logger" using concatenate(
                    "FOR-LOOP-START-HANDLER :: Error : Failed to find "
                    " FOR loop iterator variable in variable table! : "
                    " Skipping to end of loop. : "
-                   "var name: " trim(ls-var-name)
-                   " : var type: " ls-var-type
-                   " : var value: " trim(ls-var-value)
-                   " : ret code: " ls-var-ret-code)
+                   "var name: " trim(ls-variable-name)
+                   " : var type: " ls-variable-type
+                   " : var value: " trim(ls-variable-value)
+                   " : var value num: " ls-variable-value-num
+                   " : ret code: " ls-get-variable-return-code)
                end-call 
                perform set-current-line-to-loop-exit-and-go-back
            end-if 
@@ -235,13 +225,13 @@
            if ws-for-loop-start-val(ls-working-for-loop-idx) 
                > ws-for-loop-end-val(ls-working-for-loop-idx)                
            then                 
-               if numval(ls-var-value) 
+               if ls-variable-value-num
                    < ws-for-loop-end-val(ls-working-for-loop-idx) 
                then 
                    perform set-current-line-to-loop-exit-and-go-back
                end-if                    
            else       
-               if numval(ls-var-value) 
+               if ls-variable-value-num
                    > ws-for-loop-end-val(ls-working-for-loop-idx) 
                then 
                    perform set-current-line-to-loop-exit-and-go-back
@@ -296,7 +286,7 @@
       ******************************************************************
        entry "for-loop-end-handler" using 
            l-src-code-str l-cur-line-num 
-           l-loop-boundary-table l-variable-table.
+           l-loop-boundary-table.
 
            call "logger" using concatenate(
                "FOR-LOOP-END-HANDLER :: Enter handler with line: " 
@@ -338,37 +328,38 @@
            end-if 
            
       *>   Get current value of variable.
-           call "get-var-value" using                
-               ls-next-var-name 
-               ls-var-type 
-               ls-var-value
-               ls-var-ret-code
+           move ls-next-var-name to ls-variable-name 
+           call "get-variable" using 
+               ls-variable 
+               ls-get-variable-return-code
            end-call 
 
            call "logger" using concatenate(
                "FOR-LOOP-END-HANDLER :: "
-               "var name: " trim(ls-next-var-name)
-               " : var type: " ls-var-type
-               " : var value: " trim(ls-var-value)
-               " : ret code: " ls-var-ret-code)
+               "var name: " trim(ls-variable-name)
+               " : var type: " ls-variable-type
+               " : var value: " trim(ls-variable-value)
+               " : var value num: " ls-variable-value-num 
+               " : ret code: " ls-get-variable-return-code)
            end-call 
            
-           if ls-var-ret-code = 0 or ls-var-type not = "INTEGER" then 
+           if ls-get-variable-return-code = 0 or ls-type-string then 
                call "logger" using concatenate(
                    "FOR-LOOP-END-HANDLER :: Error : Failed to find "
                    " FOR loop iterator variable in variable table! : "
                    " EXITING loop. : "
-                   "var name: " trim(ls-next-var-name)
-                   " : var type: " ls-var-type
-                   " : var value: " trim(ls-var-value)
-                   " : ret code: " ls-var-ret-code)
+                   "var name: " trim(ls-variable-name)
+                   " : var type: " ls-variable-type
+                   " : var value: " trim(ls-variable-value)
+                   " : var value num: " ls-variable-value-num 
+                   " : ret code: " ls-get-variable-return-code)
                end-call 
                perform set-current-line-to-loop-exit-and-go-back
            end-if 
 
       *>   Assign new value to the iterator. Increasing by STEP amount.
            compute ls-new-var-value = 
-               numval(ls-var-value) +               
+               ls-variable-value-num +               
                ws-for-loop-step(ls-working-for-loop-idx)
            end-compute 
 
