@@ -27,16 +27,10 @@
 
        local-storage section.
        
+       copy "copybooks/local_storage/ls_variable.cpy". 
+
        01  ls-temp-param-buffer         pic x(1024).
-       01  ls-temp-param-values         pic x(16) occurs 2 times. 
-
-       01  ls-variable-temp-data.
-           05  ls-var-name               pic x(16).
-           05  ls-var-type               pic x(8).
-           05  ls-var-value              pic x(1024).
-           05  ls-var-value-num          pic 9(16).
-           05  ls-var-ret-code           pic 9.
-
+       01  ls-temp-param-values         pic x(16) occurs 2 times.        
 
        linkage section.       
 
@@ -45,12 +39,10 @@
        01  l-screen-position.
            05  l-scr-row                pic 999.
            05  l-scr-col                pic 999.    
-
-       copy "copybooks/linkage_section/l_variable_table.cpy".
        
 
        procedure division using 
-           l-src-code-str l-screen-position l-variable-table.   
+           l-src-code-str l-screen-position.   
 
        main-procedure.
            
@@ -75,20 +67,18 @@
            if trim(ls-temp-param-values(1)) is numeric then 
                move ls-temp-param-values(1) to l-scr-row
            else 
-               move upper-case(trim(ls-temp-param-values(1))) 
-                   to ls-var-name
+               move ls-temp-param-values(1) to ls-variable-name
                perform set-value-from-var
-               move ls-var-value to l-scr-row 
+               move ls-variable-value-num to l-scr-row 
            end-if 
 
            if ls-temp-param-values(2) not = spaces then 
                if trim(ls-temp-param-values(2)) is numeric then 
                    move ls-temp-param-values(2) to l-scr-col
                else 
-                   move upper-case(trim(ls-temp-param-values(2)))
-                       to ls-var-name
+                   move ls-temp-param-values(2) to ls-variable-name 
                    perform set-value-from-var
-                   move ls-var-value to l-scr-col 
+                   move ls-variable-value-num to l-scr-col 
                end-if 
            end-if 
 
@@ -101,19 +91,18 @@
 
 
        set-value-from-var.
-           call "get-var-value" using                
-               ls-var-name
-               ls-var-type 
-               ls-var-value
-               ls-var-ret-code
+
+           call "get-variable" using 
+               ls-variable 
+               ls-get-variable-return-code
            end-call
 
-           if ls-var-ret-code = 0 or ls-var-type not = "INTEGER" then 
+           if ls-get-variable-return-code = 0 or ls-type-string then 
                call "logger" using concatenate(
-                   "LOCATE :: Failed to get value for variable: "
-                   trim(ls-var-name) " : Defaulting to 1.")
+                   "LOCATE :: Failed to get valid value for variable: "
+                   trim(ls-variable-name) " : Defaulting to 1.")
                end-call 
-               move 1 to ls-var-value
+               move 1 to ls-variable-value-num
            end-if            
 
            exit paragraph.

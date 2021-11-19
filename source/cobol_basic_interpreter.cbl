@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-11-18
+      * Last Modified: 2021-11-19
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -319,8 +319,7 @@
            
                    call "set-cursor-position" using 
                        ws-source-data-temp
-                       ws-screen-position
-                       ws-variable-table
+                       ws-screen-position                       
                    end-call       
               
 
