@@ -36,8 +36,7 @@
 
        01  ls-conditional-ret-val        pic 9.       
 
-       01  ls-if-idx                     pic 9(4) comp.
-       01  ls-elseif-idx                 pic 99 comp.
+       01  ls-max-if-idx                 usage index.      
 
        01  ls-elseif-found-sw            pic a value 'N'.
            88  ls-elseif-found           value 'Y'.
@@ -102,15 +101,16 @@
        handle-if.
 
       *>   Find related if idx and set to not processed yet.
-           perform varying ls-if-idx from 1 by 1 
-           until ls-if-idx > l-num-ifs 
-               if l-if-start(ls-if-idx) = l-cur-line-num then 
-                   set l-if-not-processed(ls-if-idx) to true                    
+           set ls-max-if-idx to l-num-ifs 
+           perform varying l-if-idx from 1 by 1 
+           until l-if-idx > ls-max-if-idx 
+               if l-if-start(l-if-idx) = l-cur-line-num then 
+                   set l-if-not-processed(l-if-idx) to true                    
                    exit perform 
                end-if 
            end-perform 
 
-           if ls-if-idx > l-num-ifs then 
+           if l-if-idx > ls-max-if-idx then 
                call "logger" using concatenate(
                    "IF-HANDLER :: WARNING: Could not related IF index "
                    "in the IF boundary table. Skipping conditional "
@@ -136,27 +136,27 @@
            if ls-conditional-ret-val > 0 then 
                call "logger" using concatenate(
                    "***********SETTING IF TO PROCESSED FOR ID: "
-                   ls-if-idx "******************"
+                   l-if-idx "******************"
                ) end-call 
-               set l-if-processed(ls-if-idx) to true                 
+               set l-if-processed(l-if-idx) to true                 
            else 
 
                evaluate true 
-                   when l-num-elseifs(ls-if-idx) > 0 
+                   when l-num-elseifs(l-if-idx) > 0 
                        compute l-cur-line-num = 
-                           l-elseif-start(ls-if-idx, 1) - 1
+                           l-elseif-start(l-if-idx, 1) - 1
                        end-compute 
                    
-                   when l-else-start(ls-if-idx) > 0 
+                   when l-else-start(l-if-idx) > 0 
                        compute l-cur-line-num = 
-                           l-else-start(ls-if-idx) - 1
+                           l-else-start(l-if-idx) - 1
                        end-compute                        
 
                    when other 
                 *> Check if END IF exists before setting.
-                       if l-if-end(ls-if-idx) > 0 then 
+                       if l-if-end(l-if-idx) > 0 then 
                            compute l-cur-line-num = 
-                               l-if-end(ls-if-idx) - 1
+                               l-if-end(l-if-idx) - 1
                            end-compute                   
                        end-if 
 
@@ -172,20 +172,21 @@
        handle-elseif.
 
       *>   Find related if idx
-           perform varying ls-if-idx from 1 by 1 
-           until ls-if-idx > l-num-ifs
+           set ls-max-if-idx to l-num-ifs
+           perform varying l-if-idx from 1 by 1 
+           until l-if-idx > ls-max-if-idx
 
-               perform varying ls-elseif-idx from 1 by 1 
-               until ls-elseif-idx > l-num-elseifs(ls-if-idx) 
+               perform varying l-elseif-idx from 1 by 1 
+               until l-elseif-idx > l-num-elseifs(l-if-idx) 
 
                    if l-elseif-start
-                       (ls-if-idx, ls-elseif-idx) 
+                       (l-if-idx, l-elseif-idx) 
                        = l-cur-line-num 
                    then      
                        call "logger" using concatenate(
                            "********* ELSEIF FOUND: " 
-                           ls-elseif-idx " ELSE ID: " 
-                           ls-if-idx)
+                           l-elseif-idx " ELSE ID: " 
+                           l-if-idx)
                        end-call 
                        set ls-elseif-found to true              
                        exit perform 
@@ -197,7 +198,7 @@
                end-if  
            end-perform 
 
-           if ls-if-idx > l-num-ifs then 
+           if l-if-idx > ls-max-if-idx then 
                call "logger" using concatenate(
                    "IF-HANDLER :: WARNING: Could not related IF index "
                    "in the IF boundary table for ELSEIF. "
@@ -207,13 +208,13 @@
            end-if 
 
       *>   If conditional was already processed, move to end of if block
-           if l-if-processed(ls-if-idx) then 
+           if l-if-processed(l-if-idx) then 
                call "logger" using concatenate(
                    "IF-HANDLER :: If alread processed. Moving to "
                    "END IF line.")
                end-call 
                
-               compute l-cur-line-num = l-if-end(ls-if-idx) - 1 
+               compute l-cur-line-num = l-if-end(l-if-idx) - 1 
 
                goback 
            end-if 
@@ -234,25 +235,25 @@
            if ls-conditional-ret-val > 0 then 
                call "logger" using concatenate(
                    "***********SETTING IF TO PROCESSED FOR ID: "
-                   ls-if-idx "******************"
+                   l-if-idx "******************"
                ) end-call 
-               set l-if-processed(ls-if-idx) to true  
+               set l-if-processed(l-if-idx) to true  
            else 
 
                evaluate true 
-                   when l-num-elseifs(ls-if-idx) > ls-elseif-idx 
+                   when l-num-elseifs(l-if-idx) > l-elseif-idx 
                        compute l-cur-line-num = 
                            l-elseif-start(
-                               ls-if-idx, (ls-elseif-idx + 1)) - 1
+                               l-if-idx, (l-elseif-idx + 1)) - 1
                        end-compute 
                    
-                   when l-else-start(ls-if-idx) > 0 
+                   when l-else-start(l-if-idx) > 0 
                        compute l-cur-line-num = 
-                           l-else-start(ls-if-idx) - 1
+                           l-else-start(l-if-idx) - 1
                        end-compute                        
 
                    when other 
-                       compute l-cur-line-num = l-if-end(ls-if-idx) - 1 
+                       compute l-cur-line-num = l-if-end(l-if-idx) - 1 
 
                end-evaluate
            end-if          
@@ -264,11 +265,12 @@
        handle-else.
       *>   Find related IF idx. If already processed, skip ELSE and move
       *>   to END IF.
-           perform varying ls-if-idx from 1 by 1 
-           until ls-if-idx > l-num-ifs 
-               if l-else-start(ls-if-idx) = l-cur-line-num then 
-                   if l-if-processed(ls-if-idx) then 
-                       compute l-cur-line-num = l-if-end(ls-if-idx) - 1 
+           set ls-max-if-idx to l-num-ifs
+           perform varying l-if-idx from 1 by 1 
+           until l-if-idx > ls-max-if-idx 
+               if l-else-start(l-if-idx) = l-cur-line-num then 
+                   if l-if-processed(l-if-idx) then 
+                       compute l-cur-line-num = l-if-end(l-if-idx) - 1 
                        goback 
                    end-if                    
                end-if 
@@ -280,10 +282,11 @@
        handle-end-if.
       *>   Find related IF idx for END IF and mark as unprocessed for
       *>   next potential iteration over IF block.
-           perform varying ls-if-idx from 1 by 1 
-           until ls-if-idx > l-num-ifs 
-               if l-if-end(ls-if-idx) = l-cur-line-num then 
-                   set l-if-not-processed(ls-if-idx) to true  
+           set ls-max-if-idx to l-num-ifs
+           perform varying l-if-idx from 1 by 1 
+           until l-if-idx > ls-max-if-idx 
+               if l-if-end(l-if-idx) = l-cur-line-num then 
+                   set l-if-not-processed(l-if-idx) to true  
                    goback                    
                end-if 
            end-perform 

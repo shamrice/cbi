@@ -86,13 +86,15 @@
        01  ws-if-boundary-table.
            05  ws-num-ifs                  pic 9(4) comp. 
            05  ws-if-data                  occurs 0 to 9999 times
-                                           depending on ws-num-ifs.
+                                           depending on ws-num-ifs
+                                           indexed by ws-if-idx.
                10  ws-if-processed-sw      pic a.
                    88  ws-if-processed     value 'Y'.
                    88  ws-if-not-processed value 'N'.
                10  ws-if-start             pic 9(5).
                10  ws-num-elseifs          pic 99 comp.
-               10  ws-elseif-start         pic 9(5) occurs 99 times.
+               10  ws-elseif-start         pic 9(5) occurs 99 times
+                                           indexed by ws-elseif-idx.
                10  ws-else-start           pic 9(5). 
                10  ws-if-end               pic 9(5).
 
@@ -210,8 +212,7 @@
 
 
 
-       parse-and-run-program.           
-           
+       parse-and-run-program.                      
            perform varying ws-line-idx from 1 by 1 
            until ws-line-idx > ws-num-lines or ws-exit-program
 
