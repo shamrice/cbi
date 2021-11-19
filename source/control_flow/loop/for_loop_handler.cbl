@@ -27,12 +27,14 @@
 
        copy "copybooks/basic_keywords.cpy".
 
+       01  ws-for-loop-end-idx           usage index.
+
        01  ws-for-loop-data-table.
            05  ws-num-for-loops          pic 9(4) comp.
            05  ws-for-loop-data          occurs 0 to 1000 times 
                                          depending on ws-num-for-loops
                                          indexed by 
-                                         ls-working-for-loop-idx.
+                                         ws-working-for-loop-idx.
                10  ws-for-loop-line      pic 9(5).
                10  ws-for-loop-var       pic x(1024).
                10  ws-for-loop-start-val pic 9(16).
@@ -125,12 +127,11 @@
 
        init-new-for-loop-record.
            add 1 to ws-num-for-loops
-
-      *     move ws-num-for-loops to ls-working-for-loop-idx
-           set ls-working-for-loop-idx to ws-num-for-loops
+      
+           set ws-working-for-loop-idx to ws-num-for-loops
 
            move upper-case(ls-for-loop-parts(ls-parts-idx))
-               to ws-for-loop-var(ls-working-for-loop-idx)
+               to ws-for-loop-var(ws-working-for-loop-idx)
                
            exit paragraph.
 
@@ -145,13 +146,15 @@
                exit paragraph
            end-if 
           
-      *>   Otherwise, find existing entry 
-           perform varying ls-working-for-loop-idx from 1 by 1 
-           until ls-working-for-loop-idx > ws-num-for-loops 
+      *>   Otherwise, find existing entry
+           set ws-for-loop-end-idx to ws-num-for-loops
 
-           call "logger" using ws-for-loop-var(ls-working-for-loop-idx) 
+           perform varying ws-working-for-loop-idx from 1 by 1 
+           until ws-working-for-loop-idx > ws-for-loop-end-idx 
 
-               if ws-for-loop-var(ls-working-for-loop-idx) 
+           call "logger" using ws-for-loop-var(ws-working-for-loop-idx) 
+
+               if ws-for-loop-var(ws-working-for-loop-idx) 
                = upper-case(ls-for-loop-parts(ls-parts-idx))
                then       
                    exit paragraph
@@ -168,13 +171,13 @@
       *>   TODO : Start value can also be a variable, not just an int!
 
            move ls-for-loop-parts(ls-parts-idx) 
-               to ws-for-loop-start-val(ls-working-for-loop-idx) 
+               to ws-for-loop-start-val(ws-working-for-loop-idx) 
 
            move concatenate(
                trim(
-                   upper-case(ws-for-loop-var(ls-working-for-loop-idx)))
+                   upper-case(ws-for-loop-var(ws-working-for-loop-idx)))
                " = "
-               ws-for-loop-start-val(ls-working-for-loop-idx))
+               ws-for-loop-start-val(ws-working-for-loop-idx))
                to ls-assignment-str
 
            call "assign-var" using 
@@ -190,10 +193,10 @@
       *>   TODO : End value can also be a variable, not just an int!           
 
            move ls-for-loop-parts(ls-parts-idx) 
-               to ws-for-loop-end-val(ls-working-for-loop-idx) 
+               to ws-for-loop-end-val(ws-working-for-loop-idx) 
 
 
-           move ws-for-loop-var(ls-working-for-loop-idx) 
+           move ws-for-loop-var(ws-working-for-loop-idx) 
                to ls-variable-name
            
            call "get-variable" using 
@@ -224,17 +227,17 @@
                perform set-current-line-to-loop-exit-and-go-back
            end-if 
 
-           if ws-for-loop-start-val(ls-working-for-loop-idx) 
-               > ws-for-loop-end-val(ls-working-for-loop-idx)                
+           if ws-for-loop-start-val(ws-working-for-loop-idx) 
+               > ws-for-loop-end-val(ws-working-for-loop-idx)                
            then                 
                if ls-variable-value-num
-                   < ws-for-loop-end-val(ls-working-for-loop-idx) 
+                   < ws-for-loop-end-val(ws-working-for-loop-idx) 
                then 
                    perform set-current-line-to-loop-exit-and-go-back
                end-if                    
            else       
                if ls-variable-value-num
-                   > ws-for-loop-end-val(ls-working-for-loop-idx) 
+                   > ws-for-loop-end-val(ws-working-for-loop-idx) 
                then 
                    perform set-current-line-to-loop-exit-and-go-back
                end-if                    
@@ -249,10 +252,10 @@
        *>  TODO : STEP value can also be variable not just int!
 
            if ls-for-loop-parts(ls-parts-idx) = spaces then 
-               move 1 to ws-for-loop-step(ls-working-for-loop-idx) 
+               move 1 to ws-for-loop-step(ws-working-for-loop-idx) 
            else 
                move numval(ls-for-loop-parts(ls-parts-idx))
-               to ws-for-loop-step(ls-working-for-loop-idx)                      
+               to ws-for-loop-step(ws-working-for-loop-idx)                      
            end-if           
            exit paragraph.
 
@@ -262,7 +265,7 @@
            call "logger" using concatenate(
                "FOR-LOOP-START-HANDLER :: Exiting for loop. "
                "Setting line num to end of for loop " 
-               ls-working-for-loop-idx)
+               ws-working-for-loop-idx)
            end-call
 
            perform varying ls-loop-idx from 1 by 1 
@@ -304,10 +307,12 @@
            move trim(ls-line-to-process) to ls-next-var-name
             
       *>   Find existing loop entry to get IDX in memory
-           perform varying ls-working-for-loop-idx from 1 by 1 
-           until ls-working-for-loop-idx > ws-num-for-loops 
+           set ws-for-loop-end-idx to ws-num-for-loops
 
-               if ws-for-loop-var(ls-working-for-loop-idx) 
+           perform varying ws-working-for-loop-idx from 1 by 1 
+           until ws-working-for-loop-idx > ws-for-loop-end-idx 
+
+               if ws-for-loop-var(ws-working-for-loop-idx) 
                = ls-next-var-name
                then  
                    call "logger" using concatenate(
@@ -320,7 +325,7 @@
            end-perform 
 
       *>   If can't be found, leave the loop. 
-           if ls-working-for-loop-idx > ws-num-for-loops then 
+           if ws-working-for-loop-idx > ws-num-for-loops then 
                call "logger" using concatenate(
                    "FOR-LOOP-END-HANDLER :: ERROR : Failed to find FOR "
                    "loop info for iterator: " trim(ls-next-var-name)
@@ -362,11 +367,11 @@
       *>   Assign new value to the iterator. Increasing by STEP amount.
            compute ls-new-var-value = 
                ls-variable-value-num +               
-               ws-for-loop-step(ls-working-for-loop-idx)
+               ws-for-loop-step(ws-working-for-loop-idx)
            end-compute 
 
            move concatenate(
-               trim(ws-for-loop-var(ls-working-for-loop-idx))
+               trim(ws-for-loop-var(ws-working-for-loop-idx))
                " = " 
                ls-new-var-value)
                to ls-assignment-str
@@ -376,13 +381,13 @@
            end-call 
 
       *>   Check exit condition of loop. If not, return to top.
-           if (ws-for-loop-step(ls-working-for-loop-idx) > 0 
+           if (ws-for-loop-step(ws-working-for-loop-idx) > 0 
                    and ls-new-var-value 
-                   > ws-for-loop-end-val(ls-working-for-loop-idx))
+                   > ws-for-loop-end-val(ws-working-for-loop-idx))
                or 
-               (ws-for-loop-step(ls-working-for-loop-idx) < 0 
+               (ws-for-loop-step(ws-working-for-loop-idx) < 0 
                    and ls-new-var-value 
-                   < ws-for-loop-end-val(ls-working-for-loop-idx))
+                   < ws-for-loop-end-val(ws-working-for-loop-idx))
            then 
                perform set-current-line-to-loop-exit-and-go-back
            else 
