@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-13
-      * Last Modified: 2021-11-18
+      * Last Modified: 2021-11-19
       * Purpose: Handles a SELECT statements and moves current line number 
       *          to the correct location based on processing of the 
       *          statement.      
@@ -32,6 +32,8 @@
       
        copy "copybooks/local_storage/ls_variable.cpy".  
 
+       01  ls-max-select-idx             usage index.
+
        01  ls-check-val-num-temp         pic 9(16).
        01  ls-case-val-num-temp          pic 9(16).       
 
@@ -42,9 +44,6 @@
        01  ls-conditional-ret-val        pic 9.       
 
        01  ls-conditional-operator-count pic 9(4) comp.
-
-       01  ls-select-idx                 pic 9(4) comp.
-       01  ls-case-idx                   pic 99 comp.       
 
        01  ls-case-found-sw              pic a value 'N'.
            88  ls-case-found             value 'Y'.
@@ -100,15 +99,16 @@
        handle-select-case.
 
       *>   Find related select idx and set to not processed yet.
-           perform varying ls-select-idx from 1 by 1 
-           until ls-select-idx > l-num-selects 
-               if l-select-start(ls-select-idx) = l-cur-line-num then 
-                   set l-select-not-processed(ls-select-idx) to true                    
+           set ls-max-select-idx to l-num-selects
+           perform varying l-select-idx from 1 by 1 
+           until l-select-idx > ls-max-select-idx 
+               if l-select-start(l-select-idx) = l-cur-line-num then 
+                   set l-select-not-processed(l-select-idx) to true                    
                    exit perform 
                end-if 
            end-perform 
 
-           if ls-select-idx > l-num-selects then 
+           if l-select-idx > ls-max-select-idx then 
                call "logger" using concatenate(
                    "SELECT-HANDLER :: WARNING: Could not find related "
                    "index in the SELECT boundary table. Skipping "
@@ -141,7 +141,7 @@
                end-call 
 
                move ls-conditional-ret-val 
-               to l-select-check-val(ls-select-idx)      
+               to l-select-check-val(l-select-idx)      
            else 
 
       *>   Check if variable, if so replace it with that value, if not,
@@ -155,10 +155,10 @@
                if ls-get-variable-return-code > 0 then       
                    if ls-type-integer then 
                        move ls-variable-value-num
-                       to l-select-check-val(ls-select-idx)
+                       to l-select-check-val(l-select-idx)
                    else     
                        move ls-variable-value
-                       to l-select-check-val(ls-select-idx)
+                       to l-select-check-val(l-select-idx)
                    end-if 
                else                
       *>           Replace any leading or trailing double quotes.
@@ -170,22 +170,22 @@
 
       *>           Set value.
                    move trim(ls-line-text)     
-                   to l-select-check-val(ls-select-idx)
+                   to l-select-check-val(l-select-idx)
                end-if 
                
            end-if 
            
       *>   Move to first CASE statement if exists, or to end of 
       *>   select if it doesn't. 
-           if l-num-cases(ls-select-idx) > 0 then 
+           if l-num-cases(l-select-idx) > 0 then 
                compute l-cur-line-num = 
-                   l-case-start(ls-select-idx, 1) - 1
+                   l-case-start(l-select-idx, 1) - 1
                end-compute 
            else 
       *>       If END SELECT is missing (bad syntax), will produce 
       *>       'undefined' behavior. (Will move to line 99999)
                compute l-cur-line-num = 
-                   l-select-end(ls-select-idx) - 1 
+                   l-select-end(l-select-idx) - 1 
                end-compute 
            end-if   
 
@@ -197,19 +197,20 @@
        handle-case.
 
       *>   Find related if idx
-           perform varying ls-select-idx from 1 by 1 
-           until ls-select-idx > l-num-selects
+           set ls-max-select-idx to l-num-selects
+           perform varying l-select-idx from 1 by 1 
+           until l-select-idx > ls-max-select-idx
 
-               perform varying ls-case-idx from 1 by 1 
-               until ls-case-idx > l-num-cases(ls-select-idx) 
+               perform varying l-case-idx from 1 by 1 
+               until l-case-idx > l-num-cases(l-select-idx) 
 
-                   if l-case-start(ls-select-idx, ls-case-idx) 
+                   if l-case-start(l-select-idx, l-case-idx) 
                        = l-cur-line-num 
                    then      
                        call "logger" using concatenate(
                            "********* CASE FOUND: " 
-                           ls-case-idx " SELECT ID: " 
-                           ls-select-idx)
+                           l-case-idx " SELECT ID: " 
+                           l-select-idx)
                        end-call 
                        set ls-case-found to true              
                        exit perform 
@@ -221,7 +222,7 @@
                end-if  
            end-perform 
 
-           if ls-select-idx > l-num-selects then 
+           if l-select-idx > ls-max-select-idx then 
                call "logger" using concatenate(
                    "SELECT-HANDLER :: WARNING: Could not related SELECT"
                    " index in the SELECT boundary table for CASE. "
@@ -231,13 +232,13 @@
            end-if 
 
       *>   If case was already processed, move to end of select block
-           if l-select-processed(ls-select-idx) then 
+           if l-select-processed(l-select-idx) then 
                call "logger" using concatenate(
                    "SELECT-HANDLER :: select alread processed. Moving "
                    "to END SELECT line.")
                end-call 
                
-               compute l-cur-line-num = l-select-end(ls-select-idx) - 1 
+               compute l-cur-line-num = l-select-end(l-select-idx) - 1 
 
                goback 
            end-if 
@@ -245,7 +246,7 @@
 
       *>   If currently on CASE ELSE and not processed, always true.
            if trim(ls-line-text) = ws-case-else then 
-               set l-select-processed(ls-select-idx) to true 
+               set l-select-processed(l-select-idx) to true 
                goback 
            end-if 
 
@@ -258,8 +259,8 @@
       *>   TODO : CASE can have conditionals (REQUIRES 'IS') and 
       *>          equations, not just simple single values. 
            
-           if trim(l-select-check-val(ls-select-idx)) is numeric then 
-               move trim(l-select-check-val(ls-select-idx)) 
+           if trim(l-select-check-val(l-select-idx)) is numeric then 
+               move trim(l-select-check-val(l-select-idx)) 
                to ls-check-val-num-temp
 
                set ls-check-val-numeric to true 
@@ -277,14 +278,14 @@
            if ls-get-variable-return-code > 0 then       
                 if ls-type-integer and ls-check-val-numeric then       
                    if ls-variable-value-num = ls-check-val-num-temp then 
-                       set l-select-processed(ls-select-idx) to true 
+                       set l-select-processed(l-select-idx) to true 
                        goback 
                    end-if 
                else       
                    if ls-variable-value = 
-                       l-select-check-val(ls-select-idx)       
+                       l-select-check-val(l-select-idx)       
                    then 
-                       set l-select-processed(ls-select-idx) to true 
+                       set l-select-processed(l-select-idx) to true 
                        goback 
                    end-if 
                end-if 
@@ -293,14 +294,14 @@
                then 
                    move trim(ls-line-text) to ls-case-val-num-temp
                    if ls-case-val-num-temp = ls-check-val-num-temp then 
-                       set l-select-processed(ls-select-idx) to true 
+                       set l-select-processed(l-select-idx) to true 
                        goback 
                    end-if 
                else 
                    if trim(ls-line-text) 
-                       = l-select-check-val(ls-select-idx) 
+                       = l-select-check-val(l-select-idx) 
                    then 
-                       set l-select-processed(ls-select-idx) to true 
+                       set l-select-processed(l-select-idx) to true 
                        goback 
                    end-if 
                end-if 
@@ -308,12 +309,12 @@
 
       *>   If made this far, CASE check failed, move to next CASE or 
       *>   END SELECT.
-           if l-num-cases(ls-select-idx) > ls-case-idx then 
+           if l-num-cases(l-select-idx) > l-case-idx then 
                compute l-cur-line-num = 
-                   l-case-start(ls-select-idx, ls-case-idx + 1)  - 1
+                   l-case-start(l-select-idx, l-case-idx + 1)  - 1
                end-compute 
            else 
-               compute l-cur-line-num = l-select-end(ls-select-idx) - 1 
+               compute l-cur-line-num = l-select-end(l-select-idx) - 1 
            end-if                
 
            exit paragraph. 
@@ -324,10 +325,11 @@
        handle-end-select.
       *>   Find related SELECT idx for END SELECT and mark as unprocessed
       *>   for next potential iteration over SELECT block.
-           perform varying ls-select-idx from 1 by 1 
-           until ls-select-idx > l-num-selects
-               if l-select-end(ls-select-idx) = l-cur-line-num then 
-                   set l-select-not-processed(ls-select-idx) to true  
+           set ls-max-select-idx to l-num-selects
+           perform varying l-select-idx from 1 by 1 
+           until l-select-idx > ls-max-select-idx
+               if l-select-end(l-select-idx) = l-cur-line-num then 
+                   set l-select-not-processed(l-select-idx) to true  
                    goback                    
                end-if 
            end-perform 

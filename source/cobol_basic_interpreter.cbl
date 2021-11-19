@@ -104,14 +104,16 @@
            05  ws-num-selects                  pic 9(4) comp. 
            05  ws-select-data                  occurs 0 to 9999 times
                                                depending on 
-                                               ws-num-selects.
+                                               ws-num-selects
+                                               indexed by ws-select-idx.
                10  ws-select-processed-sw      pic a.
                    88  ws-select-processed     value 'Y'.
                    88  ws-select-not-processed value 'N'.
                10  ws-select-start             pic 9(5).
                10  ws-select-check-val         pic x(1024).
                10  ws-num-cases                pic 99 comp.
-               10  ws-case-start               pic 9(5) occurs 99 times.               
+               10  ws-case-start               pic 9(5) occurs 99 times
+                                               indexed by ws-case-idx.               
                10  ws-select-end               pic 9(5).
 
 
