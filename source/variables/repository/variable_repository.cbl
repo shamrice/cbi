@@ -25,6 +25,7 @@
 
        copy "copybooks/basic_keywords.cpy".
 
+       01  ws-var-end-idx                 usage index. 
 
        01  ws-variable-table.
            05  ws-num-variables           pic 9(4) comp.
@@ -38,7 +39,7 @@
                10  ws-variable-value      pic x(1024) value spaces.
                10  ws-variable-value-num  pic 9(16) value zeros.  
     
-       local-storage section.
+       local-storage section.       
 
        01  ls-found-var-idx               pic 9(4) comp.
 
@@ -88,8 +89,9 @@
            move upper-case(trim(l-variable-name)) to l-variable-name 
 
            if ws-num-variables > 0 then 
+               set ws-var-end-idx to ws-num-variables
                perform varying ws-var-idx from 1 by 1 
-               until ws-var-idx > ws-num-variables
+               until ws-var-idx > ws-var-end-idx
                
                    if ws-variable-name(ws-var-idx) = l-variable-name 
                    then 
@@ -146,8 +148,9 @@
 
            move upper-case(trim(l-variable-name)) to l-variable-name 
 
+           set ws-var-end-idx to ws-num-variables
            perform varying ws-var-idx from 1 by 1 
-           until ws-var-idx > ws-num-variables
+           until ws-var-idx > ws-var-end-idx
                
                if ws-variable-name(ws-var-idx) = l-variable-name 
                then 
