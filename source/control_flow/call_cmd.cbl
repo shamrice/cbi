@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-25
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-19
       * Purpose: Process the CALL command with parameter.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -28,7 +28,7 @@
        local-storage section.    
     
        01  ls-temp-sub-name          pic x(32).    
-       01  ls-sub-idx                pic 9(4) comp. 
+       01  ls-sub-end-idx            pic 9(4) comp. 
 
        01  ls-cur-line-num-disp      pic 9(5).
 
@@ -71,22 +71,23 @@
 
            call "logger" using ls-temp-sub-name
 
-           perform varying ls-sub-idx from 1 by 1 
-           until ls-sub-idx > l-num-subs 
+           set ls-sub-end-idx to l-num-subs 
+           perform varying l-sub-idx from 1 by 1 
+           until l-sub-idx > ls-sub-end-idx
                
-               if l-sub-name(ls-sub-idx) = ls-temp-sub-name then 
+               if l-sub-name(l-sub-idx) = ls-temp-sub-name then 
 
                *> Add to nest idx (invoke count) and keep track of this
                *> as source called line. Then redirect processing to sub
-                   add 1 to l-sub-cur-nest(ls-sub-idx)
+                   add 1 to l-sub-cur-nest(l-sub-idx)
                    
                    move l-cur-line-num 
                    to l-sub-last-call(
-                       ls-sub-idx, 
-                       l-sub-cur-nest(ls-sub-idx))
+                       l-sub-idx, 
+                       l-sub-cur-nest(l-sub-idx))
 
-                   *>move l-sub-start(ls-sub-idx) to l-cur-line-num 
-                   compute l-cur-line-num = l-sub-start(ls-sub-idx) - 1
+                   *>move l-sub-start(l-sub-idx) to l-cur-line-num 
+                   compute l-cur-line-num = l-sub-start(l-sub-idx) - 1
 
                    move l-cur-line-num to ls-cur-line-num-disp
                    call "logger" using concatenate(

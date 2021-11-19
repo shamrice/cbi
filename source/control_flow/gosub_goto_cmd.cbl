@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-08
-      * Last Modified: 2021-11-08
+      * Last Modified: 2021-11-19
       * Purpose: Process the GOSUB and GOTO commands with parameter.
       *          Commands are the same except GOSUB has a return line
       *          number whereas GOTO is just a single jump.
@@ -30,7 +30,7 @@
        local-storage section.    
     
        01  ls-temp-label-name        pic x(32).    
-       01  ls-label-idx              pic 9(4) comp. 
+       01  ls-label-end-idx          usage index.
 
        01  ls-cur-line-num-disp      pic 9(5).
 
@@ -106,19 +106,21 @@
 
            call "logger" using ls-temp-label-name
 
-           perform varying ls-label-idx from 1 by 1 
-           until ls-label-idx > l-num-line-labels 
+
+           set ls-label-end-idx to l-num-line-labels
+           perform varying l-label-idx from 1 by 1 
+           until l-label-idx > ls-label-end-idx
                
-               if l-label-name(ls-label-idx) = ls-temp-label-name then 
+               if l-label-name(l-label-idx) = ls-temp-label-name then 
 
                *> keep track of this as source called line. Then 
                *> redirect processing to label                                                                            
                    if ls-command-type-gosub then 
                        move l-cur-line-num 
-                       to l-label-last-call(ls-label-idx)
+                       to l-label-last-call(l-label-idx)
                    end-if 
 
-                   move l-label-start(ls-label-idx) to l-cur-line-num                   
+                   move l-label-start(l-label-idx) to l-cur-line-num                   
 
                    move l-cur-line-num to ls-cur-line-num-disp
                    call "logger" using concatenate(

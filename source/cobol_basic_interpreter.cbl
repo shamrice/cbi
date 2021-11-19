@@ -38,7 +38,7 @@
 
        01  ws-screen-mode             pic 99.
 
-       01  ws-line-idx                pic 9(5) comp value 0.
+       01  ws-line-idx                pic 9(5) comp.       
        01  ws-line-idx-disp           pic 9(5) value 0.                    
 
        01  ws-source-data-temp        pic x(1024).
@@ -124,7 +124,8 @@
        01  ws-sub-boundary-table.
            05  ws-num-subs                pic 9(4) comp. 
            05  ws-sub-data                occurs 0 to 1000 times
-                                          depending on ws-num-subs.    
+                                          depending on ws-num-subs
+                                          indexed by ws-sub-idx.    
                10  ws-sub-name            pic x(32).           
                10  ws-sub-start           pic 9(5). *>TODO Make comp 
                10  ws-sub-end             pic 9(5).  
@@ -136,7 +137,8 @@
            05  ws-num-line-labels         pic 9(4) comp. 
            05  ws-line-label-data         occurs 0 to 1000 times
                                           depending 
-                                          on ws-num-line-labels.    
+                                          on ws-num-line-labels
+                                          indexed by ws-label-idx.    
                10  ws-label-name          pic x(32).           
                10  ws-label-start         pic 9(5). *>TODO Make comp 
                10  ws-label-end           pic 9(5). *> For GOSUBs RETURN
@@ -208,7 +210,7 @@
 
 
        parse-and-run-program.           
-
+           
            perform varying ws-line-idx from 1 by 1 
            until ws-line-idx > ws-num-lines or ws-exit-program
 

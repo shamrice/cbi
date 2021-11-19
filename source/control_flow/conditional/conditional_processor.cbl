@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-18
+      * Last Modified: 2021-11-19
       * Purpose: Processes a single conditional statement and returns 
       *          if true (1) or false (0).
       *          This should be called from the conditional-statement-handler
@@ -49,7 +49,8 @@
        01  ls-conditional-parts-table.
            05  ls-num-parts                   pic 9(4) comp value zero.
            05  ls-statement-part              occurs 0 to 9999 times 
-                                              depending on ls-num-parts.
+                                              depending on ls-num-parts
+                                              indexed by ls-parts-idx.
                10  ls-part-value              pic x(1024) value spaces.
                10  ls-part-value-num          pic 9(16) value zeros.
                10  ls-part-type               pic a(8) value spaces.                   
@@ -59,7 +60,7 @@
 
 
        01  ls-unstring-idx-pointer            pic 9(4) comp.       
-       01  ls-parts-idx                       pic 9(4) comp.
+       01  ls-parts-end-idx                   usage index.
 
        01  ls-temp-statement-value            pic x(1024) value spaces.            
        
@@ -222,8 +223,9 @@
                goback 
            end-if 
 
+           set ls-parts-end-idx to ls-num-parts
            perform varying ls-parts-idx from 1 by 1 
-           until ls-parts-idx > ls-num-parts
+           until ls-parts-idx > ls-parts-end-idx
            
                call "logger" using concatenate(
                    "CONDITIONAL-PROCESSOR :: Part type: " 

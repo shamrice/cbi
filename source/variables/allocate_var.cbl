@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-18
+      * Last Modified: 2021-11-19
       * Purpose: Allocates a new variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -34,7 +34,7 @@
 
        01  ls-keyword-count              pic 9(10) comp value zero.       
 
-       01  ls-temp-param-values          pic x(1024) occurs 10 times.
+       01  ls-temp-param-values          pic x(1024).
 
        01  ls-temp-variable-type         pic x(10) value spaces.       
        
@@ -75,12 +75,12 @@
       *>   Get and set variable name as well as increment variable count.
            unstring ls-temp-param-buffer
                delimited by space 
-               into ls-temp-param-values(1) 
+               into ls-temp-param-values 
            end-unstring
 
       *>   Make sure var name isn't a reserve word. If so, exit allocation.
            call "is-keyword" using 
-               ls-temp-param-values(1) 
+               ls-temp-param-values
                ls-keyword-check-ret-code
            end-call                    
 
@@ -88,13 +88,13 @@
                call "logger" using concatenate(
                    "DIM :: cannot allocate variable. Variable name is "
                    " a reserved keyword. Variable name attempted: "
-                   trim(ls-temp-param-values(1)))
+                   trim(ls-temp-param-values))
                end-call
                set l-return-code-false to true 
                goback 
            end-if 
               
-           move ls-temp-param-values(1) 
+           move ls-temp-param-values
                to ls-variable-name 
 
       *>   Figure out what the new type is for the variable and set it.

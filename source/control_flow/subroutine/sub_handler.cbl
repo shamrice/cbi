@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-25
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-19
       * Purpose: Handles SUBROUTINE directing control flow to proper 
       *          entry and exit processing if current line is SUB related.
       * Tectonics: ./build.sh
@@ -29,7 +29,7 @@
        local-storage section.    
     
        01  ls-temp-sub-name          pic x(32).    
-       01  ls-sub-idx                pic 9(4) comp. 
+       01  ls-sub-end-idx            usage index.
 
        01  ls-cur-line-num-disp      pic 9(5).
 
@@ -71,24 +71,25 @@
 
        handle-sub-start.
            call "logger" using "SUB-HANDLER :: processing SUB start"
-               
-           perform varying ls-sub-idx from 1 by 1
-           until ls-sub-idx > l-num-subs 
-               if l-sub-start(ls-sub-idx) = l-cur-line-num then 
+           
+           set ls-sub-end-idx to l-num-subs 
+           perform varying l-sub-idx from 1 by 1
+           until l-sub-idx > ls-sub-end-idx 
+               if l-sub-start(l-sub-idx) = l-cur-line-num then 
 
-                   if l-sub-cur-nest(ls-sub-idx) = 0 then 
+                   if l-sub-cur-nest(l-sub-idx) = 0 then 
                        move l-cur-line-num to ls-cur-line-num-disp
                        call "logger" using concatenate(
                            "SUB-HANDLER :: SUBROUTINE start on line " 
                             ls-cur-line-num-disp
                            " has not been invoked yet. Skipping "
                            " to END SUB at line "
-                           l-sub-end(ls-sub-idx)) 
+                           l-sub-end(l-sub-idx)) 
                        end-call 
 
                    *> -1 because program counter will add line at next loop
                        compute l-cur-line-num =
-                            l-sub-end(ls-sub-idx) - 1    
+                            l-sub-end(l-sub-idx) - 1    
                        end-compute 
                            
                        exit perform                        
@@ -105,18 +106,19 @@
 
       *>   Iterate through loop table and find last called line of
       *>   sub and subtract the nest index by 1.
-           perform varying ls-sub-idx from 1 by 1
-           until ls-sub-idx > l-num-subs 
+           set ls-sub-end-idx to l-num-subs 
+           perform varying l-sub-idx from 1 by 1
+           until l-sub-idx > ls-sub-end-idx 
                
-               if l-sub-end(ls-sub-idx) = l-cur-line-num then 
+               if l-sub-end(l-sub-idx) = l-cur-line-num then 
                    
                    
-                   if l-sub-cur-nest(ls-sub-idx) > 0 then 
+                   if l-sub-cur-nest(l-sub-idx) > 0 then 
                        move l-sub-last-call(
-                           ls-sub-idx, l-sub-cur-nest(ls-sub-idx))
+                           l-sub-idx, l-sub-cur-nest(l-sub-idx))
                            to l-cur-line-num 
 
-                       subtract 1 from l-sub-cur-nest(ls-sub-idx) 
+                       subtract 1 from l-sub-cur-nest(l-sub-idx) 
                        
                        move l-cur-line-num to ls-cur-line-num-disp
                        call "logger" using concatenate(

@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-18
+      * Last Modified: 2021-11-19
       * Purpose: Assigns value to a variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -50,12 +50,7 @@
                88  ls-temp-type-string     value "STRING".
            05  ls-temp-variable-name       pic x(16) value spaces.
            05  ls-temp-variable-value      pic x(1024) value spaces.
-           05  ls-temp-variable-value-num  pic 9(16) value zeros.   
-
-
-       01  ls-var-idx                    pic 9(4) comp value zero.
-
-       01  ls-var-source-idx             pic 9(4) comp.
+           05  ls-temp-variable-value-num  pic 9(16) value zeros.                 
 
        01  ls-space-count                pic 9(10) comp value zero.
 
@@ -76,9 +71,7 @@
        01  ls-temp-param-pointer         pic 9(4) comp.
        
 
-       01  ls-temp-alloc-str             pic x(1024) value spaces.     
-
-       01  ls-test-numval-ret-code       pic 99.   
+       01  ls-temp-alloc-str             pic x(1024) value spaces.            
 
        01  ls-allocate-return-code       pic 9 value 0.
 
@@ -92,32 +85,31 @@
 
        01  ls-latest-operator            pic a value space.  
 
-       01  ls-prev-operator            pic a value space.
-           88  ls-prev-op-add          value '+'.
-           88  ls-prev-op-sub          value '-'.
-           88  ls-prev-op-mult         value '*'.
-           88  ls-prev-op-div          value '/'.
-           88  ls-prev-op-none         value space.            
+       01  ls-prev-operator              pic a value space.
+           88  ls-prev-op-add            value '+'.
+           88  ls-prev-op-sub            value '-'.
+           88  ls-prev-op-mult           value '*'.
+           88  ls-prev-op-div            value '/'.
+           88  ls-prev-op-none           value space.            
 
       *> Number of quoted pairs in a source code line.
        01  ls-quote-table.
-           05  ls-num-quote-pairs     pic 9(4).
-           05  ls-quote-location      occurs 0 to 9999 times 
-                                      depending on ls-num-quote-pairs.
-               10  ls-q-start-idx     pic 9(4) comp.
-               10  ls-q-end-idx       pic 9(4) comp.
+           05  ls-num-quote-pairs       pic 9(4).
+           05  ls-quote-location        occurs 0 to 9999 times 
+                                        depending on ls-num-quote-pairs
+                                        indexed by ls-quote-idx.
+               10  ls-q-start-idx       pic 9(4) comp.
+               10  ls-q-end-idx         pic 9(4) comp.      
 
-       01  ls-quote-idx               pic 9(4) comp.
+       01  ls-quote-type-sw             pic a value 'E'.
+           88  ls-quote-type-start      value 'S'.
+           88  ls-quote-type-end        value 'E'.
 
-       01  ls-quote-type-sw           pic a value 'E'.
-           88  ls-quote-type-start    value 'S'.
-           88  ls-quote-type-end      value 'E'.
+       01  ls-quote-delimiter           pic a.
 
-       01  ls-quote-delimiter         pic a.
-
-       01  ls-is-in-quote-sw          pic a value 'N'.
-           88  ls-is-in-quote         value 'Y'.
-           88  ls-is-not-in-quote     value 'N'.
+       01  ls-is-in-quote-sw            pic a value 'N'.
+           88  ls-is-in-quote           value 'Y'.
+           88  ls-is-not-in-quote       value 'N'.
 
        linkage section.       
 
@@ -158,22 +150,7 @@
                ls-variable ls-get-variable-return-code
            end-call 
 
-      *     perform varying ls-var-idx from 1 by 1 
-      *     until ls-var-idx > l-num-variables
-
-      *         if upper-case(ls-assignment-dest) 
-      *         = l-variable-name(ls-var-idx) then 
-      *             if l-type-string(ls-var-idx) then 
-      *                 set ls-assign-type-string to true 
-      *             else 
-      *                 set ls-assign-type-num to true 
-      *             end-if 
-      *             exit perform 
-      *         end-if 
-      *     end-perform
-
-      *> If not found, allocate a new variable before assignment.
-      *     if l-num-variables = 0 or ls-var-idx > l-num-variables then 
+      *> If not found, allocate a new variable before assignment.      
            if ls-get-variable-return-code = 0 then 
                perform allocate-new-variable
            else 
@@ -287,11 +264,9 @@
 
 
            
-      *> Assign new value to variable      
-      *     if l-type-integer(ls-var-idx) then 
+      *> Assign new value to variable            
            if ls-assign-type-num then 
-               move trim(ls-running-assign-val-num)
-      *             to l-variable-value-num(ls-var-idx) 
+               move trim(ls-running-assign-val-num)      
                    to ls-variable-value-num
                call "logger" using concatenate(
                    "ASSIGNMENT :: Number value. New value: "
@@ -300,8 +275,7 @@
                end-call                                              
            end-if 
 
-           
-      *     if l-type-string(ls-var-idx) then 
+                 
            if ls-assign-type-string then 
      
                move trim(ls-running-assign-val) 
@@ -318,19 +292,13 @@
                replacing first '"' by space 
 
                move trim(ls-temp-param-value)
-                   to ls-variable-value
-      *             to l-variable-value(ls-var-idx)
+                   to ls-variable-value      
             
                move zeros to ls-space-count   
-                       
-      *         inspect reverse(l-variable-value(ls-var-idx))
+                             
                inspect reverse(ls-variable-value)
                tallying ls-space-count for leading spaces
                
-      *         compute ls-end-quote-idx = 
-      *             length(l-variable-value(ls-var-idx)) 
-      *             - ls-space-count
-      *         end-compute 
 
                compute ls-end-quote-idx = 
                    length(ls-variable-value) 
@@ -339,14 +307,10 @@
       
 
                if ls-end-quote-idx > 0 then 
-      *             if l-variable-value
-      *                 (ls-var-idx)(ls-end-quote-idx:1) = '"' 
                    if ls-variable-value(ls-end-quote-idx:1) = '"' 
                    then                
                        move spaces 
                        to ls-variable-value(ls-end-quote-idx:)                       
-      *                 to l-variable-value
-      *                     (ls-var-idx)(ls-end-quote-idx:)
                    else 
                        call "logger" using concatenate(
                            "ASSIGNMENT :: WARNING : variable: " 
@@ -379,14 +343,7 @@
        calculate-running-assignment-value.
                
       *> Check to see if right hand of assignment is variable. If so,
-      *> substitute the correct value in its place.
-      *     perform varying ls-var-source-idx from 1 by 1 
-      *     until ls-var-source-idx > l-num-variables               
-
-      *         if trim(upper-case(ls-temp-param-value)) 
-      *             = l-variable-name(ls-var-source-idx) 
-      *         then 
-           
+      *> substitute the correct value in its place.           
            move ls-temp-param-value to ls-temp-variable-name 
 
            call "get-variable" using 
@@ -394,31 +351,24 @@
            end-call 
 
            if ls-get-variable-return-code > 0 then 
-                   call "logger" using concatenate(
-                       "ASSIGNMENT :: Found righthand side variable:" 
-                       trim(ls-temp-variable-name)
-                       " value: " 
-                       trim(ls-temp-variable-value)
-                       " num val: " 
-                       ls-temp-variable-value-num)
-                   end-call 
-
-      *             if l-type-integer(ls-var-source-idx) then 
-                   if ls-temp-type-integer then 
-      *                 move l-variable-value-num
-      *                     (ls-var-source-idx) 
-                       move ls-temp-variable-value-num
-                       to ls-temp-param-value 
-                               
-                   else 
-      *                 move l-variable-value(ls-var-source-idx)
-                       move ls-temp-variable-value 
-                       to ls-temp-param-value 
-                               
-                   end-if 
-      *             exit perform 
-               end-if 
-      *     end-perform
+               call "logger" using concatenate(
+                   "ASSIGNMENT :: Found righthand side variable:" 
+                   trim(ls-temp-variable-name)
+                   " value: " 
+                   trim(ls-temp-variable-value)
+                   " num val: " 
+                   ls-temp-variable-value-num)
+               end-call 
+      
+               if ls-temp-type-integer then 
+                   move ls-temp-variable-value-num
+                   to ls-temp-param-value 
+                           
+               else 
+                   move ls-temp-variable-value 
+                   to ls-temp-param-value                            
+               end-if  
+           end-if 
               
            call "logger" using ls-running-assign-val-type-sw
 

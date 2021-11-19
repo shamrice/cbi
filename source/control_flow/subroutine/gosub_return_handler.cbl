@@ -28,7 +28,7 @@
        local-storage section.    
     
        01  ls-temp-label-name        pic x(32).    
-       01  ls-label-idx              pic 9(4) comp. 
+       01  ls-label-end-idx          usage index.
 
        01  ls-cur-line-num-disp      pic 9(5).
 
@@ -64,14 +64,15 @@
 
       *>   Iterate through loop table and find last called line of
       *>   GOSUB. Only redirect if last call was initialized with a val.
-               perform varying ls-label-idx from 1 by 1
-               until ls-label-idx > l-num-line-labels 
+               set ls-label-end-idx to l-num-line-labels
+               perform varying l-label-idx from 1 by 1
+               until l-label-idx > ls-label-end-idx
                
-                   if l-label-end(ls-label-idx) = l-cur-line-num 
-                       and l-label-last-call(ls-label-idx) > 0 
+                   if l-label-end(l-label-idx) = l-cur-line-num 
+                       and l-label-last-call(l-label-idx) > 0 
                    then 
                    
-                       move l-label-last-call(ls-label-idx)
+                       move l-label-last-call(l-label-idx)
                            to l-cur-line-num 
 
                        move l-cur-line-num to ls-cur-line-num-disp
