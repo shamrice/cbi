@@ -52,9 +52,9 @@
        01  ls-for-loop-parts         pic x(1024) occurs 8 times
                                      indexed by ls-parts-idx.
       
-       01  ls-unstring-idx           pic 9(4) comp.      
+       01  ls-unstring-idx           pic 9(4) comp.            
 
-       01  ls-loop-idx               pic 9(4) comp.
+       01  ls-loop-end-idx           usage index.
 
        01  ls-assignment-str         pic x(1024).
 
@@ -268,10 +268,11 @@
                ws-working-for-loop-idx)
            end-call
 
-           perform varying ls-loop-idx from 1 by 1 
-           until ls-loop-idx > l-num-loops 
-               if l-loop-start(ls-loop-idx) = l-cur-line-num then 
-                   move l-loop-end(ls-loop-idx) to l-cur-line-num
+           set ls-loop-end-idx to l-num-loops 
+           perform varying l-loop-idx from 1 by 1 
+           until l-loop-idx > ls-loop-end-idx
+               if l-loop-start(l-loop-idx) = l-cur-line-num then 
+                   move l-loop-end(l-loop-idx) to l-cur-line-num
                    exit perform 
                end-if 
            end-perform 
@@ -391,20 +392,21 @@
            then 
                perform set-current-line-to-loop-exit-and-go-back
            else 
-               perform varying ls-loop-idx from 1 by 1
-               until ls-loop-idx > l-num-loops 
+               set ls-loop-end-idx to l-num-loops 
+               perform varying l-loop-idx from 1 by 1
+               until l-loop-idx > ls-loop-end-idx
 
                    move l-cur-line-num to ls-cur-line-num-disp
                    call "logger" using concatenate(
                        "FOR-LOOP-END-HANDLER :: checking end of " 
-                       ls-loop-idx 
-                       " : l-loop-end: " l-loop-end(ls-loop-idx) 
+                       l-loop-idx 
+                       " : l-loop-end: " l-loop-end(l-loop-idx) 
                        " : cur line: " ls-cur-line-num-disp)
                    end-call 
 
-                   if l-loop-end(ls-loop-idx) = l-cur-line-num then  
+                   if l-loop-end(l-loop-idx) = l-cur-line-num then  
                        compute l-cur-line-num = 
-                           l-loop-start(ls-loop-idx)
+                           l-loop-start(l-loop-idx)
                        end-compute                        
                        move l-cur-line-num to ls-cur-line-num-disp
                        call "logger" using concatenate(

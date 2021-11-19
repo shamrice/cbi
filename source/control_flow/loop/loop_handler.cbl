@@ -28,7 +28,7 @@
  
        local-storage section.    
            
-       01  ls-loop-idx               pic 9(4) comp.
+       01  ls-loop-end-idx           usage index.      
 
        01  ls-conditional-ret-val    pic 9.
 
@@ -131,12 +131,13 @@
                call "logger" using "WHILE :: VALUE FALSE!"
       
            *>     Find matching loop exit line and redirect there.
-               perform varying ls-loop-idx from 1 by 1
-               until ls-loop-idx > l-num-loops 
+               set ls-loop-end-idx to l-num-loops
+               perform varying l-loop-idx from 1 by 1
+               until l-loop-idx > ls-loop-end-idx 
 
-                   if l-loop-start(ls-loop-idx) = l-cur-line-num then 
+                   if l-loop-start(l-loop-idx) = l-cur-line-num then 
                          
-                       move l-loop-end(ls-loop-idx) to l-cur-line-num
+                       move l-loop-end(l-loop-idx) to l-cur-line-num
                        exit perform 
                    end-if 
                end-perform
@@ -149,18 +150,19 @@
        handle-no-condition-loop-end.
       *> Iterate through loop table and find start position of current
       *> loop's end.
-           perform varying ls-loop-idx from 1 by 1
-           until ls-loop-idx > l-num-loops 
+           set ls-loop-end-idx to l-num-loops
+           perform varying l-loop-idx from 1 by 1
+           until l-loop-idx > ls-loop-end-idx  
                call "logger" using concatenate(
-                   "LOOP : checking end of " ls-loop-idx 
-                   " : l-loop-end: " l-loop-end(ls-loop-idx) 
+                   "LOOP : checking end of " l-loop-idx 
+                   " : l-loop-end: " l-loop-end(l-loop-idx) 
                    " : cur line: " ls-cur-line-num-disp)
                end-call 
 
-               if l-loop-end(ls-loop-idx) = l-cur-line-num then 
+               if l-loop-end(l-loop-idx) = l-cur-line-num then 
       *> -1 because app line counter will auto increment in main parse loop                   
                    compute l-cur-line-num = 
-                       l-loop-start(ls-loop-idx) - 1
+                       l-loop-start(l-loop-idx) - 1
                    end-compute 
 
                    move l-cur-line-num to ls-cur-line-num-disp
@@ -195,12 +197,13 @@
                call "logger" using "DO WHILE :: VALUE FALSE!"
       
            *>     Find matching loop exit line and redirect there.
-               perform varying ls-loop-idx from 1 by 1
-               until ls-loop-idx > l-num-loops 
+               set ls-loop-end-idx to l-num-loops
+               perform varying l-loop-idx from 1 by 1
+               until l-loop-idx > ls-loop-end-idx  
 
-                   if l-loop-start(ls-loop-idx) = l-cur-line-num then 
+                   if l-loop-start(l-loop-idx) = l-cur-line-num then 
                          
-                       move l-loop-end(ls-loop-idx) to l-cur-line-num
+                       move l-loop-end(l-loop-idx) to l-cur-line-num
                        exit perform 
                    end-if 
                end-perform
@@ -229,12 +232,13 @@
                call "logger" using "DO UNTIL :: VALUE TRUE!"
       
            *>     Find matching loop exit line and redirect there.
-               perform varying ls-loop-idx from 1 by 1
-               until ls-loop-idx > l-num-loops 
+               set ls-loop-end-idx to l-num-loops
+               perform varying l-loop-idx from 1 by 1
+               until l-loop-idx > ls-loop-end-idx 
 
-                   if l-loop-start(ls-loop-idx) = l-cur-line-num then 
+                   if l-loop-start(l-loop-idx) = l-cur-line-num then 
                          
-                       move l-loop-end(ls-loop-idx) to l-cur-line-num
+                       move l-loop-end(l-loop-idx) to l-cur-line-num
                        exit perform 
                    end-if 
                end-perform
@@ -261,12 +265,13 @@
                call "logger" using "LOOP WHILE :: VALUE TRUE!"
       
            *>     Find matching loop exit line and redirect there.
-               perform varying ls-loop-idx from 1 by 1
-               until ls-loop-idx > l-num-loops 
+               set ls-loop-end-idx to l-num-loops 
+               perform varying l-loop-idx from 1 by 1
+               until l-loop-idx > ls-loop-end-idx 
 
-                   if l-loop-end(ls-loop-idx) = l-cur-line-num then 
+                   if l-loop-end(l-loop-idx) = l-cur-line-num then 
                          
-                       move l-loop-start(ls-loop-idx) to l-cur-line-num
+                       move l-loop-start(l-loop-idx) to l-cur-line-num
                        exit perform 
                    end-if 
                end-perform
@@ -292,12 +297,13 @@
                call "logger" using "LOOP UNTIL :: VALUE FALSE!"
       
            *>     Find matching loop exit line and redirect there.
-               perform varying ls-loop-idx from 1 by 1
-               until ls-loop-idx > l-num-loops 
+               set ls-loop-end-idx to l-num-loops
+               perform varying l-loop-idx from 1 by 1
+               until l-loop-idx > ls-loop-end-idx  
 
-                   if l-loop-end(ls-loop-idx) = l-cur-line-num then 
+                   if l-loop-end(l-loop-idx) = l-cur-line-num then 
                          
-                       move l-loop-start(ls-loop-idx) to l-cur-line-num
+                       move l-loop-start(l-loop-idx) to l-cur-line-num
                        exit perform 
                    end-if 
                end-perform

@@ -116,7 +116,8 @@
        01  ws-loop-boundary-table.
            05  ws-num-loops               pic 9(4) comp. 
            05  ws-loop-data               occurs 0 to 1000 times
-                                          depending on ws-num-loops.               
+                                          depending on ws-num-loops
+                                          indexed by ws-loop-idx.               
                10  ws-loop-start          pic 9(5). *>TODO Make comp 
                10  ws-loop-end            pic 9(5).                                      
 
