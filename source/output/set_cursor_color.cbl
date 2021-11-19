@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-11
+      * Last Modified: 2021-11-19
       * Purpose: Processed the COLOR command and sets cursor color
       * Tectonics: ./build.sh
       ******************************************************************
@@ -30,17 +30,13 @@
        
        local-storage section.       
 
+       copy "copybooks/local_storage/ls_variable.cpy".   
+
        01  ls-comma-count                pic 9 comp value zero.
       
        01  ls-temp-param-buffer          pic x(1024).
        01  ls-temp-param-values          pic x(1024) occurs 2 times.  
-
-       01  ls-variable-temp-data.
-           05  ls-var-name               pic x(16).
-           05  ls-var-type               pic x(8).
-           05  ls-var-value              pic x(1024).
-           05  ls-var-value-num          pic 9(16).
-           05  ls-var-ret-code           pic 9.
+       
 
        linkage section.       
 
@@ -53,13 +49,11 @@
                88  l-text-fg-highlight   value 'Y'.
                88  l-text-fg-lowlight    value 'N'.
            
-       copy "copybooks/linkage_section/l_variable_table.cpy".
-
        01  l-screen-mode                 pic 99.
        
 
        procedure division using 
-           l-src-code-str l-text-colors l-variable-table l-screen-mode.   
+           l-src-code-str l-text-colors l-screen-mode.   
 
        main-procedure.
 
@@ -83,9 +77,9 @@
                if trim(ls-temp-param-values(1)) is numeric then 
                    move ls-temp-param-values(1) to l-text-fg-color
                else 
-                   move ls-temp-param-values(1) to ls-var-name 
+                   move ls-temp-param-values(1) to ls-variable-name 
                    perform set-value-from-var
-                   move ls-var-value to l-text-fg-color                    
+                   move ls-variable-value-num to l-text-fg-color                    
                end-if 
                if l-text-fg-color > 7 then 
                    set l-text-fg-highlight to true 
@@ -99,9 +93,10 @@
                if trim(ls-temp-param-values(2)) is numeric then 
                    move ls-temp-param-values(2) to l-text-bg-color
                else 
-                   move trim(ls-temp-param-values(2)) to ls-var-name 
+                   move trim(ls-temp-param-values(2)) 
+                       to ls-variable-name 
                    perform set-value-from-var
-                   move ls-var-value to l-text-bg-color                    
+                   move ls-variable-value-num to l-text-bg-color                    
                end-if                    
                if l-text-bg-color > 7 then                            
                    subtract 8 from l-text-bg-color                        
@@ -114,8 +109,7 @@
                and (l-screen-mode = 7 or l-screen-mode = 9)
            then                
                call "paint-background" using 
-                   l-text-colors
-                   l-variable-table
+                   l-text-colors                   
                end-call 
            end-if
 
@@ -136,20 +130,19 @@
 
 
 
-       set-value-from-var.           
-           call "get-var-value" using                
-               ls-var-name
-               ls-var-type 
-               ls-var-value
-               ls-var-ret-code
-           end-call
+       set-value-from-var. 
 
-           if ls-var-ret-code = 0 or ls-var-type not = "INTEGER" then 
+           call "get-variable" using
+               ls-variable 
+               ls-get-variable-return-code
+           end-call 
+           
+           if ls-get-variable-return-code = 0 or ls-type-string then 
                call "logger" using concatenate(
-                   "COLOR :: Failed to get value for variable: "
-                   trim(ls-var-name) " : Defaulting to 0.")
+                   "COLOR :: Failed to get valid value for variable: "
+                   trim(ls-variable-name) " : Defaulting to 0.")
                end-call 
-               move 0 to ls-var-value
+               move 0 to ls-variable-value-num
            end-if            
 
            exit paragraph.

@@ -157,8 +157,7 @@
            call "print-text" using 
                ls-temp-input-text 
                l-screen-position
-               l-text-colors
-               l-variable-table
+               l-text-colors               
            end-call  
 
            perform display-and-accept-input
@@ -176,8 +175,7 @@
            call "print-text" using 
                ls-temp-input-text 
                l-screen-position
-               l-text-colors
-               l-variable-table
+               l-text-colors               
            end-call  
 
            move trim(ls-temp-param-buffer) to ls-temp-param-values(1) 

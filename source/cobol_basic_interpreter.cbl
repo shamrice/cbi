@@ -309,8 +309,7 @@
            
                    call "set-cursor-color" using 
                        ws-source-data-temp
-                       ws-text-colors
-                       ws-variable-table
+                       ws-text-colors                       
                        ws-screen-mode 
                    end-call 
                
@@ -331,8 +330,7 @@
                    call "print-text" using 
                        ws-source-data-temp
                        ws-screen-position
-                       ws-text-colors
-                       ws-variable-table
+                       ws-text-colors                       
                    end-call 
            
                when upper-case(

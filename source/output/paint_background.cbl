@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-11
-      * Last Modified: 2021-11-11
+      * Last Modified: 2021-11-19
       * Purpose: Paints background with passed background color.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -49,11 +49,9 @@
                88  l-text-fg-highlight   value 'Y'.
                88  l-text-fg-lowlight    value 'N'.
            
-       copy "copybooks/linkage_section/l_variable_table.cpy".
-              
 
        procedure division using 
-           l-text-colors l-variable-table.   
+           l-text-colors.   
 
        main-procedure.
            
@@ -84,8 +82,7 @@
                call "print-text" using 
                    ls-paint-scr-string
                    ls-paint-screen-position
-                   l-text-colors
-                   l-variable-table
+                   l-text-colors                   
                end-call 
 
            end-perform 

@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-17
-      * Last Modified: 2021-11-15
+      * Last Modified: 2021-11-19
       * Purpose: Process the PRINT command.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -63,12 +63,9 @@
                88  l-text-fg-highlight   value 'Y'.
                88  l-text-fg-lowlight    value 'N'.
 
-       copy "copybooks/linkage_section/l_variable_table.cpy".
-             
       
        procedure division using 
-           l-src-code-str l-screen-position l-text-colors
-           l-variable-table.   
+           l-src-code-str l-screen-position l-text-colors.   
 
        main-procedure.
 
@@ -183,8 +180,7 @@
 
       *>   If variable value is a number, remove leading zeros before 
       *>   moving it to the temp param buffer.
-           if ls-type-integer then 
-               call "logger" using ")))))))))TYPE INT(((((((((((((("
+           if ls-type-integer then                
                move ls-variable-value-num
                to ls-temp-disp-num-val
 
@@ -192,35 +188,10 @@
                to ls-temp-str-buffer
            
            else 
-               call "logger" using ")))))))))TYPE OTHER(((((((((((((("
                move ls-variable-value
                to ls-temp-str-buffer
            end-if               
-
-      *     perform varying ls-temp-variable-idx from 1 by 1 
-      *     until ls-temp-variable-idx > l-num-variables
-
-      *             if upper-case(trim(ls-temp-str-buffer))
-      *             = l-variable-name(ls-temp-variable-idx) then 
-                   
-      *>   If variable value is a number, remove leading zeros before 
-      *>   moving it to the temp param buffer.
-      *                 if l-type-integer(ls-temp-variable-idx) then 
-      *                     move 
-      *                        l-variable-value-num(ls-temp-variable-idx)
-      *                        to ls-temp-disp-num-val
-
-      *                     move trim(ls-temp-disp-num-val)
-      *                         to ls-temp-str-buffer
-      *                 else 
-      *                     move l-variable-value(ls-temp-variable-idx)
-      *                         to ls-temp-str-buffer
-      *                 end-if
-          
-      *                 exit perform 
-      *             end-if 
-      *         end-perform 
-
+     
            exit paragraph.
 
        end program print-text.
