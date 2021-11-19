@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-11-15
+      * Last Modified: 2021-11-19
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -60,15 +60,16 @@
        01  ls-comment-tic-count       pic 9(4) comp.
        01  ls-comment-space-replace   pic 9(4) comp.
 
-       01  ls-quote-count             pic 9(4) comp.
+       01  ls-quote-count             pic 9(4) comp.      
 
-       01  ls-quote-pair-idx          pic 9(4) comp.
+       01  ls-quote-pair-end-idx      usage index.
 
       *> Number of quoted pairs in a source code line.
        01  ls-quote-table.
            05  ls-num-quote-pairs     pic 9(4).
            05  ls-quote-location      occurs 0 to 9999 times 
-                                      depending on ls-num-quote-pairs.
+                                      depending on ls-num-quote-pairs
+                                      indexed by ls-quote-pair-idx.
                10  ls-q-start-idx     pic 9(4).
                10  ls-q-end-idx       pic 9(4).
 
@@ -94,8 +95,8 @@
            05  ls-if-start-part       pic x(1024).
            05  ls-if-end-parts        pic x(1024).
 
-       01  ls-if-count                pic 9(4).
-       01  ls-then-count              pic 9(4).
+       01  ls-if-count                pic 9(4) comp.
+       01  ls-then-count              pic 9(4) comp.
 
        linkage section.    
 
@@ -385,8 +386,9 @@
       *> Check if colon is in quote, if so, append data to output line
       *> but don't start a new line yet.
                    if ls-num-quote-pairs > 0 then 
+                       set ls-quote-pair-end-idx to ls-num-quote-pairs
                        perform varying ls-quote-pair-idx from 1 by 1 
-                       until ls-quote-pair-idx > ls-num-quote-pairs
+                       until ls-quote-pair-idx > ls-quote-pair-end-idx
                            if ws-starting-pointer > 
                                ls-q-start-idx(ls-quote-pair-idx)
                                and ws-starting-pointer 
@@ -565,9 +567,10 @@
                    = ws-comment-tic
                then 
 
-                   if ls-num-quote-pairs > 0 then                    
+                   if ls-num-quote-pairs > 0 then   
+                       set ls-quote-pair-end-idx to ls-num-quote-pairs                 
                        perform varying ls-quote-pair-idx from 1 by 1 
-                       until ls-quote-pair-idx > ls-num-quote-pairs
+                       until ls-quote-pair-idx > ls-quote-pair-end-idx
 
                            if ls-line-char-idx > 
                                ls-q-start-idx(ls-quote-pair-idx)

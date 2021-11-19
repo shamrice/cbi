@@ -52,7 +52,7 @@
        01  ls-for-loop-parts         pic x(1024) occurs 8 times
                                      indexed by ls-parts-idx.
       
-       01  ls-unstring-idx           pic 9(4) comp.            
+       01  ls-unstring-idx           pic 9(4) comp.
 
        01  ls-loop-end-idx           usage index.
 
