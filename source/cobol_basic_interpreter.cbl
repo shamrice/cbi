@@ -159,6 +159,7 @@
 
        01  ws-command-line-args           pic x(2048).
 
+       01  ws-compiled-date               pic x(21).
 
        procedure division.
        set environment 'COB_SCREEN_EXCEPTIONS' TO 'Y'.
@@ -166,11 +167,14 @@
       
        main-procedure.
            
+           move when-compiled to ws-compiled-date
+
            display spaces 
            display "CBI - COBOL BASIC Interpreter"
            display "-----------------------------"
-           display " By: Erik Eriksen"
-           display "Url: https://github.com/shamrice/cbi"
+           display "   By: Erik Eriksen"
+           display "  Url: https://github.com/shamrice/cbi"
+           display "Build: " ws-compiled-date
            display space 
 
            accept ws-command-line-args from command-line

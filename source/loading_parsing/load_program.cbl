@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-11-19
+      * Last Modified: 2021-11-21
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -43,6 +43,20 @@
       
        
        local-storage section.
+
+       01  ls-file-exists-details.
+           02  ls-file-exists-size         pic 9(18) comp.
+           02  ls-file-exists-date.
+               03  ls-file-exists-days     pic 9(4) comp.
+               03  ls-file-exists-months   pic 9(4) comp.
+               03  ls-file-exists-years    pic 9(4) comp.
+           02  ls-file-exists-time.
+               03  ls-file-exists-hours    pic 9(4) comp.
+               03  ls-file-exists-minutes  pic 9(4) comp.
+               03  ls-file-exists-seconds  pic 9(4) comp.
+               03  ls-file-exists-m-secs   pic 9(4) comp.
+           01  ls-file-exists-status-code  pic S9(4) comp-5.
+
        
        01  ls-source-code-line        pic x(1024).
 
@@ -151,6 +165,26 @@
                end-display
                display "-----------------------------"
            end-if 
+           
+
+      *> Make sure file exists before continuing.
+           call "CBL_CHECK_FILE_EXIST" using 
+               ws-input-source-file-name
+               ls-file-exists-details
+               returning ls-file-exists-status-code
+           end-call 
+
+           if ls-file-exists-status-code not = 0 then 
+               display 
+                   "ERROR :: File: " trim(ws-input-source-file-name) 
+                   " does not exist. Please check path and try again."
+                   " Status code: " ls-file-exists-status-code
+               end-display 
+               display spaces 
+               stop run 
+           end-if 
+
+
 
            open input fd-basic-source-file
 
