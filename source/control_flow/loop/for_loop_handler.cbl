@@ -398,8 +398,7 @@
 
                    move l-cur-line-num to ls-cur-line-num-disp
                    call "logger" using concatenate(
-                       "FOR-LOOP-END-HANDLER :: checking end of " 
-                       l-loop-idx 
+                       "FOR-LOOP-END-HANDLER :: checking end of loop "                        
                        " : l-loop-end: " l-loop-end(l-loop-idx) 
                        " : cur line: " ls-cur-line-num-disp)
                    end-call 

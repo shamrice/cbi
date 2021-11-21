@@ -65,6 +65,9 @@
        01  ls-running-assign-val         pic x(1024).
        01  ls-running-assign-val-num     pic S9(16).
 
+       01  ls-running-assign-val-num-disp pic x(17).
+       01  ls-variable-value-num-disp     pic x(17).
+
        01  ls-temp-param-buffer          pic x(1024).
        01  ls-temp-param-value           pic x(1024).       
 
@@ -266,12 +269,19 @@
            
       *> Assign new value to variable            
            if ls-assign-type-num then 
+               move ls-running-assign-val-num 
+                   to ls-running-assign-val-num-disp
+
                move ls-running-assign-val-num
                    to ls-variable-value-num
+
+               move ls-variable-value-num
+                   to ls-variable-value-num-disp
+
                call "logger" using concatenate(
                    "ASSIGNMENT :: Number value. New value: "
-                   ls-variable-value-num
-                   " : from: " ls-running-assign-val-num)
+                   ls-variable-value-num-disp
+                   " : from: " ls-running-assign-val-num-disp)
                end-call                                              
            end-if 
 
@@ -455,9 +465,9 @@
 
        allocate-new-variable.
            call "logger" using concatenate(
-               "ASSIGNMENT :: No variables exist yet for "
+               "ASSIGNMENT :: No variables exist yet for: "
                trim(ls-assignment-dest) 
-               ". allocating new variable.")
+               " : allocating new variable.")
            end-call            
   
       *> determine type by suffix. if none exists, assume integer,.
@@ -472,8 +482,6 @@
                ls-string-suffix-count for 
                    all ws-suffix-type-string
 
-           call "logger" using ls-numeric-suffix-count
-           call "logger" using ls-string-suffix-count
 
       *> TODO: Later use tallies to determine exact data type.
            if ls-string-suffix-count > 0 then 

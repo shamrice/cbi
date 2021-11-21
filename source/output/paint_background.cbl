@@ -28,8 +28,8 @@
        01  ws-scr-lines         usage binary-char unsigned.
        01  ws-scr-cols          usage binary-char unsigned.
 
-       01  ws-scr-lines-disp    pic 99.
-       01  ws-scr-cols-disp     pic 99.
+       01  ws-scr-lines-disp    pic 999.
+       01  ws-scr-cols-disp     pic 999.
 
   
        local-storage section.       
@@ -53,9 +53,7 @@
        procedure division using 
            l-text-colors.   
 
-       main-procedure.
-           
-           call "logger" using "paiting background..."           
+       main-procedure.                     
 
            call "CBL_GET_SCR_SIZE" using ws-scr-lines, ws-scr-cols
 
@@ -70,9 +68,10 @@
                       
            
            call "logger" using concatenate(
-               "scr-lines: " ws-scr-lines 
-               "scr-cols: " ws-scr-cols 
-               "print statement: " ls-paint-scr-string
+               "PAINT-BACKGROUND :: "               
+               " scr-cols: " ws-scr-cols-disp 
+               " : scr-rows: " ws-scr-lines-disp
+               " : print statement: " ls-paint-scr-string
            ) end-call 
 
            move 1 to ls-scr-row
