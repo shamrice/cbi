@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-19
+      * Last Modified: 2021-11-22
       * Purpose: Assigns value to a variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -56,6 +56,9 @@
 
        01  ls-end-quote-idx              pic 9(10) comp value zero.
 
+       01  ls-char-idx                  pic 9(4) comp. 
+       01  ls-trailing-quote-idx        pic 9(4) comp.
+
        01  ls-assignment-dest            pic x(1024).
 
        01  ls-running-assign-val-type-sw pic a value 'N'.
@@ -69,7 +72,9 @@
        01  ls-variable-value-num-disp     pic x(17).
 
        01  ls-temp-param-buffer          pic x(1024).
-       01  ls-temp-param-value           pic x(1024).       
+       01  ls-temp-param-value           pic x(1024).     
+       01  ls-temp-chr-check-string      pic x(1024).  
+       01  ls-temp-inkey-ret-val         pic xx.
 
        01  ls-temp-param-pointer         pic 9(4) comp.
        
@@ -287,51 +292,15 @@
 
                  
            if ls-assign-type-string then 
-     
-               move trim(ls-running-assign-val) 
-               to ls-temp-param-value
 
                call "logger" using concatenate(
                    "ASSIGNMENT :: New raw assignment value: "
                    ls-running-assign-val)
                end-call 
-      
-               *>  remove leading and trailing '"' for strings
-               *> TODO: DO NOT REMOVE QUOTES TO PRESERVE BLANK SPACES!
-               inspect ls-temp-param-value
-               replacing first '"' by space 
-
-               move trim(ls-temp-param-value)
+            
+               move trim(ls-running-assign-val)
                    to ls-variable-value      
             
-               move zeros to ls-space-count   
-                             
-               inspect reverse(ls-variable-value)
-               tallying ls-space-count for leading spaces
-               
-
-               compute ls-end-quote-idx = 
-                   length(ls-variable-value) 
-                   - ls-space-count
-               end-compute 
-      
-
-               if ls-end-quote-idx > 0 then 
-                   if ls-variable-value(ls-end-quote-idx:1) = '"' 
-                   then                
-                       move spaces 
-                       to ls-variable-value(ls-end-quote-idx:)                       
-                   else 
-                       call "logger" using concatenate(
-                           "ASSIGNMENT :: WARNING : variable: " 
-                           trim(ls-variable-name)
-                           " assigned to type STRING but does "
-                           "not have proper quotes in value. "
-                           "Assigning anyway but data may be "
-                           "incorrect.")
-                       end-call 
-                   end-if 
-               end-if 
            end-if 
            
            call "set-variable" using ls-variable 
@@ -340,8 +309,7 @@
                "ASSIGNMENT :: variable name: " 
                trim(ls-variable-name)
                " new value: " trim(ls-variable-value)
-               " type: " ls-variable-type
-               " space count: " ls-space-count)
+               " type: " ls-variable-type)      
            end-call                     
 
            goback. 
@@ -388,20 +356,32 @@
 
       *>         Check if value INKEY$
                if upper-case(ls-temp-param-value) = ws-inkey then 
-                   move function inkey-func
-                   to ls-temp-param-value
+                   move spaces to ls-temp-param-value
+                   move function inkey-func to ls-temp-inkey-ret-val
+                   string 
+                       '"'
+                       trim(ls-temp-inkey-ret-val)
+                       '"'
+                       into ls-temp-param-value
+                   end-string 
+                    call "logger" using "**************INKEY**********"
+                   call "logger" using ls-temp-param-value
                end-if 
 
       *>           Check for CHR$
                if upper-case(ls-temp-param-value(1:length(ws-chr)))
                    = ws-chr
-               then 
-                   move ascii-code-to-char(ls-temp-param-value)
-                       to ls-temp-param-value
+               then
+                   move ascii-code-to-char(ls-temp-param-value)  
+                   to ls-temp-chr-check-string
+                   move spaces to ls-temp-param-value 
+                   string 
+                       '"' 
+                       trim(ls-temp-chr-check-string)
+                       '"'
+                       into ls-temp-param-value
+                   end-string 
                end-if 
-
-               inspect ls-temp-param-value 
-                   replacing all '"' by spaces 
 
                if ls-is-first-value then 
                    move ls-temp-param-value 
@@ -413,20 +393,41 @@
                    end-call 
                else 
                    if ls-prev-op-add then   
-                                    
+
                        call "logger" using concatenate(
-                           "COMBININING: " ls-running-assign-val
-                           " WITH: " ls-temp-param-value)
+                           "COMBININING: " trim(ls-running-assign-val)
+                           " WITH: " trim(ls-temp-param-value))
                        end-call 
 
-                       string 
-                           trim(ls-running-assign-val)
-                           trim(ls-temp-param-value)
-                           into ls-running-assign-val
-                       end-string                  
+      *>               Remove leading quote of new value.
+                       if ls-temp-param-value(1:1) = '"' then 
+                           move ls-temp-param-value(2:) 
+                           to ls-temp-param-value 
+                       end-if 
 
+      *>               Find location of trailing quote of running value.
+      *>               NOTE: May cause 'undefined' behavior if strings
+      *>                     are not enclosed correctly with quotes.
+                       move zero to ls-space-count
+                       inspect reverse(ls-running-assign-val)
+                           tallying ls-space-count 
+                           for leading spaces 
+                       
+                       compute ls-trailing-quote-idx = 
+                           length(ls-running-assign-val) 
+                           - ls-space-count  
+                       end-compute 
+
+                       if ls-trailing-quote-idx = 0 then 
+                           add 1 to ls-trailing-quote-idx
+                       end-if                                                     
+
+      *>               Move new value to location of previous trailing quote
+                       move ls-temp-param-value 
+                       to ls-running-assign-val(ls-trailing-quote-idx:)
+     
                        call "logger" using concatenate(
-                           "END VALUE: " ls-running-assign-val)
+                           "END VALUE: " trim(ls-running-assign-val))
                        end-call 
                    end-if 
                end-if

@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-17
-      * Last Modified: 2021-11-19
+      * Last Modified: 2021-11-22
       * Purpose: Process the PRINT command.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -144,7 +144,7 @@
            end-if 
 
            call "logger" using concatenate(
-               "PRINT :: location: " l-screen-position
+               "PRINT-TEXT :: location: " l-screen-position
                " colors: " l-text-colors
                " text: " trim(ls-output-buffer))
            end-call 
@@ -188,8 +188,21 @@
                to ls-temp-str-buffer
            
            else 
-               move ls-variable-value
-               to ls-temp-str-buffer
+      *>   String variables SHOULD be saved with quotes on them. If 
+      *>   there, remove if from output string.
+               if ls-variable-value(1:1) = '"' then 
+                   move ls-variable-value(2:) to ls-temp-str-buffer 
+               else 
+                   call "logger" using concatenate(
+                       "PRINT-TEXT :: WARNING : String variable: "
+                       trim(ls-variable-name) " was not stored with "
+                       "quotes. This may be due to an internal "
+                       "assignment error or error in the source file. "
+                       " : Value returned: "
+                       ls-variable-value)
+                   end-call 
+                   move ls-variable-value to ls-temp-str-buffer
+               end-if 
            end-if               
      
            exit paragraph.
