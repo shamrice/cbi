@@ -39,6 +39,10 @@
                10  ws-variable-value      pic x(1024) value spaces.
                10  ws-variable-value-num  pic S9(16) value zeros.  
     
+       01  ws-return-code-name-sw         pic x(5) value "FALSE".
+           88  ws-return-code-name-true   value "TRUE".
+           88  ws-return-code-name-false  value "FALSE".
+
        local-storage section.       
 
        01  ls-found-var-idx               pic 9(4) comp.
@@ -110,7 +114,7 @@
                to l-variable-type 
            end-if 
 
-           move l-variable to ws-variables(ls-found-var-idx)           
+           move l-variable to ws-variables(ls-found-var-idx)                      
 
            call "logger" using concatenate(
                "VARIABLE-REPOSITORY::SET-VARIABLE"
@@ -160,9 +164,16 @@
                end-if 
            end-perform 
                       
+           if l-return-code-true then 
+               set ws-return-code-name-true to true 
+           else 
+               set ws-return-code-name-false to true 
+           end-if 
+
            call "logger" using concatenate(
                "VARIABLE-REPOSITORY::GET-VARIABLE" 
-               " : Return code: " l-return-code              
+               " : Return code: " l-return-code  
+               " (" ws-return-code-name-sw ")"            
                " : name: " trim(l-variable-name)
                " : type: " l-variable-type 
                " : num value: " l-variable-value-num

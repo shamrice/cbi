@@ -130,6 +130,10 @@
 
        main-procedure.
 
+      *> TODO : In left hand variable, any value that is not numeric
+      *>        inside of parenthesis, should be attempted to be replaced
+      *>        with a variable value for array processing.
+
       *> NOTE: Current implementation only reads equations from left to
       *>       right. No orders of operations are followed. That'll have
       *>       to be a later 'TODO'. 

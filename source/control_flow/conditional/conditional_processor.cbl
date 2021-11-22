@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-19
+      * Last Modified: 2021-11-22
       * Purpose: Processes a single conditional statement and returns 
       *          if true (1) or false (0).
       *          This should be called from the conditional-statement-handler
@@ -63,7 +63,8 @@
        01  ls-parts-end-idx                   usage index.
 
        01  ls-temp-statement-value            pic x(1024) value spaces.            
-       
+       01  ls-temp-chr-check-string           pic x(1024).  
+       01  ls-temp-inkey-ret-val              pic xx.
 
        01  ls-sub-val-with-var-sw             pic a value 'N'.
            88  ls-sub-val-with-var            value 'Y'.
@@ -104,6 +105,8 @@
            perform until 
            ls-unstring-idx-pointer > length(ls-statement-to-process)          
 
+               move spaces to ls-temp-statement-value
+
                unstring ls-statement-to-process 
                    delimited by space 
                    into ls-temp-statement-value
@@ -127,18 +130,6 @@
                    
                    if ls-temp-statement-value(1:1) = '"' then 
                        set ls-part-type-string(ls-num-parts) to true
-
-                       *> Replace first and last '"' from string.
-                       inspect ls-temp-statement-value
-                       replacing first '"' by space 
-                   
-                       inspect reverse(ls-temp-statement-value)
-                       tallying ls-space-count for leading spaces
-                   
-                       move spaces 
-                           to ls-temp-statement-value(
-                           length(ls-temp-statement-value) - 
-                           ls-space-count:)                         
 
                        move trim(ls-temp-statement-value) 
                            to ls-part-value(ls-num-parts)
@@ -355,9 +346,15 @@
 
       *>   Check if val should be subbed with INKEY$ value.
            if upper-case(trim(ls-temp-statement-value)) = ws-inkey then 
-               move function inkey-func
-                   to ls-part-value(ls-num-parts)  
-               
+               move spaces to ls-part-value(ls-num-parts)  
+               move function inkey-func to ls-temp-inkey-ret-val
+               string 
+                   '"'
+                   trim(ls-temp-inkey-ret-val)
+                   '"'
+                   into ls-part-value(ls-num-parts)  
+               end-string            
+                     
                set ls-part-type-string(ls-num-parts) to true 
                set ls-sub-val-with-var to true
                exit paragraph 
@@ -367,8 +364,16 @@
            if upper-case(trim(
                ls-temp-statement-value(1:length(ws-chr)))) = ws-chr 
            then 
-               move ascii-code-to-char(ls-temp-statement-value) 
-               to ls-part-value(ls-num-parts)  
+               move ascii-code-to-char(ls-temp-statement-value)
+               to ls-temp-chr-check-string
+               move spaces to ls-part-value(ls-num-parts)   
+               string 
+                   '"' 
+                   trim(ls-temp-chr-check-string)
+                   '"'
+                   into ls-part-value(ls-num-parts)
+               end-string 
+
                set ls-part-type-string(ls-num-parts) to true 
                set ls-sub-val-with-var to true
                exit paragraph
