@@ -168,6 +168,9 @@
                exit paragraph
            end-if 
 
+      *>   Check if array and sub vars for index as eneded.
+           call "array-indexed-name" using ls-temp-str-buffer
+
            move ls-temp-str-buffer to ls-variable-name  
            call "get-variable" using                
                ls-variable 
