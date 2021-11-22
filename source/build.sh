@@ -10,6 +10,7 @@ BUILD_STRING="cobc -O2 -x --debug -fstatic-call -lncurses \
     loading_parsing/parse_ifs.cbl \
     loading_parsing/parse_line_labels.cbl \
     variables/allocate_var.cbl \
+    variables/array_indexed_name.cbl \
     variables/assign_var.cbl \
     variables/is_keyword.cbl \
     variables/repository/variable_repository.cbl \
