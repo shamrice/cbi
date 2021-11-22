@@ -56,10 +56,14 @@
 
        01  ls-end-quote-idx              pic 9(10) comp value zero.
 
-       01  ls-char-idx                  pic 9(4) comp. 
-       01  ls-trailing-quote-idx        pic 9(4) comp.
+       01  ls-char-idx                   pic 9(4) comp. 
+       01  ls-trailing-quote-idx         pic 9(4) comp.
 
-       01  ls-assignment-dest            pic x(1024).
+       01  ls-assignment-dest            pic x(1024).       
+
+       01  ls-array-name                 pic x(1024).
+       01  ls-temp-array-idx-name        pic x(1024).
+       01  ls-temp-array-idx-value       pic z(15)9.
 
        01  ls-running-assign-val-type-sw pic a value 'N'.
            88  ls-assign-type-num        value 'N'.
@@ -118,6 +122,7 @@
        01  ls-is-in-quote-sw            pic a value 'N'.
            88  ls-is-in-quote           value 'Y'.
            88  ls-is-not-in-quote       value 'N'.
+       
 
        linkage section.       
 
@@ -130,9 +135,6 @@
 
        main-procedure.
 
-      *> TODO : In left hand variable, any value that is not numeric
-      *>        inside of parenthesis, should be attempted to be replaced
-      *>        with a variable value for array processing.
 
       *> NOTE: Current implementation only reads equations from left to
       *>       right. No orders of operations are followed. That'll have
@@ -154,9 +156,10 @@
                to ls-assignment-dest(1:length(ws-const))
            end-if 
 
+      *> Check for array index processing if needed.
+           perform try-parse-array-index-name
 
-      *> Find existing variable index if exists for assignment destination.
-
+      *> Find existing variable index if exists for assignment destination.           
            move ls-assignment-dest to ls-variable-name 
            call "get-variable" using 
                ls-variable ls-get-variable-return-code
@@ -175,6 +178,7 @@
 
       *> Find quote locations in assignment statement.
            move 1 to ls-temp-param-pointer
+           move spaces to ls-temp-param-value
            perform until 
                ls-temp-param-pointer > length(ls-temp-param-buffer)
 
@@ -319,6 +323,80 @@
            goback. 
 
 
+
+
+      *> Check to see if there's an array index mentioned in the left
+      *> hand destination variable name. If so, check if that index is 
+      *> named by a variable. When a variable is present, substitute the
+      *> numeric value of that variable to be the array index.
+       try-parse-array-index-name.
+
+           move spaces to ls-temp-param-value 
+
+           unstring ls-assignment-dest 
+               delimited by "("
+               into ls-array-name ls-temp-param-value                              
+           end-unstring 
+        
+           if ls-temp-param-value not = spaces then
+
+               inspect ls-temp-param-value 
+                   replacing all ")" by spaces 
+                
+               move trim(ls-temp-param-value) to ls-temp-array-idx-name
+
+               call "logger" using ls-temp-array-idx-name
+               if trim(ls-temp-array-idx-name) not numeric then 
+                   move ls-temp-array-idx-name to ls-variable-name
+                   call "get-variable" using 
+                       ls-variable ls-get-variable-return-code
+                   end-call 
+                   
+                   if ls-get-variable-return-code > 0
+                       and ls-type-integer
+                   then                        
+
+                       move ls-variable-value-num
+                       to ls-temp-array-idx-value
+
+                       move spaces to ls-assignment-dest
+                       string
+                           upper-case(trim(ls-array-name))
+                           "("
+                           trim(ls-temp-array-idx-value)
+                           ")"
+                           into ls-assignment-dest 
+                       end-string 
+                       
+                       call "logger" using concatenate( 
+                           "ASSIGNMENT :: Parsed array variable name: "
+                           trim(ls-assignment-dest))
+                       end-call 
+                   else 
+                       call "logger" using concatenate( 
+                           "ASSIGNMENT :: WARNING : Failed to find "
+                           " numeric array integer variable value for: "
+                           trim(ls-variable-name) " : Destination "
+                           "variable name will be unchanged: " 
+                           trim(ls-assignment-dest))
+                       end-call 
+                   end-if 
+               else 
+                   call "logger" using concatenate(
+                       "ASSIGNMENT :: Array variable index is already "
+                       "numeric and will be used as-is: "
+                       trim(ls-assignment-dest))
+                   end-call 
+               end-if
+           else 
+               call "logger" using concatenate( 
+                   "ASSIGNMENT :: Not array: "
+                   "assignment-dest: " trim(ls-assignment-dest)
+                   " temp param val: " trim(ls-temp-param-value))
+               end-call 
+           end-if    
+
+           exit paragraph.
 
 
 
