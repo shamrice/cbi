@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-25
-      * Last Modified: 2021-11-19
+      * Last Modified: 2021-11-23
       * Purpose: Process the CALL command with parameter.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -79,14 +79,12 @@
 
                *> Add to nest idx (invoke count) and keep track of this
                *> as source called line. Then redirect processing to sub
-                   add 1 to l-sub-cur-nest(l-sub-idx)
+
+                   add 1 to l-sub-cur-nest
                    
                    move l-cur-line-num 
-                   to l-sub-last-call(
-                       l-sub-idx, 
-                       l-sub-cur-nest(l-sub-idx))
-
-                   *>move l-sub-start(l-sub-idx) to l-cur-line-num 
+                   to l-sub-last-call(l-sub-idx, l-sub-cur-nest)     
+                   
                    compute l-cur-line-num = l-sub-start(l-sub-idx) - 1
 
                    move l-cur-line-num to ls-cur-line-num-disp

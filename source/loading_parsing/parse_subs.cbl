@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-25
-      * Last Modified: 2021-11-05
+      * Last Modified: 2021-11-23
       * Purpose: During loading, populates sub table with start and end
       *          line locations.
       * Tectonics: ./build.sh
@@ -55,7 +55,8 @@
                add 1 to l-num-subs
             
                move l-cur-line-num to l-sub-start(l-num-subs) 
-               move zero to l-sub-cur-nest(l-num-subs)
+               
+               move zero to l-sub-cur-nest  *> <-- probably not needed..
 
                move trim(upper-case(l-src-code-str(length(ws-sub):)))
                    to l-sub-name(l-num-subs)

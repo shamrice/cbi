@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-09
-      * Last Modified: 2021-11-19
+      * Last Modified: 2021-11-23
       * Purpose: BASIC interpretter written in COBOL      
       * Tectonics: ./build.sh
       ******************************************************************
@@ -126,15 +126,15 @@
                10  ws-loop-end            pic 9(5).                                      
 
 
-       01  ws-sub-boundary-table.
+       01  ws-sub-boundary-table.           
            05  ws-num-subs                pic 9(4) comp. 
+           05  ws-sub-cur-nest            pic 9(4) comp value 0.
            05  ws-sub-data                occurs 0 to 1000 times
                                           depending on ws-num-subs
                                           indexed by ws-sub-idx.    
                10  ws-sub-name            pic x(32).           
                10  ws-sub-start           pic 9(5). *>TODO Make comp 
                10  ws-sub-end             pic 9(5).  
-               10  ws-sub-cur-nest        pic 9(4) value 0.
                10  ws-sub-last-call       pic 9(5) occurs 1000 times.
                                          *>idx of last call is cur nest.
 
@@ -365,6 +365,9 @@
                ws-source-data-temp(1:length(ws-sub))) = ws-sub) 
                or (upper-case(
                ws-source-data-temp(1:length(ws-end-sub))) = ws-end-sub) 
+               or (upper-case(
+               ws-source-data-temp(
+                   1:length(ws-exit-sub))) = ws-exit-sub) 
                    call "sub-handler" using 
                        ws-source-data-temp
                        ws-line-idx
