@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-11-21
+      * Last Modified: 2021-11-22
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -71,10 +71,9 @@
        01  ls-source-data-end         pic x(1024). 
        01  ls-last-colon-idx          pic 9(4) comp value 1.
 
-       01  ls-comment-tic-count       pic 9(4) comp.
-       01  ls-comment-space-replace   pic 9(4) comp.
+       01  ls-comment-tic-count       pic 9(4) comp.       
 
-       01  ls-quote-count             pic 9(4) comp.      
+       01  ls-quote-count             pic 9(4) comp.
 
        01  ls-quote-pair-end-idx      usage index.
 
@@ -111,6 +110,13 @@
 
        01  ls-if-count                pic 9(4) comp.
        01  ls-then-count              pic 9(4) comp.
+
+       01  ls-char-idx                pic 9(4) comp.
+       01  ls-end-if-count            pic 9(4) comp.
+       01  ls-if-delimiter            pic x(8).
+       01  ls-line-if-temp-src        pic x(1024).
+       01  ls-line-if-temp            pic x(1024).
+       
 
        linkage section.    
 
@@ -258,37 +264,94 @@
                ls-if-count for all ws-if 
                ls-then-count for all ws-then                
            
-           if ls-if-count > 0 and ls-then-count > 0 then 
-               call "logger" using "LOAD :: checking single line IF"
-               
-      *>   TODO: keywords need to be uppercased for this to work. Currently
-      *>         anything but an uppercase THEN will be ignored.
-               unstring ls-source-code-line
-                   delimited by ws-then 
-                   into ls-if-start-part ls-if-end-parts
-               end-unstring
-
-               call "logger" using ls-if-start-part
-               call "logger" using ls-if-end-parts
-
-      *>   If single line IF, break processing up into parts and load
-      *>   them. Append END IF to the end of the IF new block.
-               if ls-if-end-parts not = spaces then 
-                   set ls-single-line-if to true 
-
-                   move ls-if-start-part to ls-source-code-line
-                   perform load-source-code-data
-
-                   move ls-if-end-parts to ls-source-code-line
-                   perform load-source-code-data
-
-                   move ws-end-if to ls-source-code-line
-                   perform load-source-code-data
-
-               end-if 
+           if ls-if-count = 0 and ls-then-count = 0 then 
+               exit paragraph 
            end-if 
 
+           call "logger" using concatenate(
+               "LOAD :: checking single line IF for: "
+               trim(ls-source-code-line))
+           end-call 
+
+      *> TODO: keywords need to be uppercased for this to work. Currently
+      *>         anything but an uppercase THEN will be ignored.
+           unstring ls-source-code-line
+               delimited by ws-then 
+               into ls-if-start-part ls-if-end-parts
+               delimiter in ls-if-delimiter
+           end-unstring
+               
+      *>   If nothing after the "THEN", not a single line IF statement.
+           if ls-if-end-parts = spaces then 
+               exit paragraph 
+           end-if 
+
+      *>   If single line IF, break processing up into parts and load
+      *>   them. Append END IF to the end of the IF new block.           
+           set ls-single-line-if to true 
+        
+           move 1 to ls-char-idx 
+           move zero to ls-end-if-count
+           move ls-source-code-line to ls-line-if-temp-src
+
+
+           perform until ls-char-idx > length(ls-line-if-temp-src)                    
+
+               unstring ls-line-if-temp-src
+                   delimited by ws-then or ws-else 
+                   into ls-line-if-temp
+                   delimiter in ls-if-delimiter
+                   with pointer ls-char-idx 
+               end-unstring
+           
+               if ls-line-if-temp not = spaces then 
+
+                   move spaces to ls-source-code-line
+               
+                   evaluate true
+
+                     *> Create string from IF start to THEN and add to
+                     *> number of ifs.
+                       when ls-if-delimiter = ws-then  
+                           string 
+                               trim(ls-line-if-temp)
+                               space 
+                               ws-then 
+                               into ls-source-code-line
+                           end-string 
+                           add 1 to ls-end-if-count
+
+                      *> If ELSE, put else on newline and then following
+                      *> on next line.
+                       when ls-if-delimiter = ws-else 
+                           string 
+                               trim(ls-line-if-temp) 
+                               " : "
+                               ws-else 
+                               into ls-source-code-line
+                           end-string 
+                       
+                       *> Move line as-is to new genreated source line.
+                       when other 
+                           move ls-line-if-temp
+                           to ls-source-code-line       
+                       
+                   end-evaluate 
+
+                   perform load-source-code-data 
+             
+               end-if 
+
+           end-perform 
+
+      *>   Add 'END IF's to all the if blocks generated.
+           perform ls-end-if-count times 
+               move ws-end-if to ls-source-code-line
+               perform load-source-code-data 
+           end-perform 
+           
            exit paragraph.       
+
 
 
        set-quote-locations-in-line.
