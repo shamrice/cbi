@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-15
-      * Last Modified: 2021-11-19
+      * Last Modified: 2021-11-24
       * Purpose: Process CHR$ - get character for ASCII code passed in.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -46,16 +46,25 @@
 
            move upper-case(l-input-value) to ls-working-input-value
 
-      *     call "logger" using ls-working-input-value
+           call "logger" using ls-working-input-value
 
+      *>   Replace CHR$ and it's parenthesis (but not any inside)
            inspect ls-working-input-value
                replacing 
                    all ws-chr by spaces 
-                   all "(" by spaces 
-                   all ")" by spaces 
-           
-           
-      *     call "logger" using trim(ls-working-input-value)
+
+           inspect ls-working-input-value
+               replacing first "(" by space 
+
+           move reverse(ls-working-input-value) 
+           to ls-working-input-value
+
+           inspect ls-working-input-value
+               replacing first ")" by space 
+
+           move reverse(ls-working-input-value)
+           to ls-working-input-value
+                 
 
            if trim(ls-working-input-value) is numeric then 
                move trim(ls-working-input-value) to ls-ascii-code           
@@ -388,6 +397,8 @@
 
 
        get-value-from-variable.
+
+           call "array-indexed-name" using ls-working-input-value
 
            move ls-working-input-value to ls-variable-name 
            call "get-variable" using
