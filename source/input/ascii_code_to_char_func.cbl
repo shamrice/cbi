@@ -46,8 +46,6 @@
 
            move upper-case(l-input-value) to ls-working-input-value
 
-           call "logger" using ls-working-input-value
-
       *>   Replace CHR$ and it's parenthesis (but not any inside)
            inspect ls-working-input-value
                replacing 

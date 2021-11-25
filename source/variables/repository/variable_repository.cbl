@@ -1,18 +1,20 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-18
-      * Last Modified: 2021-11-18
+      * Last Modified: 2021-11-25
       * Purpose: Holds all in-memory variable information.
       * Tectonics: ./build.sh
       ******************************************************************
        identification division.
-       program-id. variable-repository.
+       program-id. variable-repository is recursive.
 
        environment division.
        
        configuration section.
 
        repository. 
+           function inkey-func
+           function ascii-code-to-char
            function all intrinsic.          
 
        special-names.           
@@ -23,7 +25,10 @@
 
        working-storage section.
 
-       copy "copybooks/basic_keywords.cpy".
+       copy "copybooks/basic_keywords.cpy".       
+
+       78  ws-type-int-const-val          value "INTEGER".
+       78  ws-type-str-const-val          value "STRING".
 
        01  ws-var-end-idx                 usage index. 
 
@@ -33,9 +38,9 @@
                                           depending on ws-num-variables
                                           indexed by ws-var-idx. 
                10  ws-variable-type       pic x(8) value spaces.
-                   88  ws-type-integer    value "INTEGER".
-                   88  ws-type-string     value "STRING".
-               10  ws-variable-name       pic x(16) value spaces.
+                   88  ws-type-integer    value ws-type-int-const-val.
+                   88  ws-type-string     value ws-type-str-const-val.
+               10  ws-variable-name       pic x(256) value spaces.
                10  ws-variable-value      pic x(1024) value spaces.
                10  ws-variable-value-num  pic S9(16) value zeros.  
     
@@ -43,23 +48,29 @@
            88  ws-return-code-name-true   value "TRUE".
            88  ws-return-code-name-false  value "FALSE".
 
+
        local-storage section.       
 
        01  ls-found-var-idx               pic 9(4) comp.
 
        01  ls-var-save-action-sw          pic a(6) value "UPDATE".
            88  ls-var-save-action-new     value "NEW".
-           88  ls-var-save-action-update  value "UPDATE".
+           88  ls-var-save-action-update  value "UPDATE".           
 
        01  ls-found-var-type              pic x(8).
+
+       01  ls-temp-chr-check-string       pic x(1024).  
+       01  ls-temp-inkey-ret-val          pic xx.
+
+       01  ls-leading-space-count         pic 9(4) comp.
 
        linkage section.       
 
        01  l-variable.               
-           10  l-variable-type       pic x(8).
-           10  l-variable-name       pic x(16).
-           10  l-variable-value      pic x(1024).
-           10  l-variable-value-num  pic S9(16).
+           10  l-variable-type           pic x(8).
+           10  l-variable-name           pic x(256).
+           10  l-variable-value          pic x(1024).
+           10  l-variable-value-num      pic S9(16).
 
        01  l-return-code                 pic 9 value 0.
            88  l-return-code-false       value 0.
@@ -132,7 +143,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-18
-      * Last Modified: 2021-11-18
+      * Last Modified: 2021-11-25
       * Purpose: Entry point to get variable based on name passed in the
       *          l-variable record. Return code is false if no existing 
       *          record is found or true if one is found and the l-variable
@@ -146,11 +157,71 @@
            move spaces to l-variable-value           
            move spaces to l-variable-type
 
+           if l-variable-name = spaces then 
+               goback 
+           end-if 
+
+      *>   If there's any leading spaces, shift them out of the string.
+           inspect l-variable-name 
+               tallying ls-leading-space-count
+               for leading spaces                      
+
+           if ls-leading-space-count > 0 then 
+               add 1 to ls-leading-space-count
+               move l-variable-name(ls-leading-space-count:) 
+               to l-variable-name 
+           end-if 
+
+
+      *>   Check if val should be subbed with INKEY$ value.
+           if  upper-case(l-variable-name) = ws-inkey then 
+               move function inkey-func to ls-temp-inkey-ret-val
+               string 
+                   '"'
+                   trim(ls-temp-inkey-ret-val)
+                   '"'
+                   into l-variable-value
+               end-string            
+
+               set ws-return-code-name-true to true 
+               set l-return-code-true to true 
+               move ws-type-str-const-val to l-variable-type
+
+               perform log-get-variable
+               goback             
+               
+           end-if 
+
+      *>   Check for CHR$() function.
+           if upper-case(l-variable-name(1:length(ws-chr))) = ws-chr 
+           then                
+               move ascii-code-to-char(l-variable-name)
+               to ls-temp-chr-check-string
+              
+               string 
+                   '"' 
+                   trim(ls-temp-chr-check-string)
+                   '"'
+                   into l-variable-value
+               end-string 
+
+               set ws-return-code-name-true to true 
+               set l-return-code-true to true 
+               move ws-type-str-const-val to l-variable-type  
+
+               perform log-get-variable
+               goback 
+           end-if  
+
+
+
            if ws-num-variables = 0 or l-variable-name = spaces then 
                goback 
            end-if 
 
            move upper-case(trim(l-variable-name)) to l-variable-name 
+
+           call "array-indexed-name" using l-variable-name 
 
            set ws-var-end-idx to ws-num-variables
            perform varying ws-var-idx from 1 by 1 
@@ -170,7 +241,15 @@
                set ws-return-code-name-false to true 
            end-if 
 
-           call "logger" using concatenate(
+           perform log-get-variable
+
+           goback.
+
+
+
+       log-get-variable.
+
+         call "logger" using concatenate(
                "VARIABLE-REPOSITORY::GET-VARIABLE" 
                " : Return code: " l-return-code  
                " (" ws-return-code-name-sw ")"            
@@ -180,5 +259,6 @@
                " : value: " trim(l-variable-value))             
            end-call 
 
-           goback.
+           exit paragraph.
+
        end program variable-repository.

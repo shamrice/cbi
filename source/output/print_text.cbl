@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-17
-      * Last Modified: 2021-11-22
+      * Last Modified: 2021-11-25
       * Purpose: Process the PRINT command.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -13,7 +13,6 @@
        configuration section.
 
        repository. 
-           function ascii-code-to-char
            function all intrinsic.          
 
        special-names.           
@@ -158,18 +157,6 @@
 
 
        set-variable-value.
-
-      *>   Check for CHR$() function.
-           if upper-case(trim(ls-temp-str-buffer(1:length(ws-chr))))
-               = ws-chr 
-           then 
-               move ascii-code-to-char(ls-temp-str-buffer) 
-               to ls-temp-str-buffer
-               exit paragraph
-           end-if 
-
-      *>   Check if array and sub vars for index as eneded.
-           call "array-indexed-name" using ls-temp-str-buffer
 
            move ls-temp-str-buffer to ls-variable-name  
            call "get-variable" using                

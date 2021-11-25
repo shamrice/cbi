@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-22
+      * Last Modified: 2021-11-25
       * Purpose: Processes a single conditional statement and returns 
       *          if true (1) or false (0).
       *          This should be called from the conditional-statement-handler
@@ -15,8 +15,6 @@
        configuration section.
 
        repository. 
-           function ascii-code-to-char
-           function inkey-func 
            function all intrinsic.          
 
        special-names.           
@@ -42,8 +40,6 @@
 
        01  ls-num-parts-disp                  pic 9(4).
 
-       01  ls-space-count                     pic 9(4) comp.
-
        01  ls-statement-to-process            pic x(1024).
 
        01  ls-conditional-parts-table.
@@ -63,8 +59,6 @@
        01  ls-parts-end-idx                   usage index.
 
        01  ls-temp-statement-value            pic x(1024) value spaces.            
-       01  ls-temp-chr-check-string           pic x(1024).  
-       01  ls-temp-inkey-ret-val              pic xx.
 
        01  ls-sub-val-with-var-sw             pic a value 'N'.
            88  ls-sub-val-with-var            value 'Y'.
@@ -342,44 +336,9 @@
 
        substitute-variable-val-if-exists.
 
-           set ls-not-sub-val-with-var to true 
-
-      *>   Check if val should be subbed with INKEY$ value.
-           if upper-case(trim(ls-temp-statement-value)) = ws-inkey then 
-               move spaces to ls-part-value(ls-num-parts)  
-               move function inkey-func to ls-temp-inkey-ret-val
-               string 
-                   '"'
-                   trim(ls-temp-inkey-ret-val)
-                   '"'
-                   into ls-part-value(ls-num-parts)  
-               end-string            
-                     
-               set ls-part-type-string(ls-num-parts) to true 
-               set ls-sub-val-with-var to true
-               exit paragraph 
-           end-if 
-
-      *>   Check for CHR$() function.
-           if upper-case(trim(
-               ls-temp-statement-value(1:length(ws-chr)))) = ws-chr 
-           then 
-               move ascii-code-to-char(ls-temp-statement-value)
-               to ls-temp-chr-check-string
-               move spaces to ls-part-value(ls-num-parts)   
-               string 
-                   '"' 
-                   trim(ls-temp-chr-check-string)
-                   '"'
-                   into ls-part-value(ls-num-parts)
-               end-string 
-
-               set ls-part-type-string(ls-num-parts) to true 
-               set ls-sub-val-with-var to true
-               exit paragraph
-           end-if                           
+           set ls-not-sub-val-with-var to true                           
            
-      *>   Check for declared variable
+      *>   Check for declared variable or intrinsic function
            move ls-temp-statement-value to ls-variable-name 
            call "get-variable" using 
                ls-variable 

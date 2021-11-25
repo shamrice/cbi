@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-11-22
+      * Last Modified: 2021-11-25
       * Purpose: Assigns value to a variable
       * Tectonics: ./build.sh
       ******************************************************************
@@ -13,8 +13,6 @@
        configuration section.
 
        repository. 
-           function ascii-code-to-char
-           function inkey-func
            function all intrinsic.          
 
        special-names.           
@@ -48,15 +46,12 @@
            05  ls-temp-variable-type       pic x(8) value spaces.
                88  ls-temp-type-integer    value "INTEGER".
                88  ls-temp-type-string     value "STRING".
-           05  ls-temp-variable-name       pic x(16) value spaces.
+           05  ls-temp-variable-name       pic x(256) value spaces.
            05  ls-temp-variable-value      pic x(1024) value spaces.
            05  ls-temp-variable-value-num  pic S9(16) value zeros.                 
 
-       01  ls-space-count                pic 9(10) comp value zero.
-
-       01  ls-end-quote-idx              pic 9(10) comp value zero.
-
-       01  ls-char-idx                   pic 9(4) comp. 
+       01  ls-space-count                pic 9(10) comp value zero.       
+       
        01  ls-trailing-quote-idx         pic 9(4) comp.
 
        01  ls-assignment-dest            pic x(1024).       
@@ -72,9 +67,7 @@
        01  ls-variable-value-num-disp     pic x(17).
 
        01  ls-temp-param-buffer          pic x(1024).
-       01  ls-temp-param-value           pic x(1024).     
-       01  ls-temp-chr-check-string      pic x(1024).  
-       01  ls-temp-inkey-ret-val         pic xx.
+       01  ls-temp-param-value           pic x(1024).            
 
        01  ls-temp-param-pointer         pic 9(4) comp.
        
@@ -355,34 +348,6 @@
 
                move trim(ls-temp-param-value) to ls-temp-param-value
 
-      *>         Check if value INKEY$
-               if upper-case(ls-temp-param-value) = ws-inkey then 
-                   move spaces to ls-temp-param-value
-                   move function inkey-func to ls-temp-inkey-ret-val
-                   string 
-                       '"'
-                       trim(ls-temp-inkey-ret-val)
-                       '"'
-                       into ls-temp-param-value
-                   end-string 
-                    call "logger" using "**************INKEY**********"
-                   call "logger" using ls-temp-param-value
-               end-if 
-
-      *>           Check for CHR$
-               if upper-case(ls-temp-param-value(1:length(ws-chr)))
-                   = ws-chr
-               then
-                   move ascii-code-to-char(ls-temp-param-value)  
-                   to ls-temp-chr-check-string
-                   move spaces to ls-temp-param-value 
-                   string 
-                       '"' 
-                       trim(ls-temp-chr-check-string)
-                       '"'
-                       into ls-temp-param-value
-                   end-string 
-               end-if 
 
                if ls-is-first-value then 
                    move ls-temp-param-value 

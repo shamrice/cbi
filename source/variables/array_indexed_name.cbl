@@ -8,7 +8,7 @@
       * Tectonics: ./build.sh
       ******************************************************************
        identification division.
-       program-id. array-indexed-name.
+       program-id. array-indexed-name is recursive.
 
        environment division.
        
