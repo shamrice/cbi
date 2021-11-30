@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-14
-      * Last Modified: 2021-11-12
+      * Last Modified: 2021-11-30
       * Purpose: Process the INPUT command with parameter.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -30,6 +30,8 @@
 
        local-storage section.
        
+       copy "copybooks/local_storage/ls_variable.cpy".  
+
        01  ls-temp-input-val            pic x(1024) value spaces.
        01  ls-assign-var-str            pic x(1024).              
 
@@ -37,6 +39,8 @@
        01  ls-temp-param-values         pic x(1024) occurs 10 times.                  
 
        01  ls-temp-input-text           pic x(1024).
+       
+       01  ls-space-count               pic 9(4) comp.
 
        01  ls-char-idx                  pic 9(4) comp.
        01  ls-input-str-end-idx         pic 9(4) comp.
@@ -44,6 +48,10 @@
        01  ls-input-type-sw             pic a value 'N'.
            88  ls-input-type-normal     value 'N'.
            88  ls-input-type-question   value 'Q'.
+
+       01  ls-dest-var-type             pic a value 'S'.
+           88  ls-dest-var-type-string  value 'S'.
+           88  ls-dest-var-type-int     value 'I'.
 
        01  ls-quote-count               pic 9(4) comp.
 
@@ -209,22 +217,55 @@
 
            add 1 to l-scr-row 
            move 1 to l-scr-col 
+           
+      *>   Check to see if dest variable is already declared. If so,
+      *>   use that type. If not, attempt to determine type by var name
+      *>   suffix. If all else fails, default to INTEGER.
+           set ls-dest-var-type-int to true 
 
-           if trim(ls-temp-input-val) is numeric then 
+           move ls-temp-param-values(1) to ls-variable-name 
+
+           call "get-variable" using 
+               ls-variable 
+               ls-get-variable-return-code
+           end-call 
+
+           if ls-get-variable-return-code > 0 then 
+               if ls-type-string then 
+                   set ls-dest-var-type-string to true             
+               end-if 
+
+           else 
+               inspect reverse(ls-variable-name) 
+                   tallying ls-space-count
+                   for leading spaces 
+               
+               if ls-space-count < length(ls-variable-name) 
+                   and ls-variable-name(
+                       (length(ls-variable-name) - ls-space-count): 1) 
+                       = "$"
+               then 
+                   set ls-dest-var-type-string to true                              
+               end-if 
+           end-if 
+
+
+           if ls-dest-var-type-int then 
                move concatenate(
-                   upper-case(trim(ls-temp-param-values(1)))
+                   trim(ls-variable-name)
                    ' = '
                    trim(ls-temp-input-val))
-                   to ls-assign-var-str               
+               to ls-assign-var-str               
            else 
                *> If string, add quotes in assignment.
                move concatenate(
-                   upper-case(trim(ls-temp-param-values(1)))
+                   trim(ls-variable-name)
                    ' = "'
                    trim(ls-temp-input-val)
                    '"')
-                   to ls-assign-var-str               
+               to ls-assign-var-str               
            end-if 
+
            call "assign-var" using 
                ls-assign-var-str               
            end-call 

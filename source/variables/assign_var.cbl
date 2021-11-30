@@ -95,7 +95,7 @@
 
       *> Number of quoted pairs in a source code line.
        01  ls-quote-table.
-           05  ls-num-quote-pairs       pic 9(4).
+           05  ls-num-quote-pairs       pic 9(4) comp.
            05  ls-quote-location        occurs 0 to 9999 times 
                                         depending on ls-num-quote-pairs
                                         indexed by ls-quote-idx.
