@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-13
-      * Last Modified: 2021-11-22
+      * Last Modified: 2021-11-29
       * Purpose: Loads BASIC program into memory.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -108,6 +108,10 @@
            05  ls-if-start-part       pic x(1024).
            05  ls-if-end-parts        pic x(1024).
 
+       01  ls-single-if-in-quote-sw      pic a value 'N'.
+           88  ls-single-if-in-quote     value 'Y'.
+           88  ls-single-if-not-in-quote value 'N'.
+
        01  ls-if-count                pic 9(4) comp.
        01  ls-then-count              pic 9(4) comp.
 
@@ -207,12 +211,20 @@
       *>        line alone.  
                        move f-source-code-line to ls-source-code-line                       
 
-                       perform remove-comment-from-line
+                       call "logger" using concatenate(
+                           "LOAD:LINE DATA :: " ls-source-code-line)
+                       end-call 
 
-                       perform process-single-line-if
-                       if not ls-single-line-if then                  
-                           perform load-source-code-data
+                       if ls-source-code-line not = spaces then 
+                           perform remove-comment-from-line
+
+                           perform process-single-line-if
+
+                           if not ls-single-line-if then 
+                               perform load-source-code-data
+                           end-if 
                        end-if 
+
                    end-read 
 
                end-perform 
@@ -286,6 +298,11 @@
                exit paragraph 
            end-if 
 
+           call "logger" using concatenate(
+               "LOAD :: Is single line IF, evaluating: " 
+               trim(ls-source-code-line))
+           end-call 
+
       *>   If single line IF, break processing up into parts and load
       *>   them. Append END IF to the end of the IF new block.           
            set ls-single-line-if to true 
@@ -294,6 +311,7 @@
            move zero to ls-end-if-count
            move ls-source-code-line to ls-line-if-temp-src
 
+           perform set-quote-locations-in-line
 
            perform until ls-char-idx > length(ls-line-if-temp-src)                    
 
@@ -302,12 +320,32 @@
                    into ls-line-if-temp
                    delimiter in ls-if-delimiter
                    with pointer ls-char-idx 
-               end-unstring
-           
-               if ls-line-if-temp not = spaces then 
+               end-unstring  
+
+               set ls-single-if-not-in-quote to true 
+
+               set ls-quote-pair-end-idx to ls-num-quote-pairs 
+               perform varying ls-quote-pair-idx from 1 by 1 
+               until ls-quote-pair-idx > ls-quote-pair-end-idx
+
+                   if ls-char-idx > 
+                       ls-q-start-idx(ls-quote-pair-idx)
+                       and ls-char-idx 
+                       < ls-q-end-idx(ls-quote-pair-idx)
+                   then 
+                       set ls-single-if-in-quote to true 
+                       set ls-not-single-line-if to true 
+                       call "logger" using "SINGLE LINE IF IN QUOTES"
+                       exit perform 
+                   end-if 
+               end-perform 
+       
+               if ls-line-if-temp not = spaces 
+                   and ls-single-if-not-in-quote 
+               then 
 
                    move spaces to ls-source-code-line
-               
+
                    evaluate true
 
                      *> Create string from IF start to THEN and add to
@@ -337,6 +375,11 @@
                            to ls-source-code-line       
                        
                    end-evaluate 
+                   
+                   call "logger" using concatenate(
+                       "LOAD :: Single line IF part to add: " 
+                       trim(ls-source-code-line))
+                   end-call 
 
                    perform load-source-code-data 
              
@@ -346,6 +389,7 @@
 
       *>   Add 'END IF's to all the if blocks generated.
            perform ls-end-if-count times 
+               move spaces to ls-source-code-line
                move ws-end-if to ls-source-code-line
                perform load-source-code-data 
            end-perform 
@@ -383,19 +427,24 @@
                            end-call 
                        
                        else 
-                           compute ls-q-end-idx(ls-num-quote-pairs) 
-                               = ls-line-char-idx + 1
-                           end-compute 
 
-                           set ls-quote-type-end to true 
+                       *> TODO: Adding this just to keep from crashing 
+                       *> from bad single line IF parsing.
+                           if ls-num-quote-pairs > 0 then 
 
-                           call "logger" using concatenate(
-                               "LOAD :: quote END at: " 
-                               ls-q-end-idx(ls-num-quote-pairs) 
-                               " for line: " 
-                               trim(ls-source-code-line))
-                           end-call 
-                                                     
+                               compute ls-q-end-idx(ls-num-quote-pairs) 
+                                   = ls-line-char-idx + 1
+                               end-compute 
+
+                               set ls-quote-type-end to true 
+
+                               call "logger" using concatenate(
+                                   "LOAD :: quote END at: " 
+                                   ls-q-end-idx(ls-num-quote-pairs) 
+                                   " for line: " 
+                                   trim(ls-source-code-line))
+                               end-call 
+                           end-if                       
                        end-if 
                    end-if 
                
@@ -406,9 +455,11 @@
 
 
 
-       load-source-code-data. 
-       
+       load-source-code-data.        
+
       *> Check if start of line is a line number.
+           move spaces to ls-potential-line-number
+
            perform varying ls-line-char-idx from 1 by 1 
            until ls-line-char-idx > length(ls-source-code-line) 
 
@@ -418,7 +469,10 @@
 
       *> If line number is found, create new line label entry for it and
       *> then remove line label from source code line to be processed.
-                   if trim(ls-potential-line-number) is numeric then 
+                   if ls-potential-line-number not = spaces 
+                       and trim(ls-potential-line-number) is numeric 
+                   then                        
+
                        add 1 to l-num-lines
 
                        move ls-potential-line-number
@@ -570,7 +624,7 @@
                end-if 
 
            else
-           
+               
                if ls-source-code-line not = spaces then 
                    add 1 to l-num-lines
                    move trim(ls-source-code-line)
