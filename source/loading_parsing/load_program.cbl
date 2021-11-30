@@ -336,7 +336,7 @@
                        set ls-single-if-in-quote to true 
                        set ls-not-single-line-if to true 
                        call "logger" using "SINGLE LINE IF IN QUOTES"
-                       exit perform 
+                       exit paragraph 
                    end-if 
                end-perform 
        
