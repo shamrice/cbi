@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-18
-      * Last Modified: 2021-11-25
+      * Last Modified: 2021-12-01
       * Purpose: Holds all in-memory variable information.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -60,7 +60,7 @@
        01  ls-found-var-type              pic x(8).
 
        01  ls-temp-chr-check-string       pic x(1024).  
-       01  ls-temp-inkey-ret-val          pic xx.
+       01  ls-temp-inkey-ret-val          pic x(4).
 
        01  ls-leading-space-count         pic 9(4) comp.
 
@@ -175,13 +175,7 @@
 
       *>   Check if val should be subbed with INKEY$ value.
            if  upper-case(l-variable-name) = ws-inkey then 
-               move function inkey-func to ls-temp-inkey-ret-val
-               string 
-                   '"'
-                   trim(ls-temp-inkey-ret-val)
-                   '"'
-                   into l-variable-value
-               end-string            
+               move function inkey-func to l-variable-value      
 
                set ws-return-code-name-true to true 
                set l-return-code-true to true 
