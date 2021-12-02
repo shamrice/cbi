@@ -14,7 +14,9 @@ BUILD_STRING="cobc -O2 -x --debug -fstatic-call -lncurses \
     variables/assign_var.cbl \
     variables/is_keyword.cbl \
     variables/repository/variable_repository.cbl \
-    input/ascii_code_to_char_func.cbl \
+    functions/ascii_code_to_char_func.cbl \
+    functions/ltrim.cbl \
+    functions/rtrim.cbl \
     input/inkey_func.cbl \
     input/input_cmd.cbl  \
     output/clear_screen.cbl \

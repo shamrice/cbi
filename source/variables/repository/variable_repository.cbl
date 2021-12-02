@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-18
-      * Last Modified: 2021-12-01
+      * Last Modified: 2021-12-02
       * Purpose: Holds all in-memory variable information.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -206,6 +206,34 @@
                perform log-get-variable
                goback 
            end-if  
+
+      *>   Check for RTRIM$() function.
+           if upper-case(l-variable-name(1:length(ws-rtrim))) = ws-rtrim
+           then      
+               move l-variable-name to l-variable-value          
+               call "rtrim" using l-variable-value 
+              
+               set ws-return-code-name-true to true 
+               set l-return-code-true to true 
+               move ws-type-str-const-val to l-variable-type  
+
+               perform log-get-variable
+               goback 
+           end-if 
+
+      *>   Check for LTRIM$() function.
+           if upper-case(l-variable-name(1:length(ws-ltrim))) = ws-ltrim
+           then      
+               move l-variable-name to l-variable-value          
+               call "ltrim" using l-variable-value 
+              
+               set ws-return-code-name-true to true 
+               set l-return-code-true to true 
+               move ws-type-str-const-val to l-variable-type  
+
+               perform log-get-variable
+               goback 
+           end-if 
 
 
 
