@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-12
-      * Last Modified: 2021-12-02
+      * Last Modified: 2021-12-03
       * Purpose: Copybook containing definitions for implemented BASIC
       *          keywords. 
       * Tectonics: ./build.sh
@@ -70,6 +70,8 @@
        78  ws-chr                     value "CHR$".
        78  ws-rtrim                   value "RTRIM$".
        78  ws-ltrim                   value "LTRIM$".
+       78  ws-left                    value "LEFT$".
+       78  ws-right                   value "RIGHT$".
 
        78  ws-let                     value "LET ".
      

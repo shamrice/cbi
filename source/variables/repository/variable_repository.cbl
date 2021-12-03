@@ -15,6 +15,8 @@
        repository. 
            function inkey-func
            function ascii-code-to-char
+           function left-func 
+           function right-func 
            function all intrinsic.          
 
        special-names.           
@@ -61,6 +63,8 @@
 
        01  ls-temp-chr-check-string       pic x(1024).  
        01  ls-temp-inkey-ret-val          pic x(4).
+
+       01  ls-temp-left-right-ret-val     pic x(1024).
 
        01  ls-leading-space-count         pic 9(4) comp.
 
@@ -143,7 +147,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-18
-      * Last Modified: 2021-11-25
+      * Last Modified: 2021-12-03
       * Purpose: Entry point to get variable based on name passed in the
       *          l-variable record. Return code is false if no existing 
       *          record is found or true if one is found and the l-variable
@@ -235,6 +239,40 @@
                goback 
            end-if 
 
+           
+      *>   Check for LEFT$() function.
+           if upper-case(l-variable-name(1:length(ws-left))) = ws-left
+           then     
+               *> For some reason, it needs to the temp var to jump from
+               move left-func(l-variable-name) 
+               to ls-temp-left-right-ret-val               
+               
+               move ls-temp-left-right-ret-val to l-variable-value
+
+               set ws-return-code-name-true to true 
+               set l-return-code-true to true 
+               move ws-type-str-const-val to l-variable-type  
+
+               perform log-get-variable
+               goback 
+           end-if 
+
+      *>   Check for RIGHT$() function.
+           if upper-case(l-variable-name(1:length(ws-right))) = ws-right
+           then     
+               *> For some reason, it needs to the temp var to jump from
+               move right-func(l-variable-name) 
+               to ls-temp-left-right-ret-val               
+               
+               move ls-temp-left-right-ret-val to l-variable-value
+
+               set ws-return-code-name-true to true 
+               set l-return-code-true to true 
+               move ws-type-str-const-val to l-variable-type  
+
+               perform log-get-variable
+               goback 
+           end-if        
 
 
            if ws-num-variables = 0 or l-variable-name = spaces then 
