@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-10-20
-      * Last Modified: 2021-11-25
+      * Last Modified: 2021-12-03
       * Purpose: Processes a single conditional statement and returns 
       *          if true (1) or false (0).
       *          This should be called from the conditional-statement-handler
@@ -58,7 +58,8 @@
        01  ls-unstring-idx-pointer            pic 9(4) comp.       
        01  ls-parts-end-idx                   usage index.
 
-       01  ls-temp-statement-value            pic x(1024) value spaces.            
+       01  ls-temp-statement-value            pic x(1024) value spaces.
+       01  ls-delimiter-value                 pic xx. 
 
        01  ls-sub-val-with-var-sw             pic a value 'N'.
            88  ls-sub-val-with-var            value 'Y'.
@@ -67,8 +68,6 @@
        01  ls-conditional-type-check-sw       pic a value 'N'.
            88  ls-conditional-check-numeric   value 'N'.
            88  ls-conditional-check-string    value 'S'.
-
-       01  ls-operator-count                  pic 9(4) comp.
 
        linkage section.       
 
@@ -100,10 +99,19 @@
            ls-unstring-idx-pointer > length(ls-statement-to-process)          
 
                move spaces to ls-temp-statement-value
+               move spaces to ls-delimiter-value
 
-               unstring ls-statement-to-process 
-                   delimited by space 
+      *>   NOTE: delimiter order matters. From most complex to least!
+               unstring ls-statement-to-process       
+                   delimited by 
+                       ws-not-equal-to 
+                       or ws-greater-than-equal-to 
+                       or ws-less-than-equal-to
+                       or ws-greater-than
+                       or ws-less-than 
+                       or ws-equal-to
                    into ls-temp-statement-value
+                   delimiter in ls-delimiter-value
                    with pointer ls-unstring-idx-pointer
                end-unstring
 
@@ -113,14 +121,19 @@
 
                call "logger" using concatenate(
                    "CONDITIONAL-PROCESSOR :: statement part: "
-                   trim(ls-temp-statement-value))
+                   trim(ls-temp-statement-value)
+                   " : delimiter: " ls-delimiter-value)
                end-call 
 
                add 1 to ls-num-parts                            
 
                perform substitute-variable-val-if-exists
 
+      *>   If not subbed with var, attempt to determine literal type.
                if ls-not-sub-val-with-var then 
+
+                   move trim(ls-temp-statement-value) 
+                   to ls-temp-statement-value
                    
                    if ls-temp-statement-value(1:1) = '"' then 
                        set ls-part-type-string(ls-num-parts) to true
@@ -131,44 +144,35 @@
                        move ls-temp-statement-value 
                            to ls-part-value(ls-num-parts)
 
-                       move zeros to ls-operator-count
+                       if trim(ls-temp-statement-value) is numeric then 
 
-                       inspect ls-temp-statement-value
-                       tallying ls-operator-count for 
-                           all ws-equal-to
-                           all ws-not-equal-to
-                           all ws-greater-than
-                           all ws-less-than
-                           all ws-greater-than-equal-to
-                           all ws-less-than-equal-to
-                  
-                   
-                       if ls-operator-count > 0 then 
-                           set ls-part-type-operator(ls-num-parts) 
+                           set ls-part-type-integer(ls-num-parts) 
                                to true 
+                           move ls-temp-statement-value 
+                               to ls-part-value-num(ls-num-parts)
                        else 
-                           if trim(ls-temp-statement-value) 
-                           is numeric then 
-
-                               set ls-part-type-integer(ls-num-parts) 
-                                   to true 
-                               move ls-temp-statement-value 
-                                   to ls-part-value-num(ls-num-parts)
-                           else 
-                               call "logger" using concatenate(
-                                   "CONDITIONAL-PROCESSOR :: WARNING :" 
-                                   " Item: " 
-                                   trim(ls-temp-statement-value) 
-                                   " is not a defined variable or of"
-                                   " string or numeric type. Returning "
-                                   " FALSE.")
-                               end-call 
-                               set l-return-code-false to true 
-                               goback 
-                           end-if 
+                           call "logger" using concatenate(
+                               "CONDITIONAL-PROCESSOR :: WARNING :" 
+                               " Item: " 
+                               trim(ls-temp-statement-value) 
+                               " is not a defined variable or of"
+                               " string or numeric type. Returning "
+                               " FALSE.")
+                           end-call 
+                           set l-return-code-false to true 
+                           goback 
                        end-if 
+                   end-if 
                end-if 
 
+      *>       Add operator if current part is delimited by one.
+               if ls-delimiter-value not = spaces then 
+                   add 1 to ls-num-parts
+                   set ls-part-type-operator(ls-num-parts) to true 
+
+                   move ls-delimiter-value
+                       to ls-part-value(ls-num-parts)
+               end-if 
            end-perform 
 
            move ls-num-parts to ls-num-parts-disp
