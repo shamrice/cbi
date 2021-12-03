@@ -99,15 +99,17 @@
                end-if 
            end-perform            
 
-      *>   Set forward facing str idx. Adding 1 for trailing '"'.
+      *>   Set forward facing str idx. .
            move reverse(ls-source-string) to ls-source-string
            compute 
                ls-char-idx = length(ls-source-string) - ls-char-idx + 1
            end-compute 
 
+      *>   Add 1 to char count for trailing '"'                     
            string 
                '"' 
-               ls-source-string(ls-char-idx - ls-num-chars:ls-num-chars)
+               ls-source-string(
+                   ls-char-idx - ls-num-chars:ls-num-chars + 1)
                into l-output-value
            end-string 
            
