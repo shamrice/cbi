@@ -35,6 +35,7 @@
        01  ls-cur-line-num-disp      pic 9(5).
 
        01  ls-line-text              pic x(1024).
+       01  ls-line-text-temp         pic x(1024).
 
        linkage section.       
 
@@ -119,8 +120,12 @@
            call "logger" using "WHILE :: Processing WHILE loop start"
                
       *>   Check to see if condition is valid before continuing.
+
+           move ls-line-text(length(ws-while):)
+           to ls-line-text-temp
+
            call "conditional-processor" using 
-               ls-line-text(length(ws-while):)               
+               ls-line-text-temp 
                ls-conditional-ret-val
            end-call 
                
@@ -185,8 +190,12 @@
            call "logger" using "DO WHILE :: Processing loop start"
                
       *>   Check to see if condition is valid before continuing.
+           
+           move ls-line-text(length(ws-do-while):)
+           to ls-line-text-temp
+
            call "conditional-processor" using 
-               ls-line-text(length(ws-do-while):)               
+               ls-line-text-temp 
                ls-conditional-ret-val
            end-call 
                
@@ -220,8 +229,12 @@
            call "logger" using "DO UNTIL :: Processing loop start"
                
       *>   Check to see if condition is valid before continuing.
+
+           move ls-line-text(length(ws-do-until):)
+           to ls-line-text-temp
+
            call "conditional-processor" using 
-               ls-line-text(length(ws-do-until):)               
+               ls-line-text-temp 
                ls-conditional-ret-val
            end-call 
                
@@ -253,8 +266,12 @@
            call "logger" using "LOOP WHILE :: Processing loop end"
                
       *>   Check to see if condition is valid before continuing.
+
+           move ls-line-text(length(ws-loop-while):)
+           to ls-line-text-temp
+
            call "conditional-processor" using 
-               ls-line-text(length(ws-loop-while):)               
+               ls-line-text-temp 
                ls-conditional-ret-val
            end-call 
                
@@ -285,8 +302,12 @@
            call "logger" using "LOOP UNTIL :: Processing loop end"
                
       *>   Check to see if condition is valid before continuing.
+
+           move ls-line-text(length(ws-loop-until):)
+           to ls-line-text-temp
+
            call "conditional-processor" using 
-               ls-line-text(length(ws-loop-until):)               
+               ls-line-text-temp 
                ls-conditional-ret-val
            end-call 
                

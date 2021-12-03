@@ -54,6 +54,8 @@
                    88  ls-part-type-string    value "STRING".
                    88  ls-part-type-operator  value "OPERATOR".
 
+       01  ls-temp-str-comp-1                 pic x(1024).
+       01  ls-temp-str-comp-2                 pic x(1024).
 
        01  ls-unstring-idx-pointer            pic 9(4) comp.       
        01  ls-parts-end-idx                   usage index.
@@ -255,11 +257,16 @@
                            set l-return-code-true to true 
                        end-if
                    else 
-                       call "logger" using "STRING COMP"
+                       call "logger" using 
+                           "CONDITIONAL-PROCESSOR :: STRING COMP" 
+                       end-call 
+                       move trim(ls-part-value(1)) to ls-temp-str-comp-1
+                       move trim(ls-part-value(3)) to ls-temp-str-comp-2
+
                        if 
-                       trim(ls-part-value(1)) = trim(ls-part-value(3))
-                       then     
-                           set l-return-code-true to true                    
+                           ls-temp-str-comp-1 = ls-temp-str-comp-2
+                       then                               
+                           set l-return-code-true to true 
                        end-if 
                    end-if 
 
