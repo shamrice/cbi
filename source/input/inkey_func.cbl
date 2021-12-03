@@ -144,6 +144,7 @@
 
       *>   Check if actual space bar pressed or just a time out. For now
       *>   using ASCII char code as placeholder on timeout.
+      *>   TODO : Figure out a way to differentiate between SPACE and ENTER
            if ls-working-key-in = space then 
                if ws-crt-status = COB-SCR-TIME-OUT then 
                    move '"32"' to l-user-input 

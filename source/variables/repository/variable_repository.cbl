@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-18
-      * Last Modified: 2021-12-02
+      * Last Modified: 2021-12-03
       * Purpose: Holds all in-memory variable information.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -60,8 +60,8 @@
            88  ls-var-save-action-update  value "UPDATE".           
 
        01  ls-found-var-type              pic x(8).
-
-       01  ls-temp-chr-check-string       pic x(1024).  
+         
+       01  ls-temp-chr-ret-val            pic x.
        01  ls-temp-inkey-ret-val          pic x(4).
 
        01  ls-temp-left-right-ret-val     pic x(1024).
@@ -194,11 +194,11 @@
            if upper-case(l-variable-name(1:length(ws-chr))) = ws-chr 
            then                
                move ascii-code-to-char(l-variable-name)
-               to ls-temp-chr-check-string
+               to ls-temp-chr-ret-val
               
                string 
                    '"' 
-                   trim(ls-temp-chr-check-string)
+                   ls-temp-chr-ret-val
                    '"'
                    into l-variable-value
                end-string 

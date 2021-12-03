@@ -1,7 +1,7 @@
       ******************************************************************
       * Author: Erik Eriksen
       * Create Date: 2021-11-15
-      * Last Modified: 2021-11-24
+      * Last Modified: 2021-12-03
       * Purpose: Process CHR$ - get character for ASCII code passed in.
       * Tectonics: ./build.sh
       ******************************************************************
@@ -91,6 +91,9 @@
       *> TODO: Special mappings for non-displayable ASCII codes. Must
       *> also match INKEY$ return so that can check, for example, 13 CR.
  
+               when 13 *> INKEY$ currently returns enter as a space
+                   move space to l-char-value
+
                when 33
                    move "!" to l-char-value
                
