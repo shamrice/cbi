@@ -37,7 +37,7 @@ BUILD_STRING="cobc -O2 -x --debug -fstatic-call -lncurses \
     control_flow/subroutine/sub_handler.cbl \
     control_flow/loop/loop_handler.cbl \
     control_flow/loop/for_loop_handler.cbl \
-    -o ./bin/cbi" 
+    -o ../bin/cbi" 
 
 echo 
 echo "Building COBOL BASIC Interpreter"
@@ -51,4 +51,6 @@ $BUILD_STRING
 echo 
 echo 
 echo Done.
+echo WARNING : This build script has been deprecated and will be removed in future versions. Please use 'make' instead.
 echo 
+
